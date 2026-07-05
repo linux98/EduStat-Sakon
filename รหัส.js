@@ -3092,6 +3092,52 @@ function seedOBECMTemplates() {
         { "name": "maj_english_female", "label": "เอกภาษาอังกฤษ (หญิง)", "type": "number", "required": true, "min": 0 }
       ],
       deadline: ''
+    },
+    {
+      formId: 'OBECM_F07',
+      formName: 'นักเรียนออกกลางคันจำแนกตามสาเหตุสำคัญ สพม.สกลนคร',
+      agencyId: 'OBEC_M',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "school_name", "label": "ชื่อสถานศึกษาที่รายงาน", "type": "text", "required": true },
+        { "type": "section", "label": "1. สาเหตุ: ฐานะยากจน" },
+        { "name": "poor_pri", "label": "ระดับประถม (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "poor_mid", "label": "ระดับ ม.ต้น (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "poor_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "2. สาเหตุ: มีปัญหาครอบครัว" },
+        { "name": "family_pri", "label": "ระดับประถม (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "family_mid", "label": "ระดับ ม.ต้น (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "family_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "3. สาเหตุ: สมรส" },
+        { "name": "married_pri", "label": "ระดับประถม (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "married_mid", "label": "ระดับ ม.ต้น (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "married_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "4. สาเหตุ: มีปัญหาการปรับตัว" },
+        { "name": "adjust_pri", "label": "ระดับประถม (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "adjust_mid", "label": "ระดับ ม.ต้น (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "adjust_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "5. สาเหตุ: ต้องคดี/ถูกจับ" },
+        { "name": "arrest_pri", "label": "ระดับประถม (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "arrest_mid", "label": "ระดับ ม.ต้น (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "arrest_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "6. สาเหตุ: เจ็บป่วย/อุบัติเหตุ" },
+        { "name": "sick_pri", "label": "ระดับประถม (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "sick_mid", "label": "ระดับ ม.ต้น (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "sick_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "7. สาเหตุ: อพยพตามครอบครัว" },
+        { "name": "migrate_pri", "label": "ระดับประถม (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "migrate_mid", "label": "ระดับ ม.ต้น (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "migrate_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "8. สาเหตุ: หาเลี้ยงครอบครัว" },
+        { "name": "work_pri", "label": "ระดับประถม (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "work_mid", "label": "ระดับ ม.ต้น (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "work_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "9. สาเหตุ: กรณีอื่น ๆ" },
+        { "name": "other_pri", "label": "ระดับประถม (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "other_mid", "label": "ระดับ ม.ต้น (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "other_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 }
+      ],
+      deadline: ''
     }
   ];
   

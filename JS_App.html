@@ -3522,7 +3522,8 @@ function sendReportToExecutive() {
       const reader = new FileReader();
       reader.onload = function(event) {
         const text = event.target.result;
-        const rows = text.split('\n');
+        // ทำความสะอาดตัวตัดบรรทัดและช่องว่างว่างเปล่า
+        const rows = text.split('\n').map(r => r.replace(/\r$/, '')).filter(r => r.trim());
         
         if(rows.length < 2) {
           showToast('ไฟล์ CSV ไม่ถูกต้อง หรือไม่มีข้อมูล', 'error');
@@ -3532,22 +3533,56 @@ function sendReportToExecutive() {
         const rawHeaders = rows[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
         const formId = document.getElementById('entryFormSelect').value;
         const headers = mapThaiHeadersToEnglish(rawHeaders, formId);
-        const values = rows[1].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
         
-        let matchCount = 0;
-        headers.forEach((header, index) => {
-          const input = document.querySelector(`#dynamicEntryForm [name="${header}"]`);
-          if(input && values[index] !== undefined && header !== 'report_title') { 
-            input.value = values[index];
-            matchCount++;
+        const selectedFormObj = AppState.availableForms.find(f => f.formId === formId);
+        const isMultiRow = selectedFormObj && selectedFormObj.isMultiRow;
+        
+        if (isMultiRow) {
+          // 🎯 กรณีตารางหลายแถว: พาร์สข้อมูลทุกแถวและบันทึกลง Draft
+          const tableRows = [];
+          for (let i = 1; i < rows.length; i++) {
+            const vals = rows[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+            const rowObj = {};
+            let hasVal = false;
+            headers.forEach((header, idx) => {
+              if (header && header !== 'report_title') {
+                rowObj[header] = vals[idx] || '';
+                if ((vals[idx] || '').trim()) hasVal = true;
+              }
+            });
+            if (hasVal) {
+              tableRows.push(rowObj);
+            }
           }
-        });
-        
-        if(matchCount > 0) {
-          showToast(`นำเข้าข้อมูลสำเร็จ แมปข้อมูลเข้าฟอร์ม ${matchCount} ฟิลด์`, 'success');
-          saveDraftToLocal(); 
+          
+          if (tableRows.length > 0) {
+            const agencyId = AppState.userRole === 'agency' ? AppState.userAgencyId : document.getElementById('entryAgencySelect').value;
+            const draftKey = `eduDataDraft_${agencyId}_${formId}`;
+            localStorage.setItem(draftKey, JSON.stringify(tableRows));
+            renderSelectedForm();
+            showToast(`นำเข้าข้อมูลตารางสำเร็จจำนวน ${tableRows.length} แถว`, 'success');
+          } else {
+            showToast('ไม่พบข้อมูลสำหรับนำเข้าในไฟล์ CSV', 'warning');
+          }
         } else {
-          showToast('ไม่พบหัวคอลัมน์ใน CSV ที่ตรงกับแบบฟอร์มนี้เลย', 'warning');
+          // 🎯 กรณีฟอร์มปกติแถวเดียว
+          const values = rows[1].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+          let matchCount = 0;
+          headers.forEach((header, index) => {
+            const input = document.querySelector(`#dynamicEntryForm [name="${header}"]`);
+            if(input && values[index] !== undefined && header !== 'report_title') { 
+              input.value = values[index];
+              input.dispatchEvent(new Event('input')); // บันทึกร่างและแจ้งการแก้ไข
+              matchCount++;
+            }
+          });
+          
+          if(matchCount > 0) {
+            showToast(`นำเข้าข้อมูลสำเร็จ แมปข้อมูลเข้าฟอร์ม ${matchCount} ฟิลด์`, 'success');
+            saveDraftToLocal(); 
+          } else {
+            showToast('ไม่พบหัวคอลัมน์ใน CSV ที่ตรงกับแบบฟอร์มนี้เลย', 'warning');
+          }
         }
         e.target.value = ''; 
       };
@@ -3732,10 +3767,12 @@ function sendReportToExecutive() {
       
       const config = selectedFormObj.formConfig;
       return headers.map(h => {
-        const cleanH = h.trim();
+        // ตัดอักขระ BOM (﻿) และตัดช่องว่างออก
+        const cleanH = h.trim().replace(/^\uFEFF/, "");
+        
         // ค้นหาเทียบฉลากตรงตัว หรือเอาดอกจันออก
         const match = config.find(col => {
-          const labelClean = (col.label || '').trim();
+          const labelClean = (col.label || '').trim().replace(/^\uFEFF/, "");
           return labelClean === cleanH || 
                  labelClean.replace(/\s*\*$/, '').trim() === cleanH.replace(/\s*\*$/, '').trim();
         });
@@ -3743,11 +3780,11 @@ function sendReportToExecutive() {
         
         // ค้นหาใน static labels เผื่อฟิลด์มาตรฐาน
         for (let key in _STATIC_FIELD_LABELS) {
-          if (_STATIC_FIELD_LABELS[key] === cleanH) return key;
+          const labelClean = _STATIC_FIELD_LABELS[key].trim().replace(/^\uFEFF/, "");
+          if (labelClean === cleanH) return key;
         }
         
-        // คืนค่าเดิมหากไม่พบแมตช์ (เผื่อผู้ใช้เก่าอัปโหลดแบบภาษาอังกฤษ)
-        return h;
+        return cleanH;
       });
     }
 

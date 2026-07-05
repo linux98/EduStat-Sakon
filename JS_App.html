@@ -8749,5 +8749,21 @@ function sendReportToExecutive() {
       }
     }
 
+    function clearSystemCache() {
+      showToast('กำลังล้างแคชระบบ...', 'info');
+      if (typeof google !== 'undefined' && google.script) {
+        google.script.run
+          .withSuccessHandler(function() {
+            showToast('ล้างแคชระบบสำเร็จแล้ว! กำลังรีโหลดหน้าจอเพื่อดึงค่าล่าสุด...', 'success');
+            setTimeout(function() {
+              window.location.reload();
+            }, 1500);
+          })
+          .clearCacheBackend();
+      } else {
+        showToast('ล้างแคช (Mock Mode)', 'success');
+      }
+    }
+
 
   </script>

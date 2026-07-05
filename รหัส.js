@@ -3312,5 +3312,20 @@ function seedOBECMTemplates() {
   return { success: true, message: 'ลงทะเบียนฟอร์มสำเร็จ: ' + templates.map(function(x){ return x.formId; }).join(', ') };
 }
 
+function clearCacheBackend() {
+  _invalidateFormsCache();
+  return { success: true };
+}
 
-
+function onEdit(e) {
+  if (!e) return;
+  try {
+    var sheet = e.source.getActiveSheet();
+    var name = sheet.getName();
+    if (name === 'FormTemplates') {
+      _invalidateFormsCache();
+    }
+  } catch(err) {
+    Logger.log('Error in onEdit cache invalidation: ' + err.message);
+  }
+}

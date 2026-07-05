@@ -1164,6 +1164,7 @@ function getDashboardData(payloadOrYear, filterAgency) {
     var rowStatus = data[i][5];
     // 🎯 แปลงชื่อหน่วยงานภาษาไทย (สพม.สกลนคร) กลับเป็นรหัสภาษาอังกฤษ (OBEC_M) เพื่อให้ตรงกับโครงสร้างข้อมูลในส่วนประมวลผลระบบ
     var rowAgency = _resolveAgencyId(String(data[i][2]).trim());
+    var rowForm = data[i][3]; // 🎯 ประกาศตัวแปรรหัสฟอร์ม ป้องกันการเกิด ReferenceError: rowForm is not defined
     
     var ts=data[i][1], yr='';
     if (ts instanceof Date) {

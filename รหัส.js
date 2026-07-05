@@ -3007,6 +3007,47 @@ function seedOBECMTemplates() {
         { "name": "website", "label": "เว็บไซต์หน่วยงาน", "type": "text", "required": false }
       ],
       deadline: ''
+    },
+    {
+      formId: 'OBECM_F02',
+      formName: 'รายชื่อสถานศึกษาในสังกัด สพม.สกลนคร',
+      agencyId: 'OBEC_M',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "school_name", "label": "ชื่อสถานศึกษา", "type": "text", "required": true },
+        { "name": "tambon", "label": "ตำบลที่ตั้ง", "type": "text", "required": true },
+        { "name": "amphoe", "label": "อำเภอที่ตั้ง", "type": "text", "required": true },
+        { "name": "address", "label": "ที่อยู่สถานศึกษา (โดยละเอียด)", "type": "textarea", "required": true },
+        { "name": "director_name", "label": "ชื่อผู้อำนวยการโรงเรียน", "type": "text", "required": true },
+        { "name": "contact_info", "label": "เบอร์ติดต่อ / ID Line ผู้อำนวยการ", "type": "text", "required": true }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'OBECM_F03',
+      formName: 'ข้อมูลนักเรียนรับทุน ม.ท.ศ. สพม.สกลนคร',
+      agencyId: 'OBEC_M',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "student_name", "label": "ชื่อ - สกุล นักเรียนทุน", "type": "text", "required": true },
+        { "name": "student_level", "label": "ระดับชั้น", "type": "text", "required": true },
+        { "name": "school_name", "label": "โรงเรียนต้นสังกัด", "type": "text", "required": true },
+        { "name": "notes", "label": "หมายเหตุ", "type": "textarea", "required": false }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'OBECM_F04',
+      formName: 'ข้อมูลนักเรียนรับทุนร่วมจิตต์ฯ สพม.สกลนคร',
+      agencyId: 'OBEC_M',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "student_name", "label": "ชื่อ - สกุล นักเรียนทุน", "type": "text", "required": true },
+        { "name": "student_level", "label": "ระดับชั้น", "type": "text", "required": true },
+        { "name": "school_name", "label": "โรงเรียนต้นสังกัด", "type": "text", "required": true },
+        { "name": "notes", "label": "หมายเหตุ", "type": "textarea", "required": false }
+      ],
+      deadline: ''
     }
   ];
   

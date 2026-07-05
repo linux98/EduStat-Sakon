@@ -265,8 +265,13 @@ function getAgencyMasterList() { return AGENCY_MAP; }
 
 function resolveAgencyId(raw) {
   if (!raw) return raw;
+  _initAgencyMap(); // 🎯 มั่นใจว่า AGENCY_MAP โหลดแล้ว
   if (AGENCY_MAP[raw]) return raw;
   return Object.keys(AGENCY_MAP).filter(function(k){ return AGENCY_MAP[k]===raw; })[0] || raw;
+}
+
+function _resolveAgencyId(raw) {
+  return resolveAgencyId(raw);
 }
 
 function logAction(userRole, action, details) {
@@ -1063,6 +1068,7 @@ function deleteData(payload) {
  * ─────────────────────────────────────────────
  */
 function getSubmittedData(payloadOrRole, agencyId) {
+  _initAgencyMap(); // 🎯 มั่นใจว่า AGENCY_MAP โหลดแล้ว
   var auth = _resolveAuthParam(payloadOrRole);
   if (auth.error) return auth.error;
   var userRole = auth.userRole;

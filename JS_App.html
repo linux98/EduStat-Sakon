@@ -1520,7 +1520,8 @@ function sendReportToExecutive() {
             applyBadge(pending.length);
             populateNotifDropdown(pending);
           })
-          .withFailureHandler(() => {
+          .withFailureHandler((err) => {
+            console.error('getSubmittedData for badge failed:', err);
             applyBadge(0);
           })
           .getSubmittedData({ userRole: AppState.userRole, agencyId: AppState.userAgencyId, sessionToken: AppState.sessionToken });
@@ -2172,8 +2173,9 @@ function sendReportToExecutive() {
           .withSuccessHandler(data => {
             processDashboardData(data);
           })
-          .withFailureHandler(() => {
-            if(!silent) showToast('โหลดข้อมูลล้มเหลว', 'error');
+          .withFailureHandler((err) => {
+            console.error('getDashboardData failed:', err);
+            if(!silent) showToast('โหลดข้อมูลล้มเหลว: ' + (err.message || err), 'error');
           })
           .getDashboardData({ sessionToken: AppState.sessionToken, filterYear: fYear, filterAgency: fAgency });
       } else {
@@ -3849,8 +3851,8 @@ function sendReportToExecutive() {
             AppState.currentDataList = rows || [];
             if (onComplete) onComplete();
           })
-          .withFailureHandler(function() {
-            console.error('Failed to preload submission history');
+          .withFailureHandler(function(err) {
+            console.error('Failed to preload submission history:', err);
             if (onComplete) onComplete();
           })
           .getSubmittedData({ 
@@ -3898,7 +3900,10 @@ function sendReportToExecutive() {
         }
         google.script.run
           .withSuccessHandler(renderDataList)
-          .withFailureHandler(() => { showToast('ไม่สามารถดึงข้อมูลรายงานได้', 'error'); })
+          .withFailureHandler((err) => {
+            console.error('getSubmittedData failed:', err);
+            showToast('ไม่สามารถดึงข้อมูลรายงานได้: ' + (err.message || err), 'error');
+          })
           .getSubmittedData({ userRole: AppState.userRole, agencyId: AppState.userAgencyId, sessionToken: AppState.sessionToken });
       } else {
         setTimeout(() => {

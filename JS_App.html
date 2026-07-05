@@ -3924,7 +3924,6 @@ function sendReportToExecutive() {
           </div>`;
           return;
         }
-        const data = JSON.parse(AppState.activeJsonStr);
         let html = '<table class="tbl" style="margin-bottom:0;"><thead><tr><th width="55%">รายการข้อมูล</th><th width="45%">ค่าที่รายงาน</th></tr></thead><tbody>';
         for (let key in data) {
           if (key === 'report_title') continue;

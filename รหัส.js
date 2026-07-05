@@ -355,6 +355,9 @@ function _createMasterAgenciesSheetIfNotExist() {
 
 function initSetup() {
   try {
+    debugInspectSubmissions(); // ดึงข้อมูลดิบฟอร์มตารางไปเขียนที่แท็บ DebugLogs เพื่อพิสูจน์
+  } catch(e) {}
+  try {
     _createMasterAgenciesSheetIfNotExist(); // สรรสร้างตารางรายชื่อหน่วยงานหากยังไม่มี
   } catch(e) {
     Logger.log('Error in _createMasterAgenciesSheetIfNotExist: ' + e.message);
@@ -3523,4 +3526,25 @@ function updateAgencyName(agencyId, newName) {
   } catch(e) {
     return { success: false, message: 'ข้อผิดพลาด: ' + e.message };
   }
+}
+
+
+function debugInspectSubmissions() {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var dbSheet = ss.getSheetByName('DebugLogs');
+    if (!dbSheet) {
+      dbSheet = ss.insertSheet('DebugLogs');
+    }
+    dbSheet.clear();
+    dbSheet.appendRow(['ID', 'FormID', 'RawDataJSON']);
+    
+    var sheet = ss.getSheetByName('Data');
+    var data = sheet.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][3] && data[i][3].indexOf('_F02') >= 0) {
+        dbSheet.appendRow([data[i][0], data[i][3], data[i][8]]);
+      }
+    }
+  } catch(e){}
 }

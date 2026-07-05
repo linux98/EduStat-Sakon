@@ -3474,6 +3474,11 @@ function sendReportToExecutive() {
       let ag = AppState.userRole === 'agency' ? AppState.userAgencyId : (document.getElementById('entryAgencySelect') ? document.getElementById('entryAgencySelect').value : '');
       let formId = document.getElementById('entryFormSelect').value;
       if(!ag || !formId) return;
+      
+      // 🎯 แก้บั๊ก: ป้องกันการเซฟดราฟต์ฟอร์มทั่วไปทับข้อมูลฟอร์มตาราง (isMultiRow)
+      const selectedFormObj = AppState.availableForms.find(f => f.formId === formId);
+      if (selectedFormObj && selectedFormObj.isMultiRow) return;
+      
       const formData = {};
       const form = document.getElementById('dynamicEntryForm');
       if(!form) return;
@@ -4209,32 +4214,65 @@ function sendReportToExecutive() {
 
       try {
         const data = JSON.parse(AppState.activeJsonStr);
-        if (data.isMultiRow && Array.isArray(data.rows)) {
-          let headers = [];
-          if (data.rows.length > 0) {
-            headers = Object.keys(data.rows[0]);
-          }
-          
-          let thHtml = '<tr><th style="width:50px;text-align:center;">#</th>' + headers.map(h => {
-            const label = _getFieldLabel(h, formId) || h;
-            return `<th>${label}</th>`;
-          }).join('') + '</tr>';
-          
-          let tbHtml = data.rows.map((row, rIdx) => {
-            return `<tr><td style="text-align:center;font-weight:600;color:var(--subtle);">${rIdx + 1}</td>` + headers.map(h => {
-              const val = row[h];
-              const valDisplay = (val === '' || val === null || val === undefined) ? '<span style="color:var(--muted); font-weight:normal;">—</span>' : `<span>${val}</span>`;
-              return `<td>${valDisplay}</td>`;
+        
+        // ตรวจสอบโครงสร้างแถวข้อมูลตาราง
+        let rows = data.rows;
+        if (typeof rows === 'string') {
+          try { rows = JSON.parse(rows); } catch(e){}
+        }
+        
+        const isMultiRow = (data.isMultiRow === true || data.isMultiRow === 'true');
+        
+        if (isMultiRow) {
+          if (Array.isArray(rows)) {
+            let headers = [];
+            if (rows.length > 0) {
+              headers = Object.keys(rows[0]);
+            }
+            
+            let thHtml = '<tr><th style="width:50px;text-align:center;">#</th>' + headers.map(h => {
+              const label = _getFieldLabel(h, formId) || h;
+              return `<th>${label}</th>`;
             }).join('') + '</tr>';
-          }).join('');
-          
-          content.innerHTML = `<div style="overflow-x:auto; border:1px solid var(--border-l); border-radius:12px; margin-bottom:12px;">
-            <table class="tbl" style="margin-bottom:0; width:100%; font-size:13px;">
-              <thead style="background:var(--s1);">${thHtml}</thead>
-              <tbody>${tbHtml}</tbody>
-            </table>
-          </div>`;
-          return;
+            
+            let tbHtml = rows.map((row, rIdx) => {
+              return `<tr><td style="text-align:center;font-weight:600;color:var(--subtle);">${rIdx + 1}</td>` + headers.map(h => {
+                const val = row[h];
+                const valDisplay = (val === '' || val === null || val === undefined) ? '<span style="color:var(--muted); font-weight:normal;">—</span>' : `<span>${val}</span>`;
+                return `<td>${valDisplay}</td>`;
+              }).join('') + '</tr>';
+            }).join('');
+            
+            content.innerHTML = `<div style="overflow-x:auto; border:1px solid var(--border-l); border-radius:12px; margin-bottom:12px;">
+              <table class="tbl" style="margin-bottom:0; width:100%; font-size:13px;">
+                <thead style="background:var(--s1);">${thHtml}</thead>
+                <tbody>${tbHtml}</tbody>
+              </table>
+            </div>`;
+            return;
+          } else {
+            // กรณีโครงสร้างพัง (เช่น ค่าเป็น "[object Object]" หรือไม่ใช่ Array)
+            content.innerHTML = `
+              <div style="padding: 24px; text-align: center; background: var(--red-ll); border: 1.5px dashed var(--red-l); border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                <span class="material-icons-round" style="color: var(--red); font-size: 36px;">warning</span>
+                <div style="font-weight: 700; color: var(--red-d); font-size: 15px;">พบข้อผิดพลาด: ข้อมูลตารางรายงานไม่สมบูรณ์</div>
+                <p style="font-size: 13px; color: var(--text-2); line-height: 1.6; margin: 0; max-width: 500px;">
+                  ข้อมูลรายชื่อโรงเรียนในฐานข้อมูลถูกเขียนทับด้วยรูปแบบข้อความที่ไม่ถูกต้อง (พบข้อความตัวแทน [object Object]) 
+                  ส่งผลให้ระบบไม่สามารถพล็อตตำแหน่งหรือแสดงจำนวนโรงเรียนบนแดชบอร์ดได้
+                </p>
+                <div style="font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.6; text-align: left; background: var(--surface); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-l); width: 100%;">
+                  💡 <strong>วิธีการแก้ไขด้วยตนเองใน 1 นาที:</strong>
+                  <ol style="margin-left: 20px; margin-top: 4px; display: flex; flex-direction: column; gap: 4px;">
+                    <li>ปิดหน้าต่างนี้และเลื่อนไปที่แบนเนอร์ประวัติประวัติการส่งข้อมูล</li>
+                    <li>กดปุ่ม <strong>"แก้ไขข้อมูล" (รูปดินสอสีเหลือง)</strong> ของรายการนี้ เพื่อเปิดแบบฟอร์มคีย์ข้อมูล</li>
+                    <li>คัดลอกรายชื่อโรงเรียนจาก Excel หรือพิมพ์กรอกเข้าไปใหม่ในตารางให้เรียบร้อย</li>
+                    <li>กดปุ่ม <strong>"บันทึกและส่งข้อมูล"</strong> อีกครั้งเพื่ออัปเดตข้อมูลทับของเดิมให้สมบูรณ์</li>
+                  </ol>
+                </div>
+              </div>
+            `;
+            return;
+          }
         }
         let html = '<table class="tbl" style="margin-bottom:0;"><thead><tr><th width="55%">รายการข้อมูล</th><th width="45%">ค่าที่รายงาน</th></tr></thead><tbody>';
         for (let key in data) {

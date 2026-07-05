@@ -215,6 +215,9 @@
         google.script.run
           .withSuccessHandler(function(res) {
             if (res && res.valid && res.userData) {
+              if (res.agencyMap) {
+                Object.assign(AGENCY_MAP, res.agencyMap);
+              }
               AppState.sessionToken = savedToken;
               AppState.userRole     = res.userData.role;
               AppState.userName     = res.userData.name;
@@ -1292,6 +1295,9 @@ function sendReportToExecutive() {
       function onSuccess(res){
         btn.disabled=false;btn.innerHTML=origTxt;
         if(res.success){
+          if (res.agencyMap) {
+            Object.assign(AGENCY_MAP, res.agencyMap);
+          }
           if(typeof sessionRecordLoginSuccess==='function')sessionRecordLoginSuccess();
           AppState.sessionToken=res.sessionToken;
           AppState.userRole=res.userData.role;AppState.userName=res.userData.name;
@@ -6851,6 +6857,52 @@ function sendReportToExecutive() {
       "NURSERY":  { lat: null,    lng: null }
     };
 
+    function startAgencyNameEdit(key) {
+      const currentName = AGENCY_MAP[key] || '';
+      const newName = prompt(`แก้ไขชื่อภาษาไทยของสังกัด ${key}:`, currentName);
+      if (newName === null) return;
+      
+      const cleanedName = newName.trim();
+      if (!cleanedName) {
+        showToast('กรุณาระบุชื่อสังกัดที่ถูกต้อง', 'error');
+        return;
+      }
+      
+      if (cleanedName === currentName) return;
+      
+      showToast('กำลังบันทึกข้อมูล...', 'info');
+      
+      if (typeof google !== 'undefined' && google.script) {
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.success) {
+              showToast('แก้ไขชื่อสังกัดเรียบร้อยแล้ว', 'success');
+              AGENCY_MAP[key] = cleanedName;
+              
+              if (AppState.userAgencyId === key) {
+                AppState.userAgency = cleanedName;
+                const profileAgencyEl = document.getElementById('sbRoleText');
+                if (profileAgencyEl) {
+                  profileAgencyEl.innerText = cleanedName;
+                }
+              }
+              
+              renderMasterDataTable();
+            } else {
+              showToast(res.message || 'บันทึกไม่สำเร็จ', 'error');
+            }
+          })
+          .withFailureHandler(err => {
+            showToast('เกิดข้อผิดพลาด: ' + err.toString(), 'error');
+          })
+          .updateAgencyName(key, cleanedName);
+      } else {
+        AGENCY_MAP[key] = cleanedName;
+        renderMasterDataTable();
+        showToast('แก้ไขชื่อสังกัดเรียบร้อยแล้ว (Dev Mode)', 'success');
+      }
+    }
+
     function openMasterDataModal() {
       const backdrop = document.getElementById('modalBackdrop');
       if(backdrop) backdrop.classList.add('on');
@@ -6937,20 +6989,26 @@ function sendReportToExecutive() {
           `;
         }
 
-        // Manage button (sleek outlined button with transition and layout)
-        const manageBtn = `
-          <button class="btn btn-outlined btn-sm" onclick="startGisEdit('${key}')" style="font-size:12px; height:32px; padding:0 12px; border-radius:8px; display:inline-flex; align-items:center; gap:6px; transition:var(--t); width:100%; max-width:140px; justify-content:center; margin: 0 auto;">
-            <span class="material-icons-round" style="font-size:15px; color:var(--blue);">edit_location_alt</span>
-            <span>แก้ไขพิกัด</span>
-          </button>
+        // Manage buttons (Gis Edit and Name Edit)
+        const manageActions = `
+          <div style="display:flex; justify-content:center; gap:8px;">
+            <button class="btn btn-outlined btn-sm" onclick="startGisEdit('${key}')" style="font-size:12px; height:32px; padding:0 12px; border-radius:8px; display:inline-flex; align-items:center; gap:6px; transition:var(--t);">
+              <span class="material-icons-round" style="font-size:15px; color:var(--blue);">edit_location_alt</span>
+              <span>แก้ไขพิกัด</span>
+            </button>
+            <button class="btn btn-outlined btn-sm" onclick="startAgencyNameEdit('${key}')" style="font-size:12px; height:32px; padding:0 12px; border-radius:8px; display:inline-flex; align-items:center; gap:6px; transition:var(--t); border-color:var(--border); color:var(--text-1);">
+              <span class="material-icons-round" style="font-size:15px; color:var(--muted);">edit</span>
+              <span>แก้ไขชื่อ</span>
+            </button>
+          </div>
         `;
 
         tbody.innerHTML += `
           <tr id="gis-row-${key}" style="transition: background var(--t);">
             <td style="padding: 14px 16px; vertical-align: middle; border-bottom: 1px solid var(--border-l);">${codeBadge}</td>
-            <td style="font-weight:600; color:var(--text); padding: 14px 16px; font-size: 13.5px; vertical-align: middle; border-bottom: 1px solid var(--border-l);">${name}</td>
+            <td style="font-weight:600; color:var(--text); padding: 14px 16px; font-size: 13.5px; vertical-align: middle; border-bottom: 1px solid var(--border-l);" id="agency-display-name-${key}">${name}</td>
             <td id="gis-coord-display-${key}" style="padding: 14px 16px; vertical-align: middle; border-bottom: 1px solid var(--border-l);">${coordDisplay}</td>
-            <td style="padding: 14px 16px; vertical-align: middle; text-align: center; border-bottom: 1px solid var(--border-l);">${manageBtn}</td>
+            <td style="padding: 14px 16px; vertical-align: middle; text-align: center; border-bottom: 1px solid var(--border-l);">${manageActions}</td>
           </tr>
           <!-- Modern inline card editor -->
           <tr id="gis-edit-row-${key}" style="display:none; background:var(--s1);">

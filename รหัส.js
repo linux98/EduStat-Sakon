@@ -3,14 +3,7 @@
 // Password: Plain Text + CacheService Layer
 // ==========================================
 
-const AGENCY_MAP = {
-  "OBEC_1":"สพป.สกลนคร เขต 1","OBEC_2":"สพป.สกลนคร เขต 2","OBEC_3":"สพป.สกลนคร เขต 3",
-  "OBEC_M":"สพม.สกลนคร","SPECIAL":"ศูนย์การศึกษาพิเศษสกลนคร","RATCHAPRACHA":"รร.ราชประชานุเคราะห์ 53",
-  "OPEC":"สช. (เอกชน)","SNRU":"มรภ.สกลนคร","KU_CSC":"มก. ฉกส.","RMUTI_Sakon":"มทร.อีสาน สกลนคร",
-  "WITEEDHAM":"รร.วิถีธรรม มรภ.สกลนคร","VEC":"อาชีวศึกษาสกลนคร","DOLE":"สกร. (ส่งเสริมการเรียนรู้)",
-  "MUN_NAKHON":"เทศบาลนครสกลนคร","PAO_Sakon":"อบจ.สกลนคร","MUN_TAMBON":"เทศบาลตำบล",
-  "NURSERY":"ศูนย์พัฒนาเด็กเล็ก/ศพด.","BPP":"ตชด.","BUDDHIST":"พระปริยัติธรรม","MSDHS":"พมจ.สกลนคร"
-};
+var AGENCY_MAP = null;
 const GIS_COORDS = {
   "OBEC_1":{lat:17.1652,lng:104.1486},"OBEC_2":{lat:17.3321,lng:103.7745},
   "OBEC_3":{lat:17.6543,lng:103.5678},"OBEC_M":{lat:17.1701,lng:104.1402},
@@ -286,7 +279,78 @@ function logAction(userRole, action, details) {
 // ─────────────────────────────────────────────
 // 1. INIT SETUP
 // ─────────────────────────────────────────────
+function _initAgencyMap() {
+  if (AGENCY_MAP) return AGENCY_MAP;
+  
+  var CACHE_KEY = 'master_agency_map';
+  var cached = _cacheGetSmart(CACHE_KEY);
+  if (cached) {
+    AGENCY_MAP = cached;
+    return AGENCY_MAP;
+  }
+  
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName('MasterAgencies');
+    if (sheet) {
+      var data = sheet.getDataRange().getValues();
+      var map = {};
+      for (var i = 1; i < data.length; i++) {
+        var id = String(data[i][0] || '').trim();
+        var name = String(data[i][1] || '').trim();
+        if (id && name) {
+          map[id] = name;
+        }
+      }
+      AGENCY_MAP = map;
+      _cacheSet(CACHE_KEY, map, 86400); // แคชไว้ 24 ชั่วโมง
+      return AGENCY_MAP;
+    }
+  } catch(e) {
+    Logger.log('Error loading dynamic agency map: ' + e.message);
+  }
+  
+  // Fallback กรณีเปิดแผ่นงานไม่สำเร็จหรือเพิ่งรันระบบครั้งแรก
+  AGENCY_MAP = {
+    "OBEC_1":"สพป.สกลนคร เขต 1","OBEC_2":"สพป.สกลนคร เขต 2","OBEC_3":"สพป.สกลนคร เขต 3",
+    "OBEC_M":"สพม.สกลนคร","SPECIAL":"ศูนย์การศึกษาพิเศษสกลนคร","RATCHAPRACHA":"รร.ราชประชานุเคราะห์ 53",
+    "OPEC":"สช. (เอกชน)","SNRU":"มรภ.สกลนคร","KU_CSC":"มก. ฉกส.","RMUTI_Sakon":"มทร.อีสาน สกลนคร",
+    "WITEEDHAM":"รร.วิถีธรรม มรภ.สกลนคร","VEC":"อาชีวศึกษาสกลนคร","DOLE":"สกร. (ส่งเสริมการเรียนรู้)",
+    "MUN_NAKHON":"เทศบาลนครสกลนคร","PAO_Sakon":"อบจ.สกลนคร","MUN_TAMBON":"เทศบาลตำบล",
+    "NURSERY":"ศูนย์พัฒนาเด็กเล็ก/ศพด.","BPP":"ตชด.","BUDDHIST":"พระปริยัติธรรม","MSDHS":"พมจ.สกลนคร"
+  };
+  return AGENCY_MAP;
+}
+
+function _createMasterAgenciesSheetIfNotExist() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('MasterAgencies');
+  if (!sheet) {
+    sheet = ss.insertSheet('MasterAgencies');
+    sheet.appendRow(['AgencyID', 'AgencyName']);
+    var defaultMap = {
+      "OBEC_1":"สพป.สกลนคร เขต 1","OBEC_2":"สพป.สกลนคร เขต 2","OBEC_3":"สพป.สกลนคร เขต 3",
+      "OBEC_M":"สพม.สกลนคร","SPECIAL":"ศูนย์การศึกษาพิเศษสกลนคร","RATCHAPRACHA":"รร.ราชประชานุเคราะห์ 53",
+      "OPEC":"สช. (เอกชน)","SNRU":"มรภ.สกลนคร","KU_CSC":"มก. ฉกส.","RMUTI_Sakon":"มทร.อีสาน สกลนคร",
+      "WITEEDHAM":"รร.วิถีธรรม มรภ.สกลนคร","VEC":"อาชีวศึกษาสกลนคร","DOLE":"สกร. (ส่งเสริมการเรียนรู้)",
+      "MUN_NAKHON":"เทศบาลนครสกลนคร","PAO_Sakon":"อบจ.สกลนคร","MUN_TAMBON":"เทศบาลตำบล",
+      "NURSERY":"ศูนย์พัฒนาเด็กเล็ก/ศพด.","BPP":"ตชด.","BUDDHIST":"พระปริยัติธรรม","MSDHS":"พมจ.สกลนคร"
+    };
+    var rows = [];
+    Object.keys(defaultMap).forEach(function(k) {
+      rows.push([k, defaultMap[k]]);
+    });
+    if (rows.length > 0) {
+      sheet.getRange(2, 1, rows.length, 2).setValues(rows);
+    }
+    sheet.getRange(1, 1, 1, 2).setFontWeight('bold').setBackground('#f1f3f4');
+    sheet.setFrozenRows(1);
+  }
+}
+
 function initSetup() {
+  _createMasterAgenciesSheetIfNotExist(); // สรรสร้างตารางรายชื่อหน่วยงานหากยังไม่มี
+  _initAgencyMap(); // โหลดข้อมูลรหัสและชื่อสังกัดมาเป็นโครงสร้างหลักของระบบ
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var dS = ss.getSheetByName('Data');
   if (!dS) dS = ss.insertSheet('Data');
@@ -420,7 +484,7 @@ function authenticateUser(payload) {
                        agencyId:agId, agency:AGENCY_MAP[agId]||agId };
       var token    = _createSession(userData);
       logAction(data[i][2], 'LOGIN', 'user:'+userData.username+' | name:'+userData.name+' | agency:'+agId);
-      return { success:true, message:'เข้าสู่ระบบสำเร็จ', sessionToken:token, userData:userData };
+      return { success:true, message:'เข้าสู่ระบบสำเร็จ', sessionToken:token, userData:userData, agencyMap:_initAgencyMap() };
     }
 
     // ไม่พบ username
@@ -2389,11 +2453,11 @@ function verifySession(token) {
     for (var i=1;i<data.length;i++) {
       if (String(data[i][0]).toLowerCase() === sess.username) {
         if (String(data[i][5]) !== 'Active') return { valid: false };
-        return { valid: true, userData: { role: sess.role, name: sess.name, agencyId: sess.agencyId, agency: AGENCY_MAP[sess.agencyId] || sess.agencyId } };
+        return { valid: true, userData: { role: sess.role, name: sess.name, agencyId: sess.agencyId, agency: _initAgencyMap()[sess.agencyId] || sess.agencyId }, agencyMap: _initAgencyMap() };
       }
     }
   } catch(e) {}
-  return { valid: true, userData: { role: sess.role, name: sess.name, agencyId: sess.agencyId, agency: AGENCY_MAP[sess.agencyId] || sess.agencyId } };
+  return { valid: true, userData: { role: sess.role, name: sess.name, agencyId: sess.agencyId, agency: _initAgencyMap()[sess.agencyId] || sess.agencyId }, agencyMap: _initAgencyMap() };
 }
 
 function fixFormTemplatesHeader() {
@@ -3383,7 +3447,52 @@ function onEdit(e) {
     if (name === 'FormTemplates') {
       _invalidateFormsCache();
     }
+    if (name === 'MasterAgencies') {
+      _cacheInvalidate(['master_agency_map']); // ล้างแคชรายชื่อหน่วยงานเพื่อให้ดึงค่าใหม่จากชีตทันที
+    }
   } catch(err) {
     Logger.log('Error in onEdit cache invalidation: ' + err.message);
+  }
+}
+
+// 🎯 28. เพิ่มการแก้ไขชื่อหน่วยงานตรงจากหน้า Admin Panel
+function updateAgencyName(agencyId, newName) {
+  var g = checkRole(auth.userRole, IS_ADMIN_UP, 'updateAgencyName');
+  if (!g.allowed) return g.error;
+  
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName('MasterAgencies');
+    if (!sheet) {
+      return { success: false, message: 'ไม่พบแผ่นงาน MasterAgencies' };
+    }
+    
+    var data = sheet.getDataRange().getValues();
+    var foundIndex = -1;
+    for (var i = 1; i < data.length; i++) {
+      if (String(data[i][0]).trim() === agencyId) {
+        foundIndex = i + 1; // 1-based index including header
+        break;
+      }
+    }
+    
+    if (foundIndex === -1) {
+      sheet.appendRow([agencyId, newName]);
+    } else {
+      sheet.getRange(foundIndex, 2).setValue(newName);
+    }
+    
+    // ล้างแคชทั้งหมด
+    _cacheInvalidate(['master_agency_map']);
+    _invalidateDashboardCache();
+    
+    // โหลดแผงสังกัดใหม่
+    AGENCY_MAP = null;
+    _initAgencyMap();
+    
+    logAction(auth.userRole, 'Edit Agency Name', 'แก้ไขชื่อสังกัด ' + agencyId + ' เป็น ' + newName);
+    return { success: true, message: 'แก้ไขชื่อสังกัดเรียบร้อยแล้ว' };
+  } catch(e) {
+    return { success: false, message: 'ข้อผิดพลาด: ' + e.message };
   }
 }

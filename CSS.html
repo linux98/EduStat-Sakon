@@ -3847,7 +3847,92 @@ input:checked + .slider:before {
   font-size: 14px;
   color: var(--subtle);
 }
-/* ─────────────────────────────────────────────────────────────────── */
+/* Editable Table / Grid Input styles */
+.et-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border-l);
+  border-radius: 12px;
+  background: var(--surface);
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.et-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+.et-table th {
+  background: var(--s1);
+  color: var(--text);
+  font-weight: 600;
+  padding: 12px 10px;
+  border-bottom: 1.5px solid var(--border-l);
+  white-space: nowrap;
+}
+.et-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-l);
+  background: var(--surface);
+}
+.et-table tr:hover td {
+  background: var(--s1);
+}
+.et-table input, .et-table select, .et-table textarea {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12.5px;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.et-table input:focus, .et-table select:focus, .et-table textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+  outline: none;
+}
+.et-btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--blue-ll);
+  color: var(--blue);
+  border: 1.5px solid var(--blue-l);
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.et-btn-add:hover {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+}
+.et-btn-del {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid var(--red-l);
+  background: var(--red-ll);
+  color: var(--red);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.et-btn-del:hover {
+  background: var(--red);
+  color: white;
+  border-color: var(--red);
+}
+
 /* ปรับปรุงลำดับชั้นของกล่อง SweetAlert2 ให้แสดงทับโมดอลอื่นๆ เสมอ */
 .swal2-container {
   z-index: 35000 !important;

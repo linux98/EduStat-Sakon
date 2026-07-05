@@ -3126,6 +3126,166 @@ function sendReportToExecutive() {
     }
 
     // 3.2: เรนเดอร์ฟอร์มที่ผู้ใช้เลือก
+    // 3.2.1: เรนเดอร์ตารางแก้ไขได้ (Editable Table / Grid Input)
+    function renderEditableTable(formObj, container, agencyId) {
+      const config = formObj.formConfig;
+      const columns = config.filter(f => f.type !== 'section' && f.name !== 'report_title');
+      const draftKey = `eduDataDraft_${agencyId}_${formObj.formId}`;
+      
+      let rows = [{}];
+      try {
+        const saved = JSON.parse(localStorage.getItem(draftKey));
+        if (saved && Array.isArray(saved) && saved.length > 0) {
+          rows = saved;
+        }
+      } catch(e){}
+
+      // สร้างกล่องหุ้มตาราง
+      const wrapper = document.createElement('div');
+      wrapper.className = 'et-wrapper';
+      
+      const table = document.createElement('table');
+      table.className = 'et-table';
+      
+      // เรนเดอร์หัวตาราง
+      let ths = columns.map(col => `<th>${col.label} ${col.required ? '<span style="color:var(--red)">*</span>' : ''}</th>`).join('');
+      table.innerHTML = `<thead><tr><th style="width:50px;text-align:center;">#</th>${ths}<th style="width:50px;text-align:center;">ลบ</th></tr></thead><tbody id="et-tbody"></tbody>`;
+      wrapper.appendChild(table);
+      container.appendChild(wrapper);
+
+      const tbody = table.querySelector('#et-tbody');
+
+      // ฟังก์ชันเรนเดอร์แถวเดี่ยว
+      function renderRow(rowData, index) {
+        const tr = document.createElement('tr');
+        tr.dataset.idx = index;
+        
+        let colsHtml = `<td style="text-align:center;font-weight:600;color:var(--subtle);vertical-align:middle;">${index + 1}</td>`;
+        
+        columns.forEach(col => {
+          let val = rowData[col.name] || '';
+          let fieldHtml = '';
+          
+          if (col.type === 'select' && col.opts) {
+            const optList = col.opts.split('|').map(o=>o.trim()).filter(Boolean);
+            fieldHtml = `<select name="${col.name}" ${col.required?'required':''}><option value="">-- เลือก --</option>${optList.map(o=>`<option value="${o}" ${val===o?'selected':''}>${o}</option>`).join('')}</select>`;
+          } else if (col.type === 'textarea') {
+            fieldHtml = `<textarea name="${col.name}" rows="1" ${col.required?'required':''} style="height:32px;resize:vertical;">${val}</textarea>`;
+          } else if (col.type === 'date') {
+            fieldHtml = `<input type="date" name="${col.name}" value="${val}" ${col.required?'required':''} />`;
+          } else if (col.type === 'number') {
+            const minAttr = col.min !== undefined ? ` min="${col.min}"` : '';
+            fieldHtml = `<input type="number" name="${col.name}" value="${val}" ${col.required?'required':''}${minAttr} />`;
+          } else {
+            fieldHtml = `<input type="${col.type||'text'}" name="${col.name}" value="${val}" ${col.required?'required':''} />`;
+          }
+          colsHtml += `<td style="vertical-align:middle;">${fieldHtml}</td>`;
+        });
+        
+        colsHtml += `<td style="text-align:center;vertical-align:middle;"><button class="et-btn-del" type="button" title="ลบแถวนี้"><span class="material-icons-round" style="font-size:16px;">delete</span></button></td>`;
+        tr.innerHTML = colsHtml;
+        
+        // ผูก Event หยอด Draft อัตโนมัติเมื่อคีย์
+        tr.querySelectorAll('input, select, textarea').forEach(el => {
+          el.addEventListener('input', () => {
+            saveTableDraft();
+          });
+        });
+
+        // ปุ่มลบแถว
+        tr.querySelector('.et-btn-del').addEventListener('click', () => {
+          tr.remove();
+          reindexRows();
+          saveTableDraft();
+        });
+
+        return tr;
+      }
+
+      // ดึงแถวที่มีอยู่ในร่างลงตาราง
+      rows.forEach((r, idx) => {
+        tbody.appendChild(renderRow(r, idx));
+      });
+
+      // ปุ่มเพิ่มแถวใหม่
+      const btnAdd = document.createElement('button');
+      btnAdd.type = 'button';
+      btnAdd.className = 'et-btn-add';
+      btnAdd.style.marginTop = '10px';
+      btnAdd.innerHTML = '<span class="material-icons-round" style="font-size:18px;">add</span> เพิ่มแถวใหม่';
+      btnAdd.addEventListener('click', () => {
+        tbody.appendChild(renderRow({}, tbody.children.length));
+        saveTableDraft();
+      });
+      container.appendChild(btnAdd);
+
+      // ดัก Event วางข้อมูล (Paste) จาก Excel/Google Sheets
+      table.addEventListener('paste', (e) => {
+        const clipboardData = e.clipboardData || window.clipboardData;
+        const pastedData = clipboardData.getData('Text');
+        if (!pastedData) return;
+        
+        const pasteRows = pastedData.split('\n').map(r => r.split('\t').map(c => c.trim())).filter(r => r.length > 0 && r.join('').trim() !== '');
+        if (pasteRows.length > 0) {
+          e.preventDefault();
+          const activeEl = document.activeElement;
+          if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+            const tr = activeEl.closest('tr');
+            const startRowIdx = Array.from(tbody.children).indexOf(tr);
+            const startColName = activeEl.name;
+            const startColIdx = columns.findIndex(c => c.name === startColName);
+            
+            if (startRowIdx !== -1 && startColIdx !== -1) {
+              pasteRows.forEach((pRow, rOffset) => {
+                let targetRowIdx = startRowIdx + rOffset;
+                while (tbody.children.length <= targetRowIdx) {
+                  tbody.appendChild(renderRow({}, tbody.children.length));
+                }
+                const targetTr = tbody.children[targetRowIdx];
+                pRow.forEach((pVal, cOffset) => {
+                  let targetColIdx = startColIdx + cOffset;
+                  if (targetColIdx < columns.length) {
+                    const colObj = columns[targetColIdx];
+                    const inputEl = targetTr.querySelector(`[name="${colObj.name}"]`);
+                    if (inputEl) {
+                      inputEl.value = pVal;
+                      inputEl.dispatchEvent(new Event('input'));
+                    }
+                  }
+                });
+              });
+              saveTableDraft();
+            }
+          }
+        }
+      });
+
+      // จัดตัวเลขแถวใหม่หลังจากลบ
+      function reindexRows() {
+        Array.from(tbody.children).forEach((tr, idx) => {
+          tr.dataset.idx = idx;
+          tr.children[0].innerText = idx + 1;
+        });
+      }
+
+      // บันทึกตารางลงร่าง Local Storage
+      function saveTableDraft() {
+        const tableData = [];
+        Array.from(tbody.children).forEach(tr => {
+          const rowObj = {};
+          columns.forEach(col => {
+            const el = tr.querySelector(`[name="${col.name}"]`);
+            if (el) rowObj[col.name] = el.value;
+          });
+          if (Object.values(rowObj).filter(Boolean).length > 0) {
+            tableData.push(rowObj);
+          }
+        });
+        localStorage.setItem(draftKey, JSON.stringify(tableData));
+      }
+    }
+
+
     function renderSelectedForm() {
         const formId = document.getElementById('entryFormSelect').value;
         const form = document.getElementById('dynamicEntryForm');
@@ -3147,6 +3307,10 @@ function sendReportToExecutive() {
         
         if(container) container.innerHTML = '';
         if(btnSubmitData) btnSubmitData.style.display = 'inline-flex';
+        if (selectedFormObj.isMultiRow) {
+            renderEditableTable(selectedFormObj, container, agencyId);
+            return;
+        }
         
         let savedDraft = {};
         let draftKey = `eduDataDraft_${agencyId}_${formId}`;
@@ -3285,18 +3449,57 @@ function sendReportToExecutive() {
       let ag = AppState.userRole === 'agency' ? AppState.userAgencyId : document.getElementById('entryAgencySelect').value;
       let formId = document.getElementById('entryFormSelect').value;
       
-      const formData = {};
-      const form = document.getElementById('dynamicEntryForm');
-      const inputs = form ? form.elements : [];
-      for (let i = 0; i < inputs.length; i++) {
-        const el = inputs[i];
-        if (!el.name) continue;
-        if (el.type === 'checkbox') {
-          formData[el.name] = el.checked ? '1' : '0';
-        } else if (el.type === 'radio') {
-          if (el.checked) formData[el.name] = el.value;
-          else if (!(el.name in formData)) formData[el.name] = '';
-        } else {
+      const selectedFormObj = AppState.availableForms.find(f => f.formId === formId);
+      const isMultiRow = selectedFormObj && selectedFormObj.isMultiRow;
+      
+      const formData = {};
+      const form = document.getElementById('dynamicEntryForm');
+      
+      if (isMultiRow) {
+        formData.report_title = selectedFormObj.formName;
+        formData.isMultiRow = true;
+        formData.rows = [];
+        const tbody = document.getElementById('et-tbody');
+        if (tbody) {
+          const columns = selectedFormObj.formConfig.filter(f => f.type !== 'section' && f.name !== 'report_title');
+          Array.from(tbody.children).forEach(tr => {
+            const rowObj = {};
+            let hasVal = false;
+            columns.forEach(col => {
+              const el = tr.querySelector(`[name="${col.name}"]`);
+              if (el) {
+                rowObj[col.name] = el.value;
+                if (el.value.trim()) hasVal = true;
+              }
+            });
+            if (hasVal) {
+              formData.rows.push(rowObj);
+            }
+          });
+        }
+        if (formData.rows.length === 0) {
+          showToast('กรุณากรอกข้อมูลในตารางอย่างน้อย 1 แถว', 'warning');
+          if(btn) {
+              btn.disabled = false; 
+              btn.innerHTML = '<span class="material-icons-round">cloud_upload</span> บันทึกและส่งข้อมูล';
+          }
+          return;
+        }
+      } else {
+        const inputs = form ? form.elements : [];
+        for (let i = 0; i < inputs.length; i++) {
+          const el = inputs[i];
+          if (!el.name) continue;
+          if (el.type === 'checkbox') {
+            formData[el.name] = el.checked ? '1' : '0';
+          } else if (el.type === 'radio') {
+            if (el.checked) formData[el.name] = el.value;
+            else if (!(el.name in formData)) formData[el.name] = '';
+          } else {
+            formData[el.name] = el.value;
+          }
+        }
+      }
           formData[el.name] = el.value;
         }
       }
@@ -3506,7 +3709,7 @@ function sendReportToExecutive() {
           <td style="vertical-align: middle;">${statusBadge}</td>
           <td style="vertical-align: middle; text-align: center;">
             <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
-              <button class="btn btn-icon btn-ghost btn-sm" style="width: 32px; height: 32px; border-radius: 8px; background: var(--blue-ll);" onclick="openDataDetails('${safeJson}', '${safeMappedTitle}', '${safeDispAgency}')" title="ดูรายละเอียดข้อมูล">
+              <button class="btn btn-icon btn-ghost btn-sm" style="width: 32px; height: 32px; border-radius: 8px; background: var(--blue-ll);" onclick="openDataDetails('${safeJson}', '${safeMappedTitle}', '${safeDispAgency}', '${_escAttr(r.formId||'')}')" title="ดูรายละเอียดข้อมูล">
                 <span class="material-icons-round" style="font-size: 18px; color: var(--blue);">visibility</span>
               </button>
               <button class="btn btn-icon btn-ghost btn-sm" style="width: 32px; height: 32px; border-radius: 8px; background: var(--s2);" onclick="showRowActionsMenu(event, '${r.id}', '${r.status}', '${safeJson}', '${safeMappedTitle}', '${r.agencyId}', '${r.timestamp}', '${_escAttr(r.formId||'')}')" title="เมนูลัด / พิมพ์ใบเสร็จ">
@@ -3696,6 +3899,34 @@ function sendReportToExecutive() {
       if(!content) return;
 
       try {
+        const data = JSON.parse(AppState.activeJsonStr);
+        if (data.isMultiRow && Array.isArray(data.rows)) {
+          let headers = [];
+          if (data.rows.length > 0) {
+            headers = Object.keys(data.rows[0]);
+          }
+          
+          let thHtml = '<tr><th style="width:50px;text-align:center;">#</th>' + headers.map(h => {
+            const label = _getFieldLabel(h, formId) || h;
+            return `<th>${label}</th>`;
+          }).join('') + '</tr>';
+          
+          let tbHtml = data.rows.map((row, rIdx) => {
+            return `<tr><td style="text-align:center;font-weight:600;color:var(--subtle);">${rIdx + 1}</td>` + headers.map(h => {
+              const val = row[h];
+              const valDisplay = (val === '' || val === null || val === undefined) ? '<span style="color:var(--muted); font-weight:normal;">—</span>' : `<span>${val}</span>`;
+              return `<td>${valDisplay}</td>`;
+            }).join('') + '</tr>';
+          }).join('');
+          
+          content.innerHTML = `<div style="overflow-x:auto; border:1px solid var(--border-l); border-radius:12px; margin-bottom:12px;">
+            <table class="tbl" style="margin-bottom:0; width:100%; font-size:13px;">
+              <thead style="background:var(--s1);">${thHtml}</thead>
+              <tbody>${tbHtml}</tbody>
+            </table>
+          </div>`;
+          return;
+        }
         const data = JSON.parse(AppState.activeJsonStr);
         let html = '<table class="tbl" style="margin-bottom:0;"><thead><tr><th width="55%">รายการข้อมูล</th><th width="45%">ค่าที่รายงาน</th></tr></thead><tbody>';
         for (let key in data) {
@@ -4945,55 +5176,109 @@ function sendReportToExecutive() {
       return errors;
     }
 
-    function showImportPreview(validRows, invalidRows, fieldConfigs, inputs) {
-      var total = validRows.length + invalidRows.length;
-      var previewFields = fieldConfigs.slice(0, 4);
-      var thHtml = '<tr><th>แถวที่</th>' + previewFields.map(function(f){ return '<th>' + f.name + '</th>'; }).join('') + '<th>สถานะ</th></tr>';
-      var tbHtml = validRows.slice(0,4).map(function(r){
-        return '<tr style="background:#e6f4ea;"><td>' + r.idx + '</td>'
-          + previewFields.map(function(f){ return '<td>' + (r.row[f.name]||'-') + '</td>'; }).join('')
-          + '<td style="color:#1e8e3e;font-weight:600;">✅ ผ่าน</td></tr>';
-      }).join('') + invalidRows.slice(0,3).map(function(r){
-        return '<tr style="background:#fce8e6;"><td>' + r.idx + '</td>'
-          + previewFields.map(function(f){ return '<td>' + (r.row[f.name]||'-') + '</td>'; }).join('')
-          + '<td style="color:#c5221f;font-size:11px;">❌ ' + r.errors[0] + '</td></tr>';
-      }).join('');
-
-      Swal.fire({
-        title: 'ตรวจสอบข้อมูลก่อน Import',
-        width: '680px',
-        html: '<div style="font-family:Google Sans,Sarabun,sans-serif;text-align:left;">'
-          + '<div style="display:flex;gap:12px;margin-bottom:12px;">'
-            + '<div style="flex:1;padding:10px 14px;background:#e6f4ea;border-radius:8px;text-align:center;"><div style="font-size:24px;font-weight:700;color:#1e8e3e;">' + validRows.length + '</div><div style="font-size:11px;color:#1e8e3e;">แถวผ่าน ✓</div></div>'
-            + '<div style="flex:1;padding:10px 14px;background:#fce8e6;border-radius:8px;text-align:center;"><div style="font-size:24px;font-weight:700;color:#c5221f;">' + invalidRows.length + '</div><div style="font-size:11px;color:#c5221f;">แถวมีข้อผิดพลาด ✗</div></div>'
-            + '<div style="flex:1;padding:10px 14px;background:#f1f3f4;border-radius:8px;text-align:center;"><div style="font-size:24px;font-weight:700;color:#202124;">' + total + '</div><div style="font-size:11px;color:#5f6368;">แถวทั้งหมด</div></div>'
-          + '</div>'
-          + (invalidRows.length > 0 ? '<div style="padding:8px 12px;background:#fce8e6;border-radius:8px;font-size:12px;color:#c5221f;margin-bottom:10px;">⚠️ ตัวอย่างข้อผิดพลาด: ' + invalidRows[0].errors.slice(0,2).join(' | ') + '</div>' : '')
-          + '<div style="overflow-x:auto;max-height:180px;overflow-y:auto;border:1px solid #e8eaed;border-radius:6px;">'
-            + '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead style="background:#f8f9fa;position:sticky;top:0;">' + thHtml + '</thead><tbody>' + tbHtml + '</tbody></table>'
-          + '</div>'
-          + '<p style="font-size:11px;color:#9aa0a6;margin-top:8px;">ระบบนำเข้าแถวแรกที่ผ่านเข้าสู่ฟอร์ม • ตรวจสอบค่าแล้วกดส่งอีกครั้ง</p>'
-        + '</div>',
-        showCancelButton: true,
-        confirmButtonText: validRows.length > 0 ? 'นำเข้าแถวที่ผ่าน (' + validRows.length + ')' : 'ปิด',
-        cancelButtonText: 'ยกเลิก',
-        confirmButtonColor: '#1a73e8',
-        showConfirmButton: validRows.length > 0
-      }).then(function(r) {
-        if (!r.isConfirmed || validRows.length === 0) return;
-        var firstRow = validRows[0].row;
-        var matched  = 0;
-        inputs.forEach(function(el) {
-          if (firstRow[el.name] !== undefined) {
-            el.value = firstRow[el.name];
-            el.dispatchEvent(new Event('input'));
-            matched++;
-          }
-        });
-        showToast('นำเข้าข้อมูลแถวที่ ' + validRows[0].idx + ' สำเร็จ — ' + matched + ' ฟิลด์', 'success');
-      });
+    function showImportPreview(validRows, invalidRows, fieldConfigs, inputs) {
+      var total = validRows.length + invalidRows.length;
+      var previewFields = fieldConfigs.slice(0, 4);
+      var thHtml = '<tr><th>แถวที่</th>' + previewFields.map(function(f){ return '<th>' + f.name + '</th>'; }).join('') + '<th>สถานะ</th></tr>';
+      var tbHtml = validRows.slice(0,4).map(function(r){
+        return '<tr style="background:#e6f4ea;"><td>' + r.idx + '</td>'
+          + previewFields.map(function(f){ return '<td>' + (r.row[f.name]||'-') + '</td>'; }).join('')
+          + '<td style="color:#1e8e3e;font-weight:600;">✅ ผ่าน</td></tr>';
+      }).join('') + invalidRows.slice(0,3).map(function(r){
+        return '<tr style="background:#fce8e6;"><td>' + r.idx + '</td>'
+          + previewFields.map(function(f){ return '<td>' + (r.row[f.name]||'-') + '</td>'; }).join('')
+          + '<td style="color:#c5221f;font-size:11px;">❌ ' + r.errors[0] + '</td></tr>';
+      }).join('');
+
+      Swal.fire({
+        title: 'ตรวจสอบข้อมูลก่อน Import',
+        width: '680px',
+        html: '<div style="font-family:Google Sans,Sarabun,sans-serif;text-align:left;">'
+          + '<div style="display:flex;gap:12px;margin-bottom:12px;">'
+            + '<div style="flex:1;padding:10px 14px;background:#e6f4ea;border-radius:8px;text-align:center;"><div style="font-size:24px;font-weight:700;color:#1e8e3e;">' + validRows.length + '</div><div style="font-size:11px;color:#1e8e3e;">แถวผ่าน ✓</div></div>'
+            + '<div style="flex:1;padding:10px 14px;background:#fce8e6;border-radius:8px;text-align:center;"><div style="font-size:24px;font-weight:700;color:#c5221f;">' + invalidRows.length + '</div><div style="font-size:11px;color:#c5221f;">แถวมีข้อผิดพลาด ✗</div></div>'
+            + '<div style="flex:1;padding:10px 14px;background:#f1f3f4;border-radius:8px;text-align:center;"><div style="font-size:24px;font-weight:700;color:#202124;">' + total + '</div><div style="font-size:11px;color:#5f6368;">แถวทั้งหมด</div></div>'
+          + '</div>'
+          + (invalidRows.length > 0 ? '<div style="padding:8px 12px;background:#fce8e6;border-radius:8px;font-size:12px;color:#c5221f;margin-bottom:10px;">⚠️ ตัวอย่างข้อผิดพลาด: ' + invalidRows[0].errors.slice(0,2).join(' | ') + '</div>' : '')
+          + '<div style="overflow-x:auto;max-height:180px;overflow-y:auto;border:1px solid #e8eaed;border-radius:6px;">'
+            + '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead style="background:#f8f9fa;position:sticky;top:0;">' + thHtml + '</thead><tbody>' + tbHtml + '</tbody></table>'
+          + '</div>'
+          + '<p style="font-size:11.5px;color:var(--muted,#5f6368);margin-top:10px;line-height:1.4;">'
+            + '• <strong>นำเข้าทีละแถว (ลงหน้าจอ):</strong> ดึงข้อมูลแถวแรกมาหยอดในฟอร์มเพื่อตรวจสอบก่อนส่งมือ<br/>'
+            + '• <strong>นำเข้าทั้งหมด:</strong> บันทึกข้อมูลที่ผ่านเกณฑ์ทั้งหมด (' + validRows.length + ' แถว) ลงฐานข้อมูลหลังบ้านทันที'
+          + '</p>'
+        + '</div>',
+        showCancelButton: true,
+        showConfirmButton: validRows.length > 0,
+        showDenyButton: validRows.length > 0,
+        confirmButtonText: 'นำเข้าทีละแถว (ลงหน้าจอ)',
+        denyButtonText: 'นำเข้าทั้งหมดลงฐานข้อมูล',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#1a73e8',
+        denyButtonColor: '#34a853'
+      }).then(function(r) {
+        if (r.isConfirmed) {
+          var firstRow = validRows[0].row;
+          var matched  = 0;
+          inputs.forEach(function(el) {
+            if (firstRow[el.name] !== undefined) {
+              el.value = firstRow[el.name];
+              el.dispatchEvent(new Event('input'));
+              matched++;
+            }
+          });
+          showToast('นำเข้าข้อมูลแถวที่ ' + validRows[0].idx + ' สำเร็จ — ' + matched + ' ฟิลด์', 'success');
+        } else if (r.isDenied) {
+          executeBulkImport(validRows.map(function(item){ return item.row; }));
+        }
+      });
+    }
+
+    function executeBulkImport(rows) {
+      Swal.fire({
+        title: 'กำลังนำเข้าข้อมูล...',
+        html: 'กรุณารอการนำเข้าข้อมูลแบบกลุ่มจำนวน <strong>' + rows.length + '</strong> รายการ',
+        allowOutsideClick: false,
+        didOpen: function() { Swal.showLoading(); }
+      });
+      
+      var formId = document.getElementById('entryFormSelect').value;
+      var formSelect = document.getElementById('entryFormSelect');
+      var formName = formSelect ? formSelect.options[formSelect.selectedIndex].text : '';
+      var agencyId = AppState.userRole === 'agency' ? AppState.userAgencyId : document.getElementById('entryAgencySelect').value;
+      
+      var payload = {
+        sessionToken: AppState.sessionToken,
+        agencyId: agencyId,
+        formId: formId,
+        formName: formName,
+        rows: rows
+      };
+      
+      if (typeof google !== 'undefined' && google.script) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            Swal.close();
+            if (res.success) {
+              Swal.fire('นำเข้าสำเร็จ', res.message, 'success');
+              loadDashboardData(true);
+            } else {
+              Swal.fire('เกิดข้อผิดพลาด', res.message, 'error');
+            }
+          })
+          .withFailureHandler(function(err) {
+            Swal.close();
+            Swal.fire('ล้มเหลว', 'เกิดข้อผิดพลาดในการนำส่งข้อมูลหลังบ้าน: ' + err.toString(), 'error');
+          })
+          .submitBulkData(payload);
+      } else {
+        setTimeout(function() {
+          Swal.close();
+          Swal.fire('นำเข้าสำเร็จ (Mock)', 'นำเข้าข้อมูลจำนวน ' + rows.length + ' รายการสำเร็จแล้ว (โหมดจำลอง)', 'success');
+          loadDashboardData(true);
+        }, 1500);
+      }
     }
-
     function downloadImportTemplate() {
       var inputs  = document.querySelectorAll('#entryFormContainer input[name], #entryFormContainer select[name], #entryFormContainer textarea[name]');
       var headers = [];

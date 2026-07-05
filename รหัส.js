@@ -636,6 +636,8 @@ function getAvailableFormsForAgency(agencyId) {
   initSetup();
   var sheet  = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('FormTemplates');
   var data   = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var isMultiRowColIdx = headers.indexOf('IsMultiRow');
   var result = [], seen = {};
   for (var i=1;i<data.length;i++) {
     if (!data[i][0]||seen[data[i][0]]) continue;
@@ -646,7 +648,12 @@ function getAvailableFormsForAgency(agencyId) {
     if (!match) continue;
     seen[data[i][0]] = true;
     var fc=[]; try { fc=JSON.parse(data[i][3]); } catch(e) {}
-    result.push({ formId:String(data[i][0]), formName:String(data[i][1]), agencyId:fAg, fieldCount:fc.length, formConfig:fc });
+    var isMulti = false;
+    if (isMultiRowColIdx !== -1 && data[i][isMultiRowColIdx] !== undefined) {
+      var cellVal = data[i][isMultiRowColIdx];
+      isMulti = cellVal === true || String(cellVal) === '1' || String(cellVal) === 'true';
+    }
+    result.push({ formId:String(data[i][0]), formName:String(data[i][1]), agencyId:fAg, fieldCount:fc.length, formConfig:fc, isMultiRow:isMulti });
   }
   _cacheSet(CACHE_KEY, result, CACHE_TTL.FORMS);
   return result;
@@ -851,6 +858,75 @@ function submitData(payload) {
     }
   } catch (e) {
     return { success: false, message: 'เกิดข้อผิดพลาดในการบันทึก: ' + e.toString() };
+  } finally {
+    _invalidateDashboardCache();
+    lock.releaseLock();
+  }
+}
+
+function submitBulkData(payload) {
+  var auth = _resolveAuth(payload); if (auth.error) return auth.error;
+  var roleCheck = checkRole(auth.userRole, IS_AGENCY_UP, 'submitBulkData');
+  if (!roleCheck.allowed) return roleCheck.error;
+  var callerAgency = auth.agencyId || payload.userAgencyId || payload.agencyId;
+  var ownerCheck = checkAgencyOwnership(auth.userRole, callerAgency, payload.agencyId);
+  if (!ownerCheck.allowed) return ownerCheck.error;
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('Data');
+  if (!sheet) {
+    return { success: false, message: 'ไม่พบแผ่นงาน (Data)' };
+  }
+
+  if (!payload.rows || !Array.isArray(payload.rows)) {
+    return { success: false, message: 'ข้อมูลนำเข้าไม่ถูกต้อง' };
+  }
+
+  var lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(30000);
+  } catch (e) {
+    return { success: false, message: 'ระบบหนาแน่นชั่วคราว กรุณาลองใหม่อีกครั้งใน 10 วินาที' };
+  }
+
+  try {
+    var timestamp = new Date();
+    var timeStr = Utilities.formatDate(timestamp, "GMT+7", "dd/MM/yyyy HH:mm:ss");
+    var baseIdTime = timestamp.getTime();
+    var rowsToWrite = [];
+
+    for (var i = 0; i < payload.rows.length; i++) {
+      var rowData = payload.rows[i];
+      var reportTitle = rowData.report_title || rowData.school_name || payload.formName || "-";
+      
+      var formData = rowData;
+      if (!formData.report_title) {
+        formData.report_title = reportTitle;
+      }
+      
+      var row = [
+        "RPT_" + (baseIdTime + i),
+        timeStr,
+        payload.agencyId,
+        payload.formId,
+        reportTitle,
+        'รออนุมัติ',
+        '',
+        '',
+        JSON.stringify(formData),
+        ''
+      ];
+      rowsToWrite.push(row);
+    }
+
+    if (rowsToWrite.length > 0) {
+      var lastRow = sheet.getLastRow();
+      sheet.getRange(lastRow + 1, 1, rowsToWrite.length, 10).setValues(rowsToWrite);
+    }
+
+    return { success: true, message: 'นำเข้าข้อมูลสำเร็จทั้งหมด ' + rowsToWrite.length + ' รายการ เรียบร้อยแล้ว' };
+  } catch (e) {
+    return { success: false, message: 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล: ' + e.toString() };
   } finally {
     _invalidateDashboardCache();
     lock.releaseLock();
@@ -2990,7 +3066,14 @@ function seedOBECMTemplates() {
   var sheet = ss.getSheetByName('FormTemplates');
   if (!sheet) {
     sheet = ss.insertSheet('FormTemplates');
-    sheet.appendRow(['FormID','FormName','AgencyID','FormJSON','Deadline']);
+    sheet.appendRow(['FormID','FormName','AgencyID','FormJSON','Deadline','IsMultiRow']);
+  }
+  
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var isMultiRowColIdx = headers.indexOf('IsMultiRow');
+  if (isMultiRowColIdx === -1) {
+    sheet.getRange(1, headers.length + 1).setValue('IsMultiRow');
+    isMultiRowColIdx = headers.length;
   }
   
   var templates = [
@@ -3213,10 +3296,15 @@ function seedOBECMTemplates() {
       item.deadline
     ];
     
+    var isMultiVal = (item.formId !== 'OBECM_F01' && item.formId !== 'OBECM_F07') ? 1 : 0;
+    
     if (existRow > -1) {
       sheet.getRange(existRow, 1, 1, rowData.length).setValues([rowData]);
+      sheet.getRange(existRow, isMultiRowColIdx + 1).setValue(isMultiVal);
     } else {
       sheet.appendRow(rowData);
+      var newLastRow = sheet.getLastRow();
+      sheet.getRange(newLastRow, isMultiRowColIdx + 1).setValue(isMultiVal);
     }
   }
   

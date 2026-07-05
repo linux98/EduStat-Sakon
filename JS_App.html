@@ -3336,6 +3336,16 @@ function sendReportToExecutive() {
             if (entryCard) entryCard.style.maxWidth = '800px';
             const banner = document.getElementById('formHistoryBanner');
             if (banner) { banner.style.display = 'none'; banner.innerHTML = ''; }
+            
+            // 🔄 คืนค่าเมนูด้านซ้ายให้เปิดแสดงผลตามเดิมเมื่อไม่ได้เลือกแบบฟอร์ม
+            const sb = document.getElementById('mainSidebar');
+            if (sb && sb.classList.contains('collapsed')) {
+                sb.classList.remove('collapsed');
+                setTimeout(() => {
+                    [eChartAgency, eChartStudent, eChartTeacher, eChartSpecial, eChartYoY].forEach(c => { if(c) c.resize(); });
+                    if(map) map.invalidateSize();
+                }, 350);
+            }
             return;
         }
 
@@ -3362,11 +3372,33 @@ function sendReportToExecutive() {
         if(btnSubmitData) btnSubmitData.style.display = 'inline-flex';
         
         if (selectedFormObj.isMultiRow) {
-            if (entryCard) entryCard.style.maxWidth = '1400px';
+            // 🖥️ ขยายความกว้างการ์ดแบบฟอร์มตารางเป็น 100% เต็มหน้าจอหลักของเนื้อหา
+            if (entryCard) entryCard.style.maxWidth = '100%';
+            
+            // 🔄 ยุบเมนูด้านซ้ายอัตโนมัติ (Collapse Sidebar) เพื่อเพิ่มความกว้างเต็มสายตาให้กับตารางคอลัมน์เยอะ
+            const sb = document.getElementById('mainSidebar');
+            if (sb && !sb.classList.contains('collapsed')) {
+                sb.classList.add('collapsed');
+                setTimeout(() => {
+                    [eChartAgency, eChartStudent, eChartTeacher, eChartSpecial, eChartYoY].forEach(c => { if(c) c.resize(); });
+                    if(map) map.invalidateSize();
+                }, 350);
+            }
+            
             renderEditableTable(selectedFormObj, container, agencyId);
             return;
         } else {
             if (entryCard) entryCard.style.maxWidth = '800px';
+            
+            // 🔄 คืนค่าเมนูด้านซ้ายให้เปิดแสดงผลตามเดิมสำหรับฟอร์มปกติแถวเดียว
+            const sb = document.getElementById('mainSidebar');
+            if (sb && sb.classList.contains('collapsed')) {
+                sb.classList.remove('collapsed');
+                setTimeout(() => {
+                    [eChartAgency, eChartStudent, eChartTeacher, eChartSpecial, eChartYoY].forEach(c => { if(c) c.resize(); });
+                    if(map) map.invalidateSize();
+                }, 350);
+            }
         }
         
         let savedDraft = {};

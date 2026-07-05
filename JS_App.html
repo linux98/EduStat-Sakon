@@ -3529,12 +3529,14 @@ function sendReportToExecutive() {
           return;
         }
         
-        const headers = rows[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+        const rawHeaders = rows[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+        const formId = document.getElementById('entryFormSelect').value;
+        const headers = mapThaiHeadersToEnglish(rawHeaders, formId);
         const values = rows[1].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
         
         let matchCount = 0;
         headers.forEach((header, index) => {
-          const input = document.querySelector(`#dynamicEntryForm input[name="${header}"]`);
+          const input = document.querySelector(`#dynamicEntryForm [name="${header}"]`);
           if(input && values[index] !== undefined && header !== 'report_title') { 
             input.value = values[index];
             matchCount++;
@@ -3722,6 +3724,31 @@ function sendReportToExecutive() {
       const second = parseInt(timeParts[2] || '0', 10);
       
       return new Date(year, month, day, hour, minute, second);
+    }
+
+    function mapThaiHeadersToEnglish(headers, formId) {
+      const selectedFormObj = AppState.availableForms.find(f => f.formId === formId);
+      if (!selectedFormObj || !selectedFormObj.formConfig) return headers;
+      
+      const config = selectedFormObj.formConfig;
+      return headers.map(h => {
+        const cleanH = h.trim();
+        // ค้นหาเทียบฉลากตรงตัว หรือเอาดอกจันออก
+        const match = config.find(col => {
+          const labelClean = (col.label || '').trim();
+          return labelClean === cleanH || 
+                 labelClean.replace(/\s*\*$/, '').trim() === cleanH.replace(/\s*\*$/, '').trim();
+        });
+        if (match) return match.name;
+        
+        // ค้นหาใน static labels เผื่อฟิลด์มาตรฐาน
+        for (let key in _STATIC_FIELD_LABELS) {
+          if (_STATIC_FIELD_LABELS[key] === cleanH) return key;
+        }
+        
+        // คืนค่าเดิมหากไม่พบแมตช์ (เผื่อผู้ใช้เก่าอัปโหลดแบบภาษาอังกฤษ)
+        return h;
+      });
     }
 
     function preloadSubmissionHistory(onComplete) {
@@ -5326,7 +5353,9 @@ function sendReportToExecutive() {
       var lines = csvText.split('\n').map(function(l){ return l.replace(/\r$/,''); }).filter(function(l){ return l.trim(); });
       if (lines.length < 2) { showToast('ไฟล์ไม่มีข้อมูล', 'error'); return; }
 
-      var headers = lines[0].split(',').map(function(h){ return h.trim().replace(/^"|"$/g,'').toLowerCase(); });
+      var rawHeaders = lines[0].split(',').map(function(h){ return h.trim().replace(/^"|"$/g,''); });
+      var formId = document.getElementById('entryFormSelect')?.value;
+      var headers = mapThaiHeadersToEnglish(rawHeaders, formId);
       var allRows = [];
       for (var ri = 1; ri < lines.length; ri++) {
         if (!lines[ri].trim()) continue;
@@ -5485,10 +5514,18 @@ function sendReportToExecutive() {
       if (headers.length === 0) { showToast('กรุณาเลือกแบบฟอร์มก่อน', 'warning'); return; }
       
       var formSelect = document.getElementById('entryFormSelect');
+      var formId = formSelect ? formSelect.value : '';
       var formName = formSelect ? formSelect.options[formSelect.selectedIndex].text : 'template';
       formName = formName.replace(/\s+/g, '_').replace(/[^\w฀-๿]/g, ''); // Clean filename to avoid bad characters
       
-      var csv  = headers.join(',') + '\n' + headers.map(function(){ return ''; }).join(',');
+      // แปลงชื่อหัวคอลัมน์เป็นภาษาไทยสำหรับดาวน์โหลดเทมเพลต (UX ระดับสากลสำหรับผู้ใช้ไทย)
+      var headerLabels = headers.map(function(name) {
+        var label = _getFieldLabel(name, formId) || name;
+        // เอาเครื่องหมายดอกจันสีแดงออกเพื่อความคลีนของไฟล์ Excel/CSV
+        return label.replace(/\s*\*$/, '').trim();
+      });
+      
+      var csv  = headerLabels.join(',') + '\n' + headerLabels.map(function(){ return ''; }).join(',');
       var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
       var url  = URL.createObjectURL(blob);
       var a    = document.createElement('a');

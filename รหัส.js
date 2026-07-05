@@ -1166,7 +1166,15 @@ function getDashboardData(payloadOrYear, filterAgency) {
   var data  = sheet.getDataRange().getValues();
 
   var totalSchools=0, totalStudents=0, totalTeachers=0, totalSpecial=0;
-  var agencyCount={}, teacherCount={};
+  
+  _initAgencyMap(); // 🎯 โหลด AGENCY_MAP เพื่อเตรียมข้อมูลสังกัดครบวงจร
+  var agencyCount={};
+  var teacherCount={};
+  Object.keys(AGENCY_MAP).forEach(function(k) {
+    agencyCount[k] = 0;
+    teacherCount[k] = 0;
+  });
+  
   var studentCount={'ก่อนประถม':0,'ประถม':0,'ม.ต้น':0,'ม.ปลาย':0,'ปวช/ปวส':0};
   var specialCount={'ออทิสติก':0,'ร่างกาย':0,'สติปัญญา':0};
   var pendingCount=0, latestApproved={}, latestApprovedByForm={};

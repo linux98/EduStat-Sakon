@@ -1114,10 +1114,10 @@ function getDashboardData(payloadOrYear, filterAgency) {
     if (fAgency!=='all' && rowAgency!==fAgency) continue;
     
     var isEligible = false;
-    if (rowStatus === 'อนุมัติแล้ว') {
+    // 🎯 ปรับปรุงให้หน้าแดชบอร์ดดึงทั้งข้อมูลที่ 'อนุมัติแล้ว' และ 'รออนุมัติ' มาคำนวณแบบ Real-time ทันทีที่ส่งข้อมูลสำเร็จ
+    if (rowStatus === 'อนุมัติแล้ว' || rowStatus === 'รออนุมัติ') {
       isEligible = true;
-    } else if (fAgency !== 'all' && (rowStatus === 'รออนุมัติ' || rowStatus === 'ส่งกลับแก้ไข')) {
-      // สำหรับหน้าจอของสังกัด ยอมให้ดึงข้อมูลที่ส่งล่าสุดแม้ยังไม่อนุมัติ มาประมวลเป็นตัวเลขสถิติได้เพื่อไม่ให้สถิติเป็น 0
+    } else if (fAgency !== 'all' && rowStatus === 'ส่งกลับแก้ไข') {
       isEligible = true;
     }
 
@@ -1284,7 +1284,7 @@ function getDashboardData(payloadOrYear, filterAgency) {
       var ts = data[j][1];
       var yr = '';
 
-      if (rowStatus === 'อนุมัติแล้ว' && submissions[rowAgency]) {
+      if ((rowStatus === 'อนุมัติแล้ว' || rowStatus === 'รออนุมัติ') && submissions[rowAgency]) {
         if (ts instanceof Date) {
           yr = String(ts.getFullYear() + 543);
         } else {

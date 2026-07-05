@@ -1072,7 +1072,7 @@ function getDashboardData(payloadOrYear, filterAgency) {
   var agencyCount={}, teacherCount={};
   var studentCount={'ก่อนประถม':0,'ประถม':0,'ม.ต้น':0,'ม.ปลาย':0,'ปวช/ปวส':0};
   var specialCount={'ออทิสติก':0,'ร่างกาย':0,'สติปัญญา':0};
-  var pendingCount=0, latestApproved={};
+  var pendingCount=0, latestApproved={}, latestApprovedByForm={};
 
   // ดึงโครงสร้าง Custom Fields จาก FormTemplates สำหรับ Dashboard
   var customDashFields={};
@@ -1122,11 +1122,13 @@ function getDashboardData(payloadOrYear, filterAgency) {
     }
 
     if (isEligible) {
-      var currentBest = latestApproved[rowAgency];
-      if (!currentBest) {
-        latestApproved[rowAgency] = data[i];
+      // 🎯 1. เก็บประวัติแยกทีละแบบฟอร์มของแต่ละสังกัด ป้องกันแบบฟอร์มล่าสุดเขียนทับแบบฟอร์มอื่นจนสถิติหาย
+      var key = rowAgency + '_' + rowForm;
+      var currentBestForm = latestApprovedByForm[key];
+      if (!currentBestForm) {
+        latestApprovedByForm[key] = data[i];
       } else {
-        var currentStatus = currentBest[5];
+        var currentStatus = currentBestForm[5];
         var incomingStatus = data[i][5];
         var updateBest = false;
         
@@ -1135,13 +1137,27 @@ function getDashboardData(payloadOrYear, filterAgency) {
         } else if (incomingStatus === 'รออนุมัติ' && currentStatus === 'ส่งกลับแก้ไข') {
           updateBest = true;
         } else if (incomingStatus === currentStatus) {
-          if (Number(data[i][0] || 0) > Number(currentBest[0] || 0)) {
+          if (Number(data[i][0] || 0) > Number(currentBestForm[0] || 0)) {
             updateBest = true;
           }
         }
         
         if (updateBest) {
+          latestApprovedByForm[key] = data[i];
+        }
+      }
+
+      // 🎯 2. เก็บสถิติสรุปรวมระดับหน่วยงาน เพื่อเอาไปพล็อตแผนที่ Map Marker
+      var currentBestAgency = latestApproved[rowAgency];
+      if (!currentBestAgency) {
+        latestApproved[rowAgency] = data[i];
+      } else {
+        if (rowForm === 'OBECM_F02' && currentBestAgency[3] !== 'OBECM_F02') {
           latestApproved[rowAgency] = data[i];
+        } else if (Number(data[i][0] || 0) > Number(currentBestAgency[0] || 0)) {
+          if (currentBestAgency[3] !== 'OBECM_F02') {
+            latestApproved[rowAgency] = data[i];
+          }
         }
       }
     }
@@ -1149,34 +1165,49 @@ function getDashboardData(payloadOrYear, filterAgency) {
     if (rowStatus==='รออนุมัติ') pendingCount++;
   }
 
-  // คำนวณผลรวมสถิติจากข้อมูลที่ผ่านการกรองแล้ว
-  for (var agId in latestApproved) {
-    var row=latestApproved[agId], rawJson=row[8];
+  // คำนวณผลรวมสถิติจากข้อมูลที่ผ่านการกรองแล้ว (ดึงสถิติตัวแปรแท้จริงจากทุกแบบฟอร์มของสังกัดมาประมวลผลร่วมกัน)
+  for (var key in latestApprovedByForm) {
+    var row = latestApprovedByForm[key];
+    var formId = row[3];
+    var agId = row[2];
+    var rawJson = row[8];
     if (!rawJson) continue;
     try {
-      var fd=JSON.parse(rawJson);
-      var sch=Number(fd.school_total||0), std=Number(fd.student_total||0), tch=Number(fd.teacher_total||0);
+      var fd = JSON.parse(rawJson);
       
-      totalSchools+=sch; 
-      totalStudents+=std; 
-      totalTeachers+=tch;
-      totalSpecial+=Number(fd.spc_autistic||0)+Number(fd.spc_physical||0)+Number(fd.spc_mental||0);
+      var sch = 0;
+      var std = 0;
+      var tch = 0;
       
-      agencyCount[agId]=(agencyCount[agId]||0)+sch;
-      teacherCount[agId]=(teacherCount[agId]||0)+tch;
+      if (fd.school_total !== undefined) sch = Number(fd.school_total || 0);
+      if (fd.student_total !== undefined) std = Number(fd.student_total || 0);
+      if (fd.teacher_total !== undefined) tch = Number(fd.teacher_total || 0);
       
-      studentCount['ก่อนประถม']+=Number(fd.std_pre||0);
-      studentCount['ประถม']+=Number(fd.std_p||0);
-      studentCount['ม.ต้น']+=Number(fd.std_m_ton||0);
-      studentCount['ม.ปลาย']+=Number(fd.std_m_plai||0);
-      studentCount['ปวช/ปวส']+=Number(fd.std_voc||0);
+      // 🎯 ดึงจำนวนสถานศึกษาจริงจากตารางรายชื่อสถานศึกษาในสังกัด (OBECM_F02)
+      if (formId === 'OBECM_F02' && fd.rows && Array.isArray(fd.rows)) {
+        sch = fd.rows.length;
+      }
       
-      specialCount['ออทิสติก']+=Number(fd.spc_autistic||0);
-      specialCount['ร่างกาย']+=Number(fd.spc_physical||0);
-      specialCount['สติปัญญา']+=Number(fd.spc_mental||0);
+      totalSchools += sch; 
+      totalStudents += std; 
+      totalTeachers += tch;
+      totalSpecial += Number(fd.spc_autistic||0) + Number(fd.spc_physical||0) + Number(fd.spc_mental||0);
+      
+      agencyCount[agId] = (agencyCount[agId] || 0) + sch;
+      teacherCount[agId] = (teacherCount[agId] || 0) + tch;
+      
+      studentCount['ก่อนประถม'] += Number(fd.std_pre||0);
+      studentCount['ประถม'] += Number(fd.std_p||0);
+      studentCount['ม.ต้น'] += Number(fd.std_m_ton||0);
+      studentCount['ม.ปลาย'] += Number(fd.std_m_plai||0);
+      studentCount['ปวช/ปวส'] += Number(fd.std_voc||0);
+      
+      specialCount['ออทิสติก'] += Number(fd.spc_autistic||0);
+      specialCount['ร่างกาย'] += Number(fd.spc_physical||0);
+      specialCount['สติปัญญา'] += Number(fd.spc_mental||0);
       
       Object.keys(customDashFields).forEach(function(k){ 
-        if (fd[k]!=null&&fd[k]!=='') customTotals[k]=(customTotals[k]||0)+Number(fd[k]||0); 
+        if (fd[k]!=null&&fd[k]!=='') customTotals[k] = (customTotals[k]||0) + Number(fd[k]||0); 
       });
     } catch(e) {}
   }
@@ -1194,10 +1225,24 @@ function getDashboardData(payloadOrYear, filterAgency) {
     
     if (hasData) {
       try {
-        var _fd = JSON.parse(latestApproved[agId][8]);
-        mS = Number(_fd.school_total||0);
-        mSt = Number(_fd.student_total||0);
-        mT = Number(_fd.teacher_total||0);
+        // ประมวลผล Marker บนแผนที่สะสมค่าจากทุกแบบฟอร์มที่มีการอนุมัติ
+        for (var key in latestApprovedByForm) {
+          if (key.indexOf(agId + '_') === 0) {
+            var row = latestApprovedByForm[key];
+            var formId = row[3];
+            var _fd = JSON.parse(row[8]);
+            
+            var sch = 0;
+            if (_fd.school_total !== undefined) sch = Number(_fd.school_total || 0);
+            if (formId === 'OBECM_F02' && _fd.rows && Array.isArray(_fd.rows)) {
+              sch = _fd.rows.length;
+            }
+            
+            mS += sch;
+            mSt += Number(_fd.student_total || 0);
+            mT += Number(_fd.teacher_total || 0);
+          }
+        }
       } catch(e) {}
     }
 
@@ -2021,7 +2066,13 @@ function getYoYData() {
         fd=JSON.parse(data[i][8]); 
       } catch(e) {}
       
-      byYear[yr].schools+=Number(fd.school_total||0); 
+      var formId = data[i][3];
+      var sch = Number(fd.school_total||0);
+      if (formId === 'OBECM_F02' && fd.rows && Array.isArray(fd.rows)) {
+        sch = fd.rows.length;
+      }
+      
+      byYear[yr].schools+=sch; 
       byYear[yr].students+=Number(fd.student_total||0); 
       byYear[yr].teachers+=Number(fd.teacher_total||0); 
       byYear[yr].count++;
@@ -2739,6 +2790,10 @@ function getPredictiveForecastData(payload) {
     try {
       var fd = JSON.parse(rawJson);
       var sch = Number(fd.school_total || 0);
+      var formId = data[i][3];
+      if (formId === 'OBECM_F02' && fd.rows && Array.isArray(fd.rows)) {
+        sch = fd.rows.length;
+      }
       var std = Number(fd.student_total || 0);
       var tch = Number(fd.teacher_total || 0);
       

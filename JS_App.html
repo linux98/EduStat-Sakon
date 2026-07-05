@@ -9,7 +9,7 @@
     function agencyName(id){ return AGENCY_MAP[id]||id; }
 
     // --- Global State ---
-    const AppState = { userRole: null, userName: '', userAgencyId: '', userAgency: '', sessionToken: null, currentDataList: [], currentDashboardData: null, activeJsonStr: '', availableForms: [], activeSubmissionId: null, lastSelectedFormId: null };
+    const AppState = { userRole: null, userName: '', userAgencyId: '', userAgency: '', sessionToken: null, currentDataList: [], currentDashboardData: null, activeJsonStr: '', availableForms: [], activeSubmissionId: null, lastSelectedFormId: null, historyPreloaded: false };
 
     // escape ค่าสำหรับใช้ใน HTML attribute (ป้องกัน XSS ใน inline event handlers)
     function _escAttr(s) {
@@ -1396,6 +1396,7 @@ function sendReportToExecutive() {
               if (appEl) appEl.classList.add('on');
               navigate('dashboard');
               updateNotificationBadge();
+              preloadSubmissionHistory();
           } else {
               lp.classList.add('out');
               setTimeout(() => {
@@ -1405,6 +1406,7 @@ function sendReportToExecutive() {
                 navigate('dashboard');
                 showToast(`เข้าสู่ระบบสำเร็จ ยินดีต้อนรับ ${AppState.userName}`);
                 updateNotificationBadge();
+                preloadSubmissionHistory();
               }, 500);
           }
       }
@@ -3335,6 +3337,14 @@ function sendReportToExecutive() {
             return;
         }
 
+        if (!AppState.historyPreloaded && AppState.userRole === 'agency') {
+            AppState.historyPreloaded = true;
+            preloadSubmissionHistory(() => {
+                renderSelectedForm();
+            });
+            return;
+        }
+
         const selectedFormObj = AppState.availableForms.find(f => f.formId === formId);
         if(!selectedFormObj || !selectedFormObj.formConfig) return;
 
@@ -3712,6 +3722,36 @@ function sendReportToExecutive() {
       const second = parseInt(timeParts[2] || '0', 10);
       
       return new Date(year, month, day, hour, minute, second);
+    }
+
+    function preloadSubmissionHistory(onComplete) {
+      if (typeof google !== 'undefined' && google.script) {
+        google.script.run
+          .withSuccessHandler(function(rows) {
+            AppState.currentDataList = rows || [];
+            if (onComplete) onComplete();
+          })
+          .withFailureHandler(function() {
+            console.error('Failed to preload submission history');
+            if (onComplete) onComplete();
+          })
+          .getSubmittedData({ 
+            userRole: AppState.userRole, 
+            agencyId: AppState.userAgencyId, 
+            sessionToken: AppState.sessionToken 
+          });
+      } else {
+        // Mock data loading
+        setTimeout(function() {
+          AppState.currentDataList = [
+            { id: "mock1", timestamp: "14/04/2026 10:30", agencyId: "OBEC_1", agencyName: "สพป.สกลนคร เขต 1", reportTitle: "รายงานสถิติพื้นฐานประจำเดือน",  status: "รออนุมัติ",    details: '{"school_total":112,"student_total":18500,"teacher_total":890}', adminComment: "" },
+            { id: "mock2", timestamp: "11/04/2026 09:15", agencyId: "OBEC_1", agencyName: "สพป.สกลนคร เขต 1", reportTitle: "รายงานข้อมูลอาคารสถานที่",       status: "อนุมัติแล้ว", details: '{"building_count":112,"toilet_count":80}', adminComment: "" },
+            { id: "mock3", timestamp: "10/04/2026 14:00", agencyId: "VEC",    agencyName: "อาชีวศึกษา",         reportTitle: "รายงานสถิติพื้นฐานประจำเดือน",  status: "ส่งกลับแก้ไข", details: '{"school_total":12}', adminComment: "ตัวเลขนักเรียนไม่ตรงกับระบบเก่า โปรดตรวจสอบ" },
+            { id: "mock4", timestamp: "09/04/2026 11:00", agencyId: "OBEC_M", agencyName: "สพม.สกลนคร",        reportTitle: "รายงานสถิติพื้นฐานประจำเดือน",  status: "รออนุมัติ",    details: '{"school_total":52,"student_total":24000,"teacher_total":1200}', adminComment: "" }
+          ];
+          if (onComplete) onComplete();
+        }, 300);
+      }
     }
 
     // ==========================================

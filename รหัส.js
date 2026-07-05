@@ -1098,7 +1098,8 @@ function getDashboardData(payloadOrYear, filterAgency) {
   // คัดกรองข้อมูลเฉพาะรายการที่ 'อนุมัติแล้ว' และตรงตาม Filter
   for (var i=1;i<data.length;i++) {
     var rowStatus = data[i][5];
-    var rowAgency = data[i][2];
+    // 🎯 แปลงชื่อหน่วยงานภาษาไทย (สพม.สกลนคร) กลับเป็นรหัสภาษาอังกฤษ (OBEC_M) เพื่อให้ตรงกับโครงสร้างข้อมูลในส่วนประมวลผลระบบ
+    var rowAgency = _resolveAgencyId(String(data[i][2]).trim());
     
     var ts=data[i][1], yr='';
     if (ts instanceof Date) {
@@ -1152,10 +1153,10 @@ function getDashboardData(payloadOrYear, filterAgency) {
       if (!currentBestAgency) {
         latestApproved[rowAgency] = data[i];
       } else {
-        if (rowForm === 'OBECM_F02' && currentBestAgency[3] !== 'OBECM_F02') {
+        if (String(rowForm).indexOf('_F02') >= 0 && String(currentBestAgency[3]).indexOf('_F02') === -1) {
           latestApproved[rowAgency] = data[i];
         } else if (Number(data[i][0] || 0) > Number(currentBestAgency[0] || 0)) {
-          if (currentBestAgency[3] !== 'OBECM_F02') {
+          if (String(currentBestAgency[3]).indexOf('_F02') === -1) {
             latestApproved[rowAgency] = data[i];
           }
         }
@@ -1184,7 +1185,7 @@ function getDashboardData(payloadOrYear, filterAgency) {
       if (fd.teacher_total !== undefined) tch = Number(fd.teacher_total || 0);
       
       // 🎯 ดึงจำนวนสถานศึกษาจริงจากตารางรายชื่อสถานศึกษาในสังกัด (OBECM_F02)
-      if (formId === 'OBECM_F02' && fd.rows && Array.isArray(fd.rows)) {
+      if (String(formId).indexOf('_F02') >= 0 && fd.rows && Array.isArray(fd.rows)) {
         sch = fd.rows.length;
       }
       
@@ -1234,7 +1235,7 @@ function getDashboardData(payloadOrYear, filterAgency) {
             
             var sch = 0;
             if (_fd.school_total !== undefined) sch = Number(_fd.school_total || 0);
-            if (formId === 'OBECM_F02' && _fd.rows && Array.isArray(_fd.rows)) {
+            if (String(formId).indexOf('_F02') >= 0 && _fd.rows && Array.isArray(_fd.rows)) {
               sch = _fd.rows.length;
             }
             
@@ -1279,7 +1280,8 @@ function getDashboardData(payloadOrYear, filterAgency) {
 
     for (var j = 1; j < data.length; j++) {
       var rowStatus = data[j][5];
-      var rowAgency = data[j][2];
+      // 🎯 แปลงชื่อหน่วยงานภาษาไทยกลับเป็นรหัสภาษาอังกฤษสำหรับส่วนคำนวณ Leaderboard
+      var rowAgency = _resolveAgencyId(String(data[j][2]).trim());
       var rowForm   = data[j][3];
       var ts = data[j][1];
       var yr = '';
@@ -2068,7 +2070,7 @@ function getYoYData() {
       
       var formId = data[i][3];
       var sch = Number(fd.school_total||0);
-      if (formId === 'OBECM_F02' && fd.rows && Array.isArray(fd.rows)) {
+      if (String(formId).indexOf('_F02') >= 0 && fd.rows && Array.isArray(fd.rows)) {
         sch = fd.rows.length;
       }
       
@@ -2770,7 +2772,8 @@ function getPredictiveForecastData(payload) {
   
   for (var i = 1; i < data.length; i++) {
     var status = data[i][5];
-    var rowAgency = data[i][2];
+    // 🎯 แปลงชื่อหน่วยงานภาษาไทยกลับเป็นรหัสภาษาอังกฤษสำหรับส่วนคำนวณกราฟ YoY
+    var rowAgency = _resolveAgencyId(String(data[i][2]).trim());
     var rawJson = data[i][8];
     if (status !== 'อนุมัติแล้ว' || !rawJson) continue;
     
@@ -2791,7 +2794,7 @@ function getPredictiveForecastData(payload) {
       var fd = JSON.parse(rawJson);
       var sch = Number(fd.school_total || 0);
       var formId = data[i][3];
-      if (formId === 'OBECM_F02' && fd.rows && Array.isArray(fd.rows)) {
+      if (String(formId).indexOf('_F02') >= 0 && fd.rows && Array.isArray(fd.rows)) {
         sch = fd.rows.length;
       }
       var std = Number(fd.student_total || 0);

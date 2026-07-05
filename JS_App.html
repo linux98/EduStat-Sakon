@@ -6858,17 +6858,44 @@ function sendReportToExecutive() {
     };
 
     function startAgencyNameEdit(key) {
-      const currentName = AGENCY_MAP[key] || '';
-      const newName = prompt(`แก้ไขชื่อภาษาไทยของสังกัด ${key}:`, currentName);
-      if (newName === null) return;
+      // ปิดกล่องแก้ไขอื่นทั้งหมด
+      document.querySelectorAll('[id^="gis-edit-row-"]').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('[id^="name-edit-row-"]').forEach(el => el.style.display = 'none');
       
-      const cleanedName = newName.trim();
-      if (!cleanedName) {
+      const editRow = document.getElementById(`name-edit-row-${key}`);
+      if (editRow) {
+        editRow.style.display = 'table-row';
+        const input = document.getElementById(`name-input-${key}`);
+        if (input) {
+          input.focus();
+          input.select();
+        }
+      }
+    }
+
+    function cancelNameEdit(key) {
+      const editRow = document.getElementById(`name-edit-row-${key}`);
+      if (editRow) {
+        editRow.style.display = 'none';
+      }
+    }
+
+    function saveAgencyName(key) {
+      const input = document.getElementById(`name-input-${key}`);
+      if (!input) return;
+      
+      const newName = input.value.trim();
+      const currentName = AGENCY_MAP[key] || '';
+      
+      if (!newName) {
         showToast('กรุณาระบุชื่อสังกัดที่ถูกต้อง', 'error');
         return;
       }
       
-      if (cleanedName === currentName) return;
+      if (newName === currentName) {
+        cancelNameEdit(key);
+        return;
+      }
       
       showToast('กำลังบันทึกข้อมูล...', 'info');
       
@@ -6877,16 +6904,17 @@ function sendReportToExecutive() {
           .withSuccessHandler(res => {
             if (res && res.success) {
               showToast('แก้ไขชื่อสังกัดเรียบร้อยแล้ว', 'success');
-              AGENCY_MAP[key] = cleanedName;
+              AGENCY_MAP[key] = newName;
               
               if (AppState.userAgencyId === key) {
-                AppState.userAgency = cleanedName;
+                AppState.userAgency = newName;
                 const profileAgencyEl = document.getElementById('sbRoleText');
                 if (profileAgencyEl) {
-                  profileAgencyEl.innerText = cleanedName;
+                  profileAgencyEl.innerText = newName;
                 }
               }
               
+              cancelNameEdit(key);
               renderMasterDataTable();
             } else {
               showToast(res.message || 'บันทึกไม่สำเร็จ', 'error');
@@ -6895,9 +6923,10 @@ function sendReportToExecutive() {
           .withFailureHandler(err => {
             showToast('เกิดข้อผิดพลาด: ' + err.toString(), 'error');
           })
-          .updateAgencyName(key, cleanedName);
+          .updateAgencyName(key, newName);
       } else {
-        AGENCY_MAP[key] = cleanedName;
+        AGENCY_MAP[key] = newName;
+        cancelNameEdit(key);
         renderMasterDataTable();
         showToast('แก้ไขชื่อสังกัดเรียบร้อยแล้ว (Dev Mode)', 'success');
       }
@@ -7061,6 +7090,35 @@ function sendReportToExecutive() {
               </div>
             </td>
           </tr>
+          <!-- 🎯 การ์ดแก้ไขชื่อหน่วยงานแบบสากลหรูหราแบบ Inline (ไม่มี Prompt บราวเซอร์บดบัง) -->
+          <tr id="name-edit-row-${key}" style="display:none; background:var(--s1);">
+            <td colspan="4" style="padding:16px 20px; border-bottom:1px solid var(--border-l);">
+              <div style="background:var(--surface); border:1px solid var(--border-l); border-radius:12px; padding:18px; box-shadow:var(--e2); display:flex; flex-direction:column; gap:14px; position:relative; overflow:hidden; text-align:left;">
+                <!-- แถบสีบ่งบอกสถานะ -->
+                <div style="position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--green);"></div>
+                
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div style="width:28px; height:28px; border-radius:50%; background:var(--green-ll); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <span class="material-icons-round" style="color:var(--green); font-size:16px;">edit</span>
+                  </div>
+                  <div style="font-weight:700; color:var(--text); font-size:13.5px;">แก้ไขชื่อหน่วยงาน: <span style="color:var(--green);">${key}</span></div>
+                </div>
+
+                <div class="fi" style="margin:0;">
+                  <label style="font-size:11.5px; font-weight:700; margin-bottom:6px; color:var(--text-2);">ชื่อหน่วยงาน/สังกัด (ภาษาไทย)</label>
+                  <input type="text" id="name-input-${key}" value="${_escAttr(name)}" placeholder="เช่น สพม.สกลนคร" style="height:38px; font-size:13px; border-radius:8px; background:var(--s1); width:100%; border: 1.5px solid var(--border-l); padding: 0 12px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border-l)'" />
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; border-top:1px solid var(--border-l); padding-top:12px;">
+                  <button class="btn btn-ghost btn-sm" onclick="cancelNameEdit('${key}')" style="font-size:12px; height:32px; border-radius:6px; font-weight:600;">ยกเลิก</button>
+                  <button class="btn btn-filled btn-sm" onclick="saveAgencyName('${key}')" style="font-size:12px; height:32px; background:var(--green); color:white; border-radius:6px; display:inline-flex; align-items:center; gap:5px; font-weight:600; padding: 0 12px;">
+                    <span class="material-icons-round" style="font-size:14px;">save</span>
+                    <span>บันทึกชื่อ</span>
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
         `;
       }
 
@@ -7078,6 +7136,7 @@ function sendReportToExecutive() {
     function startGisEdit(key) {
       // ซ่อน edit row อื่นทั้งหมดก่อน
       document.querySelectorAll('[id^="gis-edit-row-"]').forEach(r => r.style.display = 'none');
+      document.querySelectorAll('[id^="name-edit-row-"]').forEach(r => r.style.display = 'none');
       const editRow = document.getElementById('gis-edit-row-' + key);
       if (editRow) {
         editRow.style.display = 'table-row';

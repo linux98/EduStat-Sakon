@@ -3138,6 +3138,59 @@ function seedOBECMTemplates() {
         { "name": "other_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 }
       ],
       deadline: ''
+    },
+    {
+      formId: 'OBECM_F08',
+      formName: 'โครงการอนุรักษ์พันธุกรรมพืชฯ สพม.สกลนคร',
+      agencyId: 'OBEC_M',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "school_name", "label": "ชื่อสถานศึกษา", "type": "text", "required": true },
+        { "name": "location", "label": "ที่ตั้งสถานศึกษา", "type": "text", "required": true },
+        { "name": "accept_date", "label": "วันที่ตอบรับสมาชิก", "type": "date", "required": true },
+        { "name": "member_no", "label": "เลขที่สมาชิก", "type": "text", "required": true },
+        { "name": "has_badge", "label": "สถานะการรับป้ายโครงการ", "type": "select", "opts": "ได้รับแล้ว | ยังไม่ได้รับ", "required": true },
+        { "name": "notes", "label": "หมายเหตุ", "type": "textarea", "required": false }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'OBECM_F09',
+      formName: 'โครงการพัฒนาเด็กและเยาวชนในถิ่นทุรกันดาร (กพด.) สพม.สกลนคร',
+      agencyId: 'OBEC_M',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "school_name", "label": "ชื่อสถานศึกษา", "type": "text", "required": true },
+        { "name": "address", "label": "ที่อยู่สถานศึกษา", "type": "textarea", "required": true },
+        { "name": "contact_phone", "label": "เบอร์ติดต่อ", "type": "text", "required": true },
+        { "name": "notes", "label": "หมายเหตุ", "type": "textarea", "required": false }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'OBECM_F10',
+      formName: 'โครงการสถานศึกษาพอเพียง สพม.สกลนคร',
+      agencyId: 'OBEC_M',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "school_name", "label": "ชื่อสถานศึกษา", "type": "text", "required": true },
+        { "name": "address", "label": "ที่อยู่สถานศึกษา", "type": "textarea", "required": true },
+        { "name": "operation_status", "label": "ผลการดำเนินงาน", "type": "select", "opts": "ผ่านการประเมินแล้ว | อยู่ระหว่างดำเนินการ | ยังไม่ได้ดำเนินการ", "required": true },
+        { "name": "notes", "label": "หมายเหตุ", "type": "textarea", "required": false }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'OBECM_F11',
+      formName: 'โครงการสถานศึกษาสีขาว ปลอดยาเสพติดและอบายมุข สพม.สกลนคร',
+      agencyId: 'OBEC_M',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "school_name", "label": "ชื่อสถานศึกษา", "type": "text", "required": true },
+        { "name": "award_level", "label": "ระดับผลงานดีเด่นที่ได้รับ", "type": "select", "opts": "ระดับทอง | ระดับเพชร | รักษามาตรฐานเพชร ปีที่ 1 | รักษามาตรฐานเพชร ปีที่ 2", "required": true },
+        { "name": "notes", "label": "หมายเหตุ", "type": "textarea", "required": false }
+      ],
+      deadline: ''
     }
   ];
   

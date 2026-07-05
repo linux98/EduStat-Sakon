@@ -1,0 +1,11 @@
+# Ignore all files by default
+**/*
+
+# Keep these files
+!รหัส.js
+!appsscript.json
+!CSS.html
+!Index.html
+!JS_App.html
+!JS_BI.html
+!ReportBuilder.html

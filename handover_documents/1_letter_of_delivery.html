@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>หนังสือส่งมอบงานจ้างแล้วเสร็จ — EduData Sakon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Material+Icons+Round&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #525659;
+      --paper: #ffffff;
+      --text: #000000;
+      --border: #cccccc;
+      --primary: #1a237e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Sarabun', sans-serif;
+      color: var(--text);
+      line-height: 1.6;
+      padding: 40px 0;
+      font-size: 16px;
+    }
+
+    /* Page container simulating A4 paper */
+    .a4-page {
+      background: var(--paper);
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      padding: 25mm 20mm 20mm 25mm; /* Standard Thai Gov margins */
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      position: relative;
+      border: 1px solid var(--border);
+    }
+
+    /* Government Krut Emblem styling */
+    .gov-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .krut-img {
+      width: 3cm;
+      height: auto;
+      margin-bottom: 12px;
+    }
+
+    .memo-title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-top: 8px;
+    }
+
+    /* Memo Info Table Grid */
+    .memo-info {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+      font-size: 16px;
+    }
+
+    .memo-info td {
+      padding: 6px 0;
+      border: none;
+      vertical-align: top;
+    }
+
+    .info-label {
+      font-weight: 700;
+      width: 90px;
+    }
+
+    .info-value {
+      border-bottom: 1px dashed #777777;
+    }
+
+    /* Document Body */
+    .doc-content {
+      text-align: justify;
+      text-justify: inter-word;
+    }
+
+    p.indent {
+      text-indent: 2.5cm; /* Standard Thai Gov paragraph indent */
+      margin-bottom: 16px;
+      text-align: justify;
+    }
+
+    /* Deliverables List Table */
+    .deliverables-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 15px;
+    }
+
+    .deliverables-table th, .deliverables-table td {
+      border: 1px solid #000000;
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    .deliverables-table th {
+      background: #f2f2f2;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    /* Signatures area */
+    .signatures-section {
+      margin-top: 60px;
+      display: flex;
+      justify-content: flex-end;
+      width: 100%;
+    }
+
+    .signature-box {
+      text-align: center;
+      width: 250px;
+    }
+
+    .sig-line {
+      margin-bottom: 40px;
+      border-bottom: 1px solid #000000;
+    }
+
+    /* Top control bar */
+    .control-panel {
+      max-width: 210mm;
+      margin: 0 auto 20px;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid #cccccc;
+      background: #ffffff;
+      color: #333333;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #f5f5f5;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: #0d1b60;
+    }
+
+    /* Print styling rules */
+    @media print {
+      body {
+        background: transparent;
+        padding: 0;
+        font-size: 16pt;
+      }
+      .control-panel {
+        display: none !important;
+      }
+      .a4-page {
+        box-shadow: none;
+        border: none;
+        margin: 0;
+        width: 100%;
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Control panel for viewing -->
+  <div class="control-panel">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span class="material-icons-round" style="color:var(--primary);">description</span>
+      <span style="font-weight:700;">เอกสารหมายเลข 1: หนังสือส่งมอบงานจ้าง</span>
+    </div>
+    <div>
+      <button class="btn btn-primary" onclick="window.print()">
+        <span class="material-icons-round">print</span> สั่งพิมพ์รายงาน (Print to PDF)
+      </button>
+    </div>
+  </div>
+
+  <!-- A4 Page Simulation -->
+  <div class="a4-page">
+    
+    <!-- Gov Header -->
+    <div class="gov-header">
+      <!-- Simulated Krut Emblem using HTML5 SVG for high definition print output -->
+      <svg class="krut-img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <path fill="currentColor" d="M50 0 C47 15, 33 22, 28 35 C23 48, 30 55, 30 65 C30 75, 42 100, 50 100 C58 100, 70 75, 70 65 C70 55, 77 48, 72 35 C67 22, 53 15, 50 0" opacity="0.85"/>
+        <circle cx="50" cy="45" r="10" fill="#ffffff" opacity="0.5"/>
+        <path d="M40 45 L60 45 M50 35 L50 55" stroke="#ffffff" stroke-width="2"/>
+      </svg>
+      <div class="memo-title">บันทึกข้อความ</div>
+    </div>
+
+    <!-- Official Gov Memo Table Info -->
+    <table class="memo-info">
+      <tr>
+        <td style="width:13%; font-weight:700;">ส่วนราชการ</td>
+        <td class="info-value" style="width:40%;">บริษัท เทคโนโลยีการศึกษาไทย จำกัด (ผู้รับจ้าง)</td>
+        <td style="width:7%; font-weight:700; text-align:center;">โทร.</td>
+        <td class="info-value" style="width:40%;">02-123-4567</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;">ที่</td>
+        <td class="info-value">สพม.สน. ๒๕๖๙/๐๖๐๔</td>
+        <td style="font-weight:700; text-align:center;">วันที่</td>
+        <td class="info-value">๔ มิถุนายน ๒๕๖๙</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;">เรื่อง</td>
+        <td class="info-value" colspan="3">ส่งมอบงานจ้างโครงการพัฒนาระบบจัดเก็บสถิติเชิงลึกจังหวัดสกลนคร (EduData Sakon) แล้วเสร็จ</td>
+      </tr>
+    </table>
+
+    <div class="doc-content">
+      <p style="margin-bottom: 16px; font-weight: 700;">เรียน ประธานคณะกรรมการตรวจรับพัสดุ</p>
+      
+      <p class="indent">
+        ตามที่ บริษัท เทคโนโลยีการศึกษาไทย จำกัด ได้ลงนามในสัญญาจ้างพัฒนาระบบคอมพิวเตอร์และโปรแกรมสำเร็จรูป โครงการพัฒนาระบบจัดเก็บสถิติเชิงลึกจังหวัดสกลนคร (EduData Sakon) สัญญาเลขที่ **สน. ๑๐๒/๒๕๖๙** ลงวันที่ **๑๕ มีนาคม ๒๕๖๙** กับ สํานักงานเขตพื้นที่การศึกษามัธยมศึกษาสกลนคร (ผู้ว่าจ้าง) เพื่อยกระดับความเร็ว ความถูกต้อง และการวิเคราะห์ทรัพยากรการศึกษาของจังหวัดสกลนครนั้น
+      </p>
+
+      <p class="indent">
+        บัดนี้ ทางบริษัทผู้รับจ้างได้ดำเนินการออกแบบ พัฒนา ติดตั้ง และทดสอบระบบจัดเก็บสถิติเชิงลึกจังหวัดสกลนคร (EduData Sakon) เป็นที่เสร็จสมบูรณ์เรียบร้อยแล้ว ๑๐๐% ตามเกณฑ์ที่ระบุในขอบเขตงานจ้าง (Terms of Reference: TOR) งวดสุดท้าย (งวดงานแล้วเสร็จ) ทุกประการ บริษัทจึงใคร่ขอส่งมอบงานจ้างตามรายละเอียดระบบและเอกสารประกอบดังต่อไปนี้:
+      </p>
+
+      <!-- Deliverables status table -->
+      <table class="deliverables-table">
+        <thead>
+          <tr>
+            <th style="width:10%;">ข้อที่</th>
+            <th style="width:50%;">รายละเอียดขอบเขตงานจ้าง (TOR Deliverables)</th>
+            <th style="width:20%;">ไฟล์แนบส่งมอบ</th>
+            <th style="width:20%;">สถานะการทำงาน</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="text-align:center;">1</td>
+            <td>ระบบฐานข้อมูลเชิงสัมพันธ์บน Google Sheets (6 ตารางเชื่อมโยงกันอย่างสมบูรณ์แบบ)</td>
+            <td>สเปกตารางชีตข้อมูล</td>
+            <td style="text-align:center; font-weight:700; color:green;">เรียบร้อย 100%</td>
+          </tr>
+          <tr>
+            <td style="text-align:center;">2</td>
+            <td>ระบบหน้าจอรายงานผลผ่านเว็บบราวเซอร์ (Data Entry) และดาวน์โหลด/นำเข้า CSV อัจฉริยะ</td>
+            <td>คู่มือการสร้างฟอร์มยืดหยุ่น</td>
+            <td style="text-align:center; font-weight:700; color:green;">เรียบร้อย 100%</td>
+          </tr>
+          <tr>
+            <td style="text-align:center;">3</td>
+            <td>แดชบอร์ดสรุปสถิตินโยบายหลัก (BI Dashboard) และแผนที่ GIS 3 เลเยอร์</td>
+            <td>แผนผังสถาปัตยกรรมระบบ</td>
+            <td style="text-align:center; font-weight:700; color:green;">เรียบร้อย 100%</td>
+          </tr>
+          <tr>
+            <td style="text-align:center;">4</td>
+            <td>ระบบผู้ช่วยวิเคราะห์ข้อมูลเชิงลึกและวาดกราฟอัตโนมัติ (Conversational BI Assistant) ด้วย AI</td>
+            <td>คู่มือแชทบอทวิเคราะห์</td>
+            <td style="text-align:center; font-weight:700; color:green;">เรียบร้อย 100%</td>
+          </tr>
+          <tr>
+            <td style="text-align:center;">5</td>
+            <td>ระบบร่างจดหมายและส่งเมลทวงถามข้อมูลค้างส่งรายสังกัดย่อย (AI Auto-Dunning Email Assistant)</td>
+            <td>คู่มือทวงงานแอดมิน</td>
+            <td style="text-align:center; font-weight:700; color:green;">เรียบร้อย 100%</td>
+          </tr>
+          <tr>
+            <td style="text-align:center;">6</td>
+            <td>ระบบร่างรายงานหน้าปกสรุปความก้าวหน้าขนาด A4 สู่เมลผู้บริหาร (AI Executive Briefing Pack)</td>
+            <td>คู่มือรายงานเชิงนโยบาย</td>
+            <td style="text-align:center; font-weight:700; color:green;">เรียบร้อย 100%</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="indent">
+        ทั้งนี้ บริษัทได้ติดตั้งระบบปฏิบัติการตัวเต็ม (Production Deployment) บนระบบคลาวด์ พร้อมดำเนินการทดสอบระบบร่วมกับเจ้าหน้าที่สังกัดย่อยทั้ง ๑๓ แห่ง (User Acceptance Test: UAT) ผ่านเกณฑ์มาตรฐานความถูกต้อง ๑๐๐% และได้ส่งมอบชุดข้อมูล ซอร์สโค้ด คู่มือปฏิบัติการ และสเปกผังการไหลของข้อมูล DataFlow ให้กับฝ่ายสารสนเทศของผู้ว่าจ้างเรียบร้อยแล้ว
+      </p>
+
+      <p class="indent">
+        บริษัทจึงใคร่ขอส่งมอบงานจ้างตามรายละเอียดข้างต้น และขอความอนุเคราะห์จากคณะกรรมการตรวจรับพัสดุ ได้โปรดนัดประชุมและดำเนินการตรวจรับงานจ้างตามระเบียบพัสดุภาครัฐต่อไป
+      </p>
+
+      <p class="indent" style="margin-bottom: 24px;">
+        จึงเรียนมาเพื่อโปรดพิจารณาและดำเนินการตรวจรับงานจ้าง
+      </p>
+
+      <!-- Signature Section -->
+      <div class="signatures-section">
+        <div class="signature-box">
+          <div style="margin-bottom:45px;">ขอแสดงความนับถือ</div>
+          <div class="sig-line"></div>
+          <div style="font-weight: 500;">(นายณัฐภัทร วรภัทรดิลก)</div>
+          <div style="font-size:14px; color:#555555; margin-top:4px;">กรรมการผู้จัดการ บริษัท เทคโนโลยีการศึกษาไทย จำกัด</div>
+          <div style="font-size:12px; color:#777777; margin-top:2px;">ผู้รับจ้าง</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

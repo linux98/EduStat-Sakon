@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>คู่มือการใช้งานเจ้าหน้าที่สังกัด (Agency) — EduData Sakon</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@400;600;700&family=Material+Icons+Round&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #7b1fa2;
+      --primary-light: #f3e5f5;
+      --primary-dark: #4a0072;
+      --accent: #ffb300;
+      --accent-light: #fff8e1;
+      --blue: #1a73e8;
+      --blue-light: #e8f0fe;
+      --green: #34a853;
+      --green-light: #e6f4ea;
+      --yellow: #fbbc04;
+      --yellow-light: #fef7e0;
+      --red: #ea4335;
+      --red-light: #fce8e6;
+      
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --border: #dadce0;
+      --text: #202124;
+      --text-muted: #5f6368;
+      
+      --radius: 14px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.04);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.07);
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f1013;
+      --surface: #1e1f22;
+      --border: #333539;
+      --text: #e3e3e3;
+      --text-muted: #9aa0a6;
+      --primary-light: rgba(123, 31, 162, 0.18);
+      --blue-light: rgba(26, 115, 232, 0.18);
+      --green-light: rgba(52, 168, 83, 0.18);
+      --yellow-light: rgba(251, 188, 4, 0.18);
+      --red-light: rgba(234, 67, 53, 0.18);
+      --accent-light: rgba(255, 179, 0, 0.18);
+      --shadow: 0 4px 20px rgba(0,0,0,0.25);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Sarabun', 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    /* Header styling with premium gradient */
+    .header-banner {
+      background: linear-gradient(135deg, #4a0072, #10001c);
+      color: white;
+      padding: 60px 24px 140px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-banner::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -20%;
+      width: 140%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(26,115,232,0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .meta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 22px;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .header-title {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      line-height: 1.35;
+    }
+
+    .header-desc {
+      font-size: 15px;
+      color: rgba(255,255,255,0.85);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Tabs navigation bar */
+    .control-container {
+      max-width: 1200px;
+      margin: -65px auto 32px;
+      padding: 0 24px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .control-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px 24px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .stepper-tabs {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      flex: 1;
+      scrollbar-width: thin;
+    }
+
+    .step-tab {
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+
+    .step-tab:hover {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .step-tab.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 4px 14px rgba(123, 31, 162, 0.25);
+    }
+
+    .theme-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+    .theme-btn:hover {
+      background: var(--bg);
+    }
+
+    /* Layout grid */
+    .main-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: var(--shadow);
+      margin-bottom: 32px;
+      transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1.5px solid var(--border);
+      padding-bottom: 14px;
+    }
+
+    .card-title span.title-icon {
+      color: var(--primary);
+      font-size: 24px;
+    }
+
+    p {
+      font-size: 14.5px;
+      color: var(--text);
+      margin-bottom: 18px;
+      line-height: 1.7;
+    }
+
+    /* Callout */
+    .callout {
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      margin-bottom: 24px;
+      border-left: 4px solid;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .callout.tip {
+      background: var(--green-light);
+      border-color: var(--green);
+      color: var(--text);
+    }
+    .callout.tip span { color: var(--green); }
+
+    .callout.warning {
+      background: var(--yellow-light);
+      border-color: var(--yellow);
+      color: var(--text);
+    }
+    .callout.warning span { color: var(--yellow); }
+
+    .callout.important {
+      background: var(--blue-light);
+      border-color: var(--blue);
+      color: var(--text);
+    }
+    .callout.important span { color: var(--blue); }
+
+    /* Sandbox Simulator Styles */
+    .sim-container {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      background: var(--surface);
+      margin-top: 24px;
+    }
+
+    .sim-header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: white;
+      padding: 18px 24px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sim-body {
+      padding: 28px;
+      background: var(--bg);
+      min-height: 380px;
+    }
+
+    .sim-footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .form-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .form-input.is-invalid {
+      border-color: var(--red);
+      background-color: var(--red-light);
+    }
+
+    .invalid-feedback {
+      color: var(--red);
+      font-size: 12px;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .form-input.is-invalid + .invalid-feedback {
+      display: block;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-secondary:hover {
+      background: var(--bg);
+    }
+
+    .btn-success {
+      background: var(--green);
+      color: white;
+    }
+    .btn-success:hover {
+      background: #2d8f47;
+    }
+
+    /* Chat sandbox */
+    .chat-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      height: 380px;
+      overflow: hidden;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: var(--bg);
+    }
+
+    .chat-bubble {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .bubble-user {
+      background: var(--primary);
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 2px;
+    }
+
+    .bubble-bot {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      align-self: flex-start;
+      border-bottom-left-radius: 2px;
+      box-shadow: var(--shadow);
+    }
+
+    .chat-input-area {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      background: var(--surface);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 50px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .status-draft { background: var(--yellow-light); color: #b78103; }
+    .status-pending { background: var(--blue-light); color: #0d47a1; }
+    .status-approved { background: var(--green-light); color: #1b5e20; }
+    .status-rejected { background: var(--red-light); color: #b71c1c; }
+
+    .d-none {
+      display: none !important;
+    }
+
+    code {
+      font-family: 'Fira Code', 'Courier New', Courier, monospace;
+      font-size: 13px;
+      background: var(--bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--primary-dark);
+    }
+    [data-theme="dark"] code {
+      color: #ffb74d;
+    }
+
+    /* Lists */
+    ol, ul {
+      padding-left: 20px;
+      margin-bottom: 16px;
+      font-size: 14.5px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin: 18px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th {
+      background: var(--bg);
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* Step guide cards */
+    .guide-card-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    @media(min-width: 768px) {
+      .guide-card-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .guide-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .guide-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--primary-dark);
+    }
+    [data-theme="dark"] .guide-card-title {
+      color: #ce93d8;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Banner -->
+  <div class="header-banner">
+    <div class="header-content">
+      <div class="meta-badge">
+        <span class="material-icons-round" style="font-size: 12px;">school</span> AGENCY USER MANUAL
+      </div>
+      <h1 class="header-title">คู่มือปฏิบัติงานระบบจัดเก็บสถิติเชิงลึก (สำหรับเจ้าหน้าที่สังกัด)</h1>
+      <p class="header-desc">เรียนรู้วิธีการส่งรายงานสถิติแบบกรอกข้อมูลด้วยตนเอง การนำเข้าข้อมูลชุดใหญ่ผ่านไฟล์ Excel/CSV และการวิเคราะห์แดชบอร์ดเชิงพื้นที่และการโต้ตอบกับ AI วิเคราะห์ข้อมูล เริ่มสอนตั้งแต่ศูนย์แบบเข้าใจง่ายที่สุด</p>
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="control-container">
+    <div class="control-bar">
+      <div class="stepper-tabs">
+        <button class="step-tab active" onclick="switchTab('intro', this)">
+          <span class="material-icons-round">info</span> 1. แนะนำระบบ & เริ่มจาก 0
+        </button>
+        <button class="step-tab" onclick="switchTab('login', this)">
+          <span class="material-icons-round">vpn_key</span> 2. ล็อกอิน & รักษาเซสชัน
+        </button>
+        <button class="step-tab" onclick="switchTab('manual-entry', this)">
+          <span class="material-icons-round">edit_note</span> 3. การส่งรายงานหน้าเว็บ
+        </button>
+        <button class="step-tab" onclick="switchTab('csv-import', this)">
+          <span class="material-icons-round">table_view</span> 4. นำเข้า Excel / CSV
+        </button>
+        <button class="step-tab" onclick="switchTab('ai-chatbot', this)">
+          <span class="material-icons-round">chat</span> 5. แดชบอร์ด & AI แชทบอท
+        </button>
+        <button class="step-tab" onclick="switchTab('sandbox', this)">
+          <span class="material-icons-round">sports_esports</span> 🎮 ห้องทดลองปฏิบัติงานจริง (Sandbox)
+        </button>
+      </div>
+      <button class="theme-btn" onclick="toggleTheme()" title="เปลี่ยนโหมดสี">
+        <span class="material-icons-round" id="themeIcon">dark_mode</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="main-container">
+    
+    <!-- TAB 1: INTRO -->
+    <div id="tab-intro" class="card">
+      <h3 class="card-title">
+        <span class="material-icons-round title-icon">help_outline</span>
+        <span>1. แนะนำระบบสารสนเทศ EduData Sakon & ข้อมูลเริ่มจากศูนย์</span>
+      </h3>
+      <p>ระบบ <strong>EduData Sakon</strong> เป็นระบบที่พัฒนาขึ้นสำหรับจัดเก็บบันทึกข้อมูลสถิติเชิงลึกด้านการศึกษาของจังหวัดสกลนคร เพื่อนำมาใช้ประกอบการสร้างแดชบอร์ดความก้าวหน้าและการวิเคราะห์ข้อมูลเชิงพื้นที่สำหรับผู้บริหารระดับสูง (BI Dashboard & GIS Spatial Map) เพื่อให้ได้ข้อมูลที่แม่นยำ รวดเร็ว และนำไปปฏิบัติได้จริง</p>
+      
+      <div class="callout tip">
+        <span class="material-icons-round">school</span>
+        <div>
+          <strong>บทบาทหลักของเจ้าหน้าที่สังกัด (Agency User Role):</strong>
+          ทำหน้าที่รายงานผลข้อมูลดิบด้านการศึกษา (เช่น จำนวนเด็กหลุดนอกระบบ, จำนวนครูและทรัพยากร, หรือสถิติรายปี) ตามแบบรายงานที่ผู้ดูแลระบบส่วนกลาง (Admin) มอบหมายให้เสร็จสิ้นภายในวันกำหนดส่ง (Deadline)
+        </div>
+      </div>
+
+      <h4 style="font-weight: 700; font-size: 16px; margin: 24px 0 10px;">สถานภาพของข้อมูลรายงาน (Data Submission States)</h4>
+      <p>ในการรายงานข้อมูล ข้อมูลที่นำส่งจะมีสถานภาพที่แตกต่างกัน 4 สถานะสำคัญ ซึ่งบ่งบอกสิทธิ์การแก้ไขและการนำไปใช้ดังนี้:</p>
+      
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>สัญลักษณ์สถานะ</th>
+              <th>ความหมาย</th>
+              <th>การแก้ไขข้อมูล</th>
+              <th>การคำนวณแดชบอร์ด</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="status-badge status-draft">แบบร่าง (Draft)</span></td>
+              <td>ข้อมูลถูกบันทึกไว้ในฐานข้อมูลคลาวด์แล้ว แต่ยังไม่ได้ส่งตรวจสอบอย่างเป็นทางการ</td>
+              <td><span style="color:var(--green); font-weight:700;">✓ แก้ไขได้ตลอดเวลา</span></td>
+              <td><span style="color:var(--red); font-weight:700;">✗ ไม่นำไปคำนวณ</span></td>
+            </tr>
+            <tr>
+              <td><span class="status-badge status-pending">รอตรวจสอบ (Pending)</span></td>
+              <td>ข้อมูลถูกส่งเข้าคิวให้ Admin กลางจังหวัดตรวจสอบความถูกต้องเรียบร้อยแล้ว</td>
+              <td><span style="color:var(--red); font-weight:700;">✗ ล็อกห้ามแก้ไข</span></td>
+              <td><span style="color:var(--red); font-weight:700;">✗ ไม่นำไปคำนวณ</span></td>
+            </tr>
+            <tr>
+              <td><span class="status-badge status-approved">อนุมัติแล้ว (Approved)</span></td>
+              <td>ข้อมูลถูกต้องสมบูรณ์ Admin ตรวจรับเรียบร้อยแล้ว</td>
+              <td><span style="color:var(--red); font-weight:700;">✗ ล็อกห้ามแก้ไข</span></td>
+              <td><span style="color:var(--green); font-weight:700;">✓ นำเข้าระบบวิเคราะห์ทันที</span></td>
+            </tr>
+            <tr>
+              <td><span class="status-badge status-rejected">ตีกลับแก้ไข (Rejected)</span></td>
+              <td>ข้อมูลมีจุดผิดพลาด หรือไม่ผ่านเกณฑ์ตรวจสอบ Admin ส่งกลับมาแก้ไข</td>
+              <td><span style="color:var(--green); font-weight:700;">✓ แก้ไขและส่งใหม่ได้</span></td>
+              <td><span style="color:var(--red); font-weight:700;">✗ ไม่นำไปคำนวณ</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 2: LOGIN & HEARTBEAT -->
+    <div id="tab-login" class="card d-none">
+      <h3 class="card-title">
+        <span class="material-icons-round title-icon">vpn_key</span>
+        <span>2. การลงชื่อเข้าใช้งานและการขยายเซสชันอัตโนมัติ (Heartbeat System)</span>
+      </h3>
+      <p>คุณจะได้รับบัญชีเข้าใช้งานระบบ (Username และ Password) จากแอดมินจังหวัดสกลนครเพื่อเริ่มต้นเข้าปฏิบัติงานในระบบ</p>
+      
+      <div class="guide-card-grid">
+        <div class="guide-card">
+          <div class="guide-card-title"><span class="material-icons-round">login</span> ขั้นตอนการล็อกอินเข้าสู่ระบบ</div>
+          <ol>
+            <li>เปิดลิงก์แอปพลิเคชันระบบสารสนเทศส่วนกลาง</li>
+            <li>กรอก **Username** (ชื่อบัญชีผู้ใช้) และ **Password** (รหัสผ่าน)</li>
+            <li>คลิกปุ่ม **"เข้าสู่ระบบ"** เพื่อรับสิทธิ์การนำส่งข้อมูล</li>
+          </ol>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-card-title"><span class="material-icons-round">favorite</span> ระบบต่อเวลาอัตโนมัติ (Heartbeat)</div>
+          <p style="font-size: 13px; margin-bottom: 0;">เพื่อความปลอดภัยทางราชการ เซสชันเข้าใช้ของคุณจะถูกจำกัดเวลาทำงานสูงสุด **2 ชั่วโมง** ทว่าระบบเบื้องหลังมีกลไก **Session Heartbeat** คอยทำงานเงียบๆ ทุกๆ 25 นาที โดยจะดึงข้อมูลต่ออายุให้อัตโนมัติหากหน้าจอยังถูกเปิดไว้ ช่วยให้ทำงานค้างได้โดยไม่ต้องล็อกอินใหม่เรื่อยๆ</p>
+        </div>
+      </div>
+
+      <div class="callout warning" style="margin-top:24px;">
+        <span class="material-icons-round">warning</span>
+        <div>
+          <strong>ข้อพึงระวังกรณีลืมรหัสผ่าน:</strong>
+          เนื่องจากรหัสผ่านของคุณถูกแฮชเป็นระบบรักษาความปลอดภัยแบบทางเดียว (SHA-256 Hash) บนฐานข้อมูลหลังบ้าน ทำให้ไม่มีใครสามารถอ่านรหัสผ่านจริงของคุณได้ หากคุณลืมรหัสผ่าน จะต้องติดต่อผู้ดูแลระบบ (Super Admin) จังหวัด เพื่อทำการส่งคำสั่งล้างระบบรหัสผ่านและสร้างรหัสผ่านใหม่ (Reset Password) เท่านั้น
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: MANUAL DATA ENTRY -->
+    <div id="tab-manual-entry" class="card d-none">
+      <h3 class="card-title">
+        <span class="material-icons-round title-icon">edit_note</span>
+        <span>3. ขั้นตอนการกรอกและแก้ไขข้อมูลผ่านหน้าเว็บบราวเซอร์</span>
+      </h3>
+      <p>วิธีที่ง่ายที่สุดในการรายงานข้อมูลคือการกรอกทีละสังกัดผ่านแบบฟอร์มคำถามบนเว็บบราวเซอร์โดยตรง</p>
+      
+      <h4 style="font-weight: 700; font-size: 15px; margin-bottom: 10px;">ขั้นตอนการกรอกและนำส่งข้อมูลแบบละเอียด:</h4>
+      <div class="guide-card-grid" style="margin-bottom: 24px;">
+        <div class="guide-card">
+          <div class="guide-card-title">1. การเข้าแบบฟอร์มและตรวจสอบกำหนดส่ง</div>
+          <ul>
+            <li>คลิกที่เมนู **"รายงานข้อมูล" (Data Entry)** ทางแถบนำทางด้านซ้าย</li>
+            <li>ระบบจะแสดงรายการแบบฟอร์มรายงานที่สังกัดของคุณต้องส่ง</li>
+            <li>สังเกตสีสัญลักษณ์แสดงระยะเวลากำหนดส่ง (Deadline): สีแดงเด่นชัดบ่งบอกว่าเหลือเวลาไม่ถึง 7 วันในการจัดส่งด่วน</li>
+          </ul>
+        </div>
+        
+        <div class="guide-card">
+          <div class="guide-card-title">2. การกรอกข้อมูลและการดักจับข้อผิดพลาด</div>
+          <ul>
+            <li>กรอกตัวเลขหรือข้อความลงตามช่องคำถามที่แสดงผลขึ้นมา</li>
+            <li>ระบบมีฟังก์ชันดักตรวจสอบค่าผิดพลาด (Validation) ทันที: เช่น หากช่องบังคับใส่จำนวนตัวเลข แต่นำตัวอักษรไปกรอก ระบบจะขึ้นเส้นสีแดงเตือนและปิดไม่ให้กดนำส่งเพื่อกันข้อมูลบิดเบี้ยว</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="guide-card-grid" style="margin-bottom: 24px;">
+        <div class="guide-card">
+          <div class="guide-card-title">3. ปุ่มบันทึกแบบร่าง (Draft) กับ ปุ่มนำส่ง (Submit)</div>
+          <ul>
+            <li>**ปุ่มบันทึกแบบร่าง (Draft):** ใช้คลิกเมื่อยังกรอกข้อมูลไม่ครบถ้วน หรือต้องการกลับมาแก้ไขต่อ ข้อมูลจะถูกจัดเก็บไว้บนเซิร์ฟเวอร์อย่างปลอดภัยโดยยังไม่ส่งถึงมือแอดมิน</li>
+            <li>**ปุ่มนำส่งข้อมูล (Submit):** ใช้คลิกเมื่อตรวจสอบแน่ชัดว่าถูกต้อง 100% แล้ว ข้อมูลจะกลายเป็นสถานะรอตรวจ (Pending) และถูกล็อกทันทีเพื่อป้องกันการแก้ไขข้อมูลลับหลัง</li>
+          </ul>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-card-title">4. การจัดการกรณีข้อมูลถูกส่งกลับแก้ไข (Rejected)</div>
+          <ul>
+            <li>หาก Admin จังหวัดตรวจพบจุดผิดพลาดและทำการส่งกลับเพื่อแก้ไข สถานะรายงานจะแสดงเป็นสีแดง **"ตีกลับแก้ไข (Rejected)"**</li>
+            <li>ให้คลิกปุ่มแก้ไข คุณจะพบ **"ข้อเสนอแนะ/บันทึกช่วยจาก Admin"** เพื่อชี้จุดที่ต้องเปลี่ยน</li>
+            <li>แก้ไขข้อมูลตามประเด็นนั้นๆ และกดปุ่ม **"นำส่งข้อมูล"** อีกครั้งหนึ่ง</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: CSV IMPORT METHOD -->
+    <div id="tab-csv-import" class="card d-none">
+      <h3 class="card-title">
+        <span class="material-icons-round title-icon">table_view</span>
+        <span>4. ขั้นตอนการจัดเตรียมและนำเข้าข้อมูลชุดใหญ่ผ่าน Excel / CSV</span>
+      </h3>
+      <p>หากคุณมีข้อมูลโรงเรียนย่อยในสังกัดเป็นจำนวนมาก การคีย์ลงหน้าเว็บบอร์ดทีละรายการอาจใช้เวลานาน ระบบจึงรองรับการดาวน์โหลดเทมเพลต Excel กรอกข้อมูลง่าย และอัปโหลดนำเข้าพร้อมกันทันที</p>
+      
+      <div class="guide-card-grid">
+        <div class="guide-card" style="grid-column: 1 / -1;">
+          <div class="guide-card-title"><span class="material-icons-round">system_update_alt</span> ขั้นตอนการจัดส่งด้วย Excel / CSV ทีละขั้น:</div>
+          <ol>
+            <li>เข้าเมนู **"รายงานข้อมูล"** และเลือกหัวข้อแบบรายงานที่ท่านต้องการจัดส่ง</li>
+            <li>คลิกปุ่ม 📥 **"ดาวน์โหลดแม่แบบ CSV (Template)"** ด้านขวาบนของแบบฟอร์ม</li>
+            <li>เปิดไฟล์แม่แบบที่ได้รับด้วยโปรแกรม **Microsoft Excel** <em>(ระบบแนบสัญลักษณ์ UTF-8 BOM ป้องกันปัญหาภาษาไทยแตกกลายเป็นต่างดาวโดยอัตโนมัติแล้ว)</em></li>
+            <li>กรอกสถิติตามแถวคอลัมน์โรงเรียนย่อยที่กำหนดให้ครบถ้วน</li>
+            <li>**กฎเหล็ก:** ห้ามลบ ห้ามแก้ไขตัวสะกดคอลัมน์หัวตาราง (Headers) ลำดับแรกอย่างเด็ดขาด มิฉะนั้นระบบนำเข้าจะปฏิเสธการอ่านไฟล์</li>
+            <li>เซฟบันทึกเอกสารให้อยู่ในฟอร์แมต **CSV (Comma Separated) UTF-8**</li>
+            <li>กลับมาที่หน้าเว็บ กดปุ่ม 📤 **"นำเข้าข้อมูล CSV"** เลือกไฟล์ที่เพิ่งเซฟบันทึกขึ้นมา</li>
+            <li>หน้าจอจะแสดง **"ข้อมูลพรีวิวก่อนจัดส่ง"** ให้คุณเช็คความเรียบร้อย หากพบฟิลด์สีแดงแสดงว่าข้อมูลไม่ได้ฟอร์แมต ให้กดแก้ไขใน Excel แล้วอัปโหลดใหม่</li>
+            <li>เมื่อพร้อมแล้ว กดปุ่ม **"ยืนยันและนำส่งรายงาน"** เพื่อเปลี่ยนสถานะเป็น Pending</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="callout warning" style="margin-top: 24px;">
+        <span class="material-icons-round">warning</span>
+        <div>
+          <strong>ทำไมนำเข้า CSV แล้วพบเส้นสีแดงแสดง Error:</strong>
+          ระบบจะตรวจจับทันทีเมื่อมีข้อมูลผิดประเภทในตาราง เช่น แอดมินระบุว่าช่อง "จำนวนเด็กตกหล่น" ต้องกรอกเป็นตัวเลขจำนวนจริง แต่ผู้ใช้งานใส่คำว่า "ไม่มี" หรือ "N/A" ลงในช่อง Excel ระบบจะปฏิเสธการแทรกลงฐานข้อมูลและไฮไลท์แถวนั้นเป็นสีแดงเพื่อเตือนให้ไปเปลี่ยนเป็นค่าตัวเลข `0` ก่อนนำเข้าใหม่
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: DASHBOARD & AI CHATBOT -->
+    <div id="tab-ai-chatbot" class="card d-none">
+      <h3 class="card-title">
+        <span class="material-icons-round title-icon">chat</span>
+        <span>5. การใช้งานแดชบอร์ดหลักและวิเคราะห์ข้อมูลผ่าน AI แชทบอทอัจฉริยะ</span>
+      </h3>
+      <p>ความสามารถพิเศษของระบบ EduData Sakon คือการสรุปข้อมูลสะสมส่งมอบการวิเคราะห์เป็นประโยชน์ต่อสังกัดของคุณเองในการดึงกราฟสถิติวิเคราะห์ด่วน</p>
+      
+      <div class="guide-card-grid">
+        <div class="guide-card">
+          <div class="guide-card-title"><span class="material-icons-round">pie_chart</span> การตรวจสอบความก้าวหน้าบน Dashboard</div>
+          <p style="font-size:13.5px;">คุณสามารถสลับปีการศึกษาเพื่อตรวจสอบเปอร์เซ็นต์สถิติการตรวจรับงานของสังกัดตนเอง ดูความคุ้มค่า และตรวจสอบพิกัดโรงเรียนบนแผนที่เชิงภูมิศาสตร์ (GIS Spatial Map) เพื่อวิเคราะห์อัตราการเจริญเติบโตสถิตินักเรียน</p>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-card-title"><span class="material-icons-round">auto_awesome</span> การสั่งวิเคราะห์และวาดชาร์ตด้วย AI Chatbot</div>
+          <p style="font-size:13.5px; margin-bottom: 12px;">แผงคีย์ข้อมูลจะมีหน้าต่างบอทอัจฉริยะ Gemini 1.5 Flash ผู้ใช้สามารถถามประเด็นเพื่อขอข้อมูลวิเคราะห์ภาษาไทย หรือขอให้ออกแบบแผนภูมิรายงานได้ทันที</p>
+          <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">ตัวอย่างประโยคส่งถาม AI:</div>
+          <ul style="font-size: 12px; padding-left: 15px; margin-bottom: 0;">
+            <li>"สรุปสถิตินักเรียนและอัตราขาดแคลนครูสังกัด สพป. สกลนคร"</li>
+            <li>"สร้างชาร์ตวงกลมเปรียบเทียบสัดส่วนโรงเรียนที่ส่งข้อมูลแล้ว"</li>
+            <li>"เขียนบทวิเคราะห์แนวโน้มเด็กออกกลางคันของปีการศึกษานี้"</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout important" style="margin-top: 24px;">
+        <span class="material-icons-round">lock</span>
+        <div>
+          <strong>การยืนยันรหัสความปลอดภัย PIN ของบอท:</strong>
+          เพื่อไม่ให้เกินขีดจำกัดการดึง API คีย์จากแอดมิน ก่อนการใช้งานบอทวิเคราะห์วิจิตรของแต่ละรอบการทำงาน คุณจะต้องทำการกรอกรหัส PIN จำนวน 4 หลัก (รับได้จากผู้ดูแลระบบสังกัดของคุณ) เพื่อปลดล็อคการเข้าคุยกับ Gemini AI ก่อนเข้าใช้บริการแชทบอท
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: SANDBOX SIMULATOR -->
+    <div id="tab-sandbox" class="card d-none">
+      <h3 class="card-title">
+        <span class="material-icons-round title-icon">sports_esports</span>
+        <span>6. ห้องจำลองสำหรับทดลองฝึกปฏิบัติงานจริง (Sandbox Training Simulator)</span>
+      </h3>
+      <p>ทดสอบปฏิบัติการใช้งานระบบของ Agency บนแอปจำลองด้านล่างนี้ โดยจำลองขั้นตอนตั้งแต่ล็อกอิน กรอกแบบฟอร์ม ส่งข้อมูลแบบมีเงื่อนไขดักจับข้อผิดพลาด นำเข้าไฟล์ CSV และสั่งแชทบอท AI วาดกราฟิก</p>
+      
+      <div class="sim-container">
+        <!-- Simulator Header -->
+        <div class="sim-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="material-icons-round">computer</span>
+            <span>ระบบจำลองสารสนเทศ EduData Sakon (จำลองสถานะบราวเซอร์จริง)</span>
+          </div>
+          <div id="sim-state-badge" class="status-badge" style="background:rgba(255,255,255,0.2); color:white;">
+            สถานะ: ยังไม่ได้ล็อกอิน
+          </div>
+        </div>
+
+        <!-- Simulator Body -->
+        <div class="sim-body" id="simBody">
+          
+          <!-- STAGE 0: LOGIN -->
+          <div id="sim-stage-login" class="sim-content">
+            <h4 style="font-weight: 700; margin-bottom: 16px; color: var(--primary-dark); font-family: 'Outfit';">กรุณาลงชื่อเข้าใช้งานระดับสังกัด (ขั้นที่ 1/4)</h4>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">เคล็ดลับ: กรอก Username อะไรก็ได้ และใส่รหัสผ่าน <code>123456</code> เพื่อผ่านด่านแรก</p>
+            
+            <div class="form-group" style="max-width: 400px; margin: 0 auto 16px;">
+              <label class="form-label">ชื่อผู้เข้าใช้งาน (Username)</label>
+              <input type="text" id="simUser" class="form-input" placeholder="ตัวอย่าง: spk_sakon">
+            </div>
+            
+            <div class="form-group" style="max-width: 400px; margin: 0 auto 24px;">
+              <label class="form-label">รหัสผ่าน (Password)</label>
+              <input type="password" id="simPass" class="form-input" placeholder="ใส่รหัสผ่านทดสอบ 123456">
+            </div>
+
+            <div style="text-align: center;">
+              <button class="btn btn-primary" onclick="simLogin()">
+                <span class="material-icons-round">login</span> ลงชื่อเข้าใช้งานจำลอง
+              </button>
+            </div>
+          </div>
+
+          <!-- STAGE 1: WEB FORM ENTRY -->
+          <div id="sim-stage-form" class="sim-content d-none">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 18px; border-bottom: 1.5px solid var(--border); padding-bottom: 10px; flex-wrap: wrap; gap:10px;">
+              <h4 style="font-weight:700; color:var(--primary-dark);">กรอกข้อมูลรายงานสถิตินักเรียน (ขั้นที่ 2/4)</h4>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <span style="font-size:12px; color:var(--text-muted);">สถานะรายงาน:</span>
+                <span id="sim-report-status" class="status-badge status-draft">แบบร่าง (Draft)</span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">1. จำนวนนักเรียนหลุดระบบรวมของสังกัด (กรอกได้เฉพาะตัวเลข 1 - 5000)</label>
+              <input type="text" id="simValNumber" class="form-input" placeholder="กรอกตัวเลข เช่น 45" oninput="simValidateInput()">
+              <div class="invalid-feedback" id="simNumFeedback">ข้อมูลต้องเป็นตัวเลขจำนวนเต็มระหว่าง 1 ถึง 5,000 เท่านั้น!</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">2. สาเหตุหรือประเด็นหลักที่นักเรียนออกกลางคัน (ต้องระบุ)</label>
+              <input type="text" id="simValText" class="form-input" placeholder="ระบุประเด็น เช่น ย้ายถิ่นฐานตามผู้ปกครอง" oninput="simValidateInput()">
+              <div class="invalid-feedback" id="simTextFeedback">กรุณากรอกสาเหตุหรือระบุประเด็นคีย์เวิร์ดนี้ด้วย!</div>
+            </div>
+
+            <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:24px;">
+              <button class="btn btn-secondary" onclick="simSaveDraft()">
+                <span class="material-icons-round">save</span> บันทึกแบบร่าง
+              </button>
+              <button class="btn btn-primary" onclick="simSubmitForm()">
+                <span class="material-icons-round">send</span> นำส่งขออนุมัติ
+              </button>
+            </div>
+          </div>
+
+          <!-- STAGE 2: CSV BATCH IMPORT -->
+          <div id="sim-stage-csv" class="sim-content d-none">
+            <h4 style="font-weight:700; margin-bottom:12px; color:var(--primary-dark); border-bottom:1.5px solid var(--border); padding-bottom:8px;">จำลองการดาวน์โหลดและนำเข้าไฟล์ CSV (ขั้นที่ 3/4)</h4>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">ทดสอบดาวน์โหลดโครงสร้างตาราง CSV กรอกใน Excel และจำลองส่งไฟล์เพื่อตรวจสอบบั๊กข้อมูลแดง</p>
+            
+            <div style="display:flex; gap:16px; margin-bottom:28px; flex-wrap:wrap;">
+              <button class="btn btn-secondary" onclick="simDownloadCsvTemplate()">
+                <span class="material-icons-round">download</span> 1. ดาวน์โหลดเทมเพลต CSV จำลอง
+              </button>
+              <button class="btn btn-secondary" onclick="simTriggerCsvUpload('error')">
+                <span class="material-icons-round">upload</span> 2. นำเข้าไฟล์มีจุดผิดพลาด (Error_Data.csv)
+              </button>
+              <button class="btn btn-secondary" onclick="simTriggerCsvUpload('correct')">
+                <span class="material-icons-round">upload</span> 3. นำเข้าไฟล์ถูกต้อง (Correct_Data.csv)
+              </button>
+            </div>
+
+            <!-- Preview box -->
+            <div id="csvPreviewArea" class="d-none" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px;">
+              <div style="font-size:12.5px; font-weight:700; display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
+                <span>ตารางจำลองพรีวิวข้อมูลในระบบ:</span>
+                <span id="csvValidationStatus" class="status-badge" style="font-size:10px;">-</span>
+              </div>
+              <div class="table-container" style="margin:0; max-height: 180px;">
+                <table style="font-size:12px;" id="csvSimTable">
+                  <!-- Table populated dynamically -->
+                </table>
+              </div>
+              
+              <div style="display:flex; justify-content:flex-end; margin-top:14px;" id="csvSimSubmitBtnWrapper" class="d-none">
+                <button class="btn btn-success" onclick="simSubmitCsv()">
+                  <span class="material-icons-round">publish</span> ยืนยันและนำส่งรายงานจากตารางนี้
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- STAGE 3: AI CHATBOT -->
+          <div id="sim-stage-chatbot" class="sim-content d-none">
+            <h4 style="font-weight:700; margin-bottom:12px; color:var(--primary-dark); border-bottom:1.5px solid var(--border); padding-bottom:8px;">ทดสอบใช้งานระบบ AI Chatbot (ขั้นที่ 4/4)</h4>
+            
+            <!-- Chat Simulator Container -->
+            <div class="chat-panel">
+              <div class="chat-messages" id="simChatMessages">
+                <div class="chat-bubble bubble-bot">
+                  สวัสดีค่ะคุณผู้ใช้งาน! เพื่อความปลอดภัยเชิงข้อมูล โปรดระบุรหัส PIN 4 หลักเพื่อเริ่มต้นขอสิทธิ์ต่อสายตรงวิเคราะห์กับ Gemini AI
+                </div>
+              </div>
+              
+              <!-- PIN verification panel -->
+              <div class="chat-input-area" id="chatbotPinArea">
+                <input type="password" id="chatbotPin" class="form-input" style="max-width:140px;" placeholder="ป้อน PIN 1234">
+                <button class="btn btn-primary" onclick="simVerifyPin()">ยืนยันรหัส PIN</button>
+              </div>
+
+              <!-- Message input panel -->
+              <div class="chat-input-area d-none" id="chatbotMessageArea">
+                <input type="text" id="chatbotMessage" class="form-input" placeholder="พิมพ์ถามบอท เช่น สรุปสถานะค้างส่ง...">
+                <button class="btn btn-primary" onclick="simSendChatMessage()">
+                  <span class="material-icons-round">send</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Quick questions suggestions chips -->
+            <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; font-size:11px;" id="chatChipsArea" class="d-none">
+              <span style="font-weight:700; color:var(--text-muted); display:inline-flex; align-items:center;">คำสั่งลัด:</span>
+              <button class="btn btn-secondary" style="font-size:11px; padding:4px 10px; border-radius:50px;" onclick="simQuickQuestion('สรุปสถานภาพการค้างส่งฟอร์ม')">📊 สรุปสถานภาพค้างส่ง</button>
+              <button class="btn btn-secondary" style="font-size:11px; padding:4px 10px; border-radius:50px;" onclick="simQuickQuestion('เปรียบเทียบเด็กออกกลางคัน YoY')">📈 วิเคราะห์สถิติ YoY</button>
+              <button class="btn btn-secondary" style="font-size:11px; padding:4px 10px; border-radius:50px;" onclick="simQuickQuestion('วาดกราฟสัดส่วนนักเรียน')">🎨 ขอรูปกราฟวงกลม</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Simulator Footer -->
+        <div class="sim-footer">
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-secondary" id="simPrevBtn" onclick="simMoveStage(-1)" disabled>ย้อนกลับ</button>
+            <button class="btn btn-secondary" id="simNextBtn" onclick="simMoveStage(1)" disabled>ถัดไป</button>
+          </div>
+          <div style="font-size: 12.5px; font-weight: 700; color: var(--primary-dark);" id="simStepIndicator">
+            บทเรียน: 1/4 (ล็อกอินเข้าใช้งาน)
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Theme Manager
+    function initTheme() {
+      const saved = localStorage.getItem('flow_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', saved);
+      updateThemeIcon(saved);
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('flow_theme', next);
+      updateThemeIcon(next);
+    }
+
+    function updateThemeIcon(theme) {
+      const icon = document.getElementById('themeIcon');
+      if (icon) {
+        icon.innerText = theme === 'dark' ? 'light_mode' : 'dark_mode';
+      }
+    }
+
+    // Tabs switcher
+    function switchTab(tabId, btnElement) {
+      document.getElementById('tab-intro').classList.add('d-none');
+      document.getElementById('tab-login').classList.add('d-none');
+      document.getElementById('tab-manual-entry').classList.add('d-none');
+      document.getElementById('tab-csv-import').classList.add('d-none');
+      document.getElementById('tab-ai-chatbot').classList.add('d-none');
+      document.getElementById('tab-sandbox').classList.add('d-none');
+      
+      document.getElementById('tab-' + tabId).classList.remove('d-none');
+      
+      document.querySelectorAll('.step-tab').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      btnElement.classList.add('active');
+    }
+
+    // SIMULATOR VARIABLES & LOGIC
+    let simStage = 0;
+    let simLoggedIn = false;
+    let simHasPin = false;
+
+    function simLogin() {
+      const user = document.getElementById('simUser').value.trim();
+      const pass = document.getElementById('simPass').value.trim();
+
+      if (user === '') {
+        alert('กรุณากรอก Username บัญชีสังกัด!');
+        return;
+      }
+      if (pass !== '123456') {
+        alert('รหัสผ่านทดสอบไม่ถูกต้อง! กรุณากรอกรหัสผ่าน 123456');
+        return;
+      }
+
+      simLoggedIn = true;
+      document.getElementById('sim-state-badge').innerText = 'สถานะ: สังกัด ' + user + ' (ล็อกอินแล้ว)';
+      document.getElementById('sim-state-badge').style.background = 'var(--green)';
+      
+      // Move to stage 1 Form
+      simMoveStage(1);
+    }
+
+    function simMoveStage(direction) {
+      // Hide current stage content
+      document.getElementById('sim-stage-login').classList.add('d-none');
+      document.getElementById('sim-stage-form').classList.add('d-none');
+      document.getElementById('sim-stage-csv').classList.add('d-none');
+      document.getElementById('sim-stage-chatbot').classList.add('d-none');
+
+      simStage += direction;
+
+      // Enable/Disable next-prev buttons
+      document.getElementById('simPrevBtn').disabled = (simStage === 0 || !simLoggedIn);
+      document.getElementById('simNextBtn').disabled = (simStage === 3 || !simLoggedIn);
+
+      // Render step index indicator
+      const stepsText = [
+        "บทเรียน: 1/4 (ล็อกอินเข้าใช้งาน)",
+        "บทเรียน: 2/4 (กรอกรายงานหน้าจอ)",
+        "บทเรียน: 3/4 (นำเข้าข้อมูล Excel/CSV)",
+        "บทเรียน: 4/4 (วิเคราะห์แชทบอท AI)"
+      ];
+      document.getElementById('simStepIndicator').innerText = stepsText[simStage];
+
+      // Show new stage content
+      if (simStage === 0) {
+        document.getElementById('sim-stage-login').classList.remove('d-none');
+      } else if (simStage === 1) {
+        document.getElementById('sim-stage-form').classList.remove('d-none');
+      } else if (simStage === 2) {
+        document.getElementById('sim-stage-csv').classList.remove('d-none');
+      } else if (simStage === 3) {
+        document.getElementById('sim-stage-chatbot').classList.remove('d-none');
+      }
+    }
+
+    // Input validations sandbox
+    function simValidateInput() {
+      const numInput = document.getElementById('simValNumber');
+      const textInput = document.getElementById('simValText');
+
+      const numVal = parseInt(numInput.value.trim());
+      const isNumValid = !isNaN(numVal) && numVal >= 1 && numVal <= 5000;
+
+      if (numInput.value.trim() !== '') {
+        if (!isNumValid) numInput.classList.add('is-invalid');
+        else numInput.classList.remove('is-invalid');
+      } else {
+        numInput.classList.remove('is-invalid');
+      }
+
+      const isTextValid = textInput.value.trim() !== '';
+      if (textInput.value.trim() !== '') {
+        textInput.classList.remove('is-invalid');
+      }
+    }
+
+    function simSaveDraft() {
+      const numInput = document.getElementById('simValNumber');
+      const textInput = document.getElementById('simValText');
+
+      if (numInput.value.trim() === '' && textInput.value.trim() === '') {
+        alert('กรุณากรอกข้อมูลก่อนบันทึกแบบร่าง!');
+        return;
+      }
+
+      document.getElementById('sim-report-status').className = 'status-badge status-draft';
+      document.getElementById('sim-report-status').innerText = 'แบบร่าง (Draft)';
+      alert('บันทึกคำตอบจำลองเป็น "แบบร่าง" ลงในฐานข้อมูลเรียบร้อย! คุณยังคงคลิกแก้ไขตัวแปรย่อยได้ตลอดเวลา');
+    }
+
+    function simSubmitForm() {
+      const numInput = document.getElementById('simValNumber');
+      const textInput = document.getElementById('simValText');
+
+      const numVal = parseInt(numInput.value.trim());
+      const isNumValid = !isNaN(numVal) && numVal >= 1 && numVal <= 5000;
+      const isTextValid = textInput.value.trim() !== '';
+
+      if (!isNumValid) {
+        numInput.classList.add('is-invalid');
+        return;
+      }
+      if (!isTextValid) {
+        textInput.classList.add('is-invalid');
+        return;
+      }
+
+      document.getElementById('sim-report-status').className = 'status-badge status-pending';
+      document.getElementById('sim-report-status').innerText = 'รอตรวจสอบ (Pending)';
+      alert('ยินดีด้วย! นำส่งรายงานข้อมูลสำเร็จ เปลี่ยนสถานะเป็น "รอตรวจสอบ (Pending)" และระบบสั่งล็อกข้อมูลเรียบร้อยแล้ว');
+      
+      // Allow moving to stage 2
+      document.getElementById('simNextBtn').disabled = false;
+    }
+
+    // CSV Simulation Functions
+    function simDownloadCsvTemplate() {
+      alert('จำลองการดาวน์โหลดไฟล์ "Template_Student_Dropout.csv" สำเร็จ! ระบบได้ใส่รหัสอักขระ UTF-8 BOM ในหัวแถว เรียบร้อยแล้ว สามารถเปิดใน Excel เพื่อกรอกข้อมูลได้เลย');
+    }
+
+    function simTriggerCsvUpload(type) {
+      const area = document.getElementById('csvPreviewArea');
+      const table = document.getElementById('csvSimTable');
+      const badge = document.getElementById('csvValidationStatus');
+      const submitBtn = document.getElementById('csvSimSubmitBtnWrapper');
+      
+      area.classList.remove('d-none');
+
+      if (type === 'error') {
+        badge.className = 'status-badge status-rejected';
+        badge.innerText = 'พบจุดผิดพลาด 1 แถว';
+        submitBtn.classList.add('d-none');
+        table.innerHTML = `
+          <thead>
+            <tr><th>ลำดับ</th><th>ชื่อโรงเรียน</th><th>จำนวนนร.ออกกลางคัน</th><th>สาเหตุหลัก</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>โรงเรียนบ้านธาตุนาเวง</td><td>3</td><td>ย้ายถิ่นฐาน</td></tr>
+            <tr><td>2</td><td>โรงเรียนวัดศรีสะเกษ</td><td>0</td><td>สุขภาพ</td></tr>
+            <tr style="background:var(--red-light); color:var(--red);"><td>3</td><td>โรงเรียนอนุบาลสกลนคร</td><td style="font-weight:700;">N/A (ผิดประเภท)</td><td>ไม่มีข้อมูล</td></tr>
+          </tbody>
+        `;
+      } else {
+        badge.className = 'status-badge status-approved';
+        badge.innerText = 'ผ่านการตรวจสอบ 100%';
+        submitBtn.classList.remove('d-none');
+        table.innerHTML = `
+          <thead>
+            <tr><th>ลำดับ</th><th>ชื่อโรงเรียน</th><th>จำนวนนร.ออกกลางคัน</th><th>สาเหตุหลัก</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>โรงเรียนบ้านธาตุนาเวง</td><td>3</td><td>ย้ายถิ่นฐาน</td></tr>
+            <tr><td>2</td><td>โรงเรียนวัดศรีสะเกษ</td><td>0</td><td>สุขภาพ</td></tr>
+            <tr><td>3</td><td>โรงเรียนอนุบาลสกลนคร</td><td>5</td><td>ย้ายถิ่นฐาน</td></tr>
+          </tbody>
+        `;
+      }
+    }
+
+    function simSubmitCsv() {
+      alert('นำเข้าไฟล์รายงานสถิติชุดใหญ่จากตาราง Correct_Data.csv สำเร็จ เปลี่ยนสถานะแบบรายงานนี้เป็น "รอตรวจสอบ (Pending)"');
+      document.getElementById('simNextBtn').disabled = false;
+    }
+
+    // Chatbot simulation
+    function simVerifyPin() {
+      const pin = document.getElementById('chatbotPin').value.trim();
+      if (pin !== '1234') {
+        alert('รหัส PIN ผิดพลาด! กรุณากรอกรหัสผ่าน 1234');
+        return;
+      }
+
+      simHasPin = true;
+      document.getElementById('chatbotPinArea').classList.add('d-none');
+      document.getElementById('chatbotMessageArea').classList.remove('d-none');
+      document.getElementById('chatChipsArea').classList.remove('d-none');
+
+      appendChat('บอทเอไอ (Gemini)', 'รหัสผ่าน PIN ได้รับอนุมัติเสร็จสิ้น! บอทต่อสายตรงประมวลผล Gemini 1.5 Flash เรียบร้อยแล้วค่ะ คุณต้องการสอบถามหรือสั่งวาดภาพชาร์ตข้อมูลเชิงลึกส่วนใดคะ?', 'bot');
+    }
+
+    function appendChat(sender, text, type) {
+      const messages = document.getElementById('simChatMessages');
+      const bubbleClass = type === 'user' ? 'bubble-user' : 'bubble-bot';
+      messages.innerHTML += `
+        <div class="chat-bubble ${bubbleClass}">
+          <strong>${sender}:</strong><br>${text}
+        </div>
+      `;
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function simSendChatMessage() {
+      const input = document.getElementById('chatbotMessage');
+      const text = input.value.trim();
+      if (text === '') return;
+
+      appendChat('คุณ', text, 'user');
+      input.value = '';
+
+      // Bot reply simulator delay
+      setTimeout(() => {
+        simAiReply(text);
+      }, 1000);
+    }
+
+    function simQuickQuestion(text) {
+      appendChat('คุณ', text, 'user');
+      setTimeout(() => {
+        simAiReply(text);
+      }, 1000);
+    }
+
+    function simAiReply(text) {
+      if (text.includes('ค้างส่ง') || text.includes('สถานภาพ')) {
+        appendChat('บอทเอไอ (Gemini)', 'จากการวิเคราะห์ชีตคำตอบ Data ล่าสุด: สังกัดของคุณมียอดแบบฟอร์มค้างกรอกอยู่จำนวน 2 แบบฟอร์ม ได้แก่ "ฟอร์มครูขาดแคลนรายวิชา" และ "ฟอร์มสถิตินักเรียนปฐมวัย" โดยมีเดดไลน์วันที่ 15 มิถุนายนนี้ค่ะ', 'bot');
+      } else if (text.includes('YoY') || text.includes('เปรียบเทียบ')) {
+        appendChat('บอทเอไอ (Gemini)', 'จากการประมวลผลเปรียบเทียบปีปัจจุบันกับปีย้อนหลังแบบ YoY: ยอดสถิตินักเรียนหลุดออกนอกระบบของสังกัดมีอัตราลดลง 4.2% เมื่อเทียบกับปีที่แล้ว ซึ่งถือเป็นแนวโน้มในทิศทางที่ดีขึ้นจากการนำนโยบายปักหมุดเด็กกลับเข้าชั้นเรียนค่ะ', 'bot');
+      } else if (text.includes('ชาร์ต') || text.includes('กราฟ')) {
+        appendChat('บอทเอไอ (Gemini)', 'ฉันได้แปลงประโยคคำถามของคุณให้กลายเป็น ECharts Config JSON และได้วาดแผนภูมิชาร์ตวงกลมแสดงสัดส่วนนักเรียนแยกตามระดับชั้นประถมศึกษาเรียบร้อยแล้วค่ะ! [จำลองการแสดงผลภาพกราฟ ECharts]', 'bot');
+      } else {
+        appendChat('บอทเอไอ (Gemini)', 'ฉันได้รับข้อความของคุณแล้วค่ะ: "' + text + '" ข้อมูลนี้ในชีตคำตอบส่งงานของสังกัดได้ระบุไว้ถูกต้องดี หากคุณต้องการข้อมูลเจาะจงโรงเรียนย่อยส่วนใด สอบถามเพิ่มเติมได้เลยนะคะ', 'bot');
+      }
+    }
+
+    // Startup Initializations
+    initTheme();
+  </script>
+</body>
+</html>

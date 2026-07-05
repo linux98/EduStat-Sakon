@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ใบตรวจรับพัสดุและเช็คลิสต์การส่งมอบงาน — EduData Sakon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Material+Icons+Round&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #525659;
+      --paper: #ffffff;
+      --text: #000000;
+      --border: #333333;
+      --primary: #1a237e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Sarabun', sans-serif;
+      color: var(--text);
+      line-height: 1.5;
+      padding: 40px 0;
+      font-size: 15px;
+    }
+
+    .a4-page {
+      background: var(--paper);
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      padding: 22mm 20mm 20mm 20mm;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      position: relative;
+      border: 1px solid #bbbbbb;
+    }
+
+    .doc-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .doc-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .doc-subtitle {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333333;
+    }
+
+    /* Contract details block */
+    .contract-details-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 18px;
+    }
+
+    .contract-details-table td {
+      padding: 4px 8px;
+      border: none;
+      vertical-align: top;
+    }
+
+    /* Checklist Table Grid */
+    .checklist-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+
+    .checklist-table th, .checklist-table td {
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      font-size: 13.5px;
+      vertical-align: middle;
+    }
+
+    .checklist-table th {
+      background: #f5f5f5;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    /* Committee signature blocks */
+    .acceptance-verdict {
+      margin-bottom: 24px;
+      font-size: 14.5px;
+      line-height: 1.6;
+    }
+
+    .committee-signatures {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-top: 40px;
+      border-top: 1px dashed #777777;
+      padding-top: 24px;
+    }
+
+    .sig-block {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .sig-line {
+      width: 100%;
+      max-width: 180px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #000000;
+      height: 40px;
+    }
+
+    /* Top control panel */
+    .control-panel {
+      max-width: 210mm;
+      margin: 0 auto 20px;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid #cccccc;
+      background: #ffffff;
+      color: #333333;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #f5f5f5;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: #0d1b60;
+    }
+
+    @media print {
+      body {
+        background: transparent;
+        padding: 0;
+        font-size: 14pt;
+      }
+      .control-panel {
+        display: none !important;
+      }
+      .a4-page {
+        box-shadow: none;
+        border: none;
+        margin: 0;
+        width: 100%;
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top control panel -->
+  <div class="control-panel">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span class="material-icons-round" style="color:var(--primary);">verified</span>
+      <span style="font-weight:700;">เอกสารหมายเลข 2: ใบตรวจรับพัสดุและเช็คลิสต์ TOR งวดงานแล้วเสร็จ</span>
+    </div>
+    <div>
+      <button class="btn btn-primary" onclick="window.print()">
+        <span class="material-icons-round">print</span> สั่งพิมพ์รายงาน (Print to PDF)
+      </button>
+    </div>
+  </div>
+
+  <!-- A4 Page Simulation -->
+  <div class="a4-page">
+    
+    <!-- Doc Header -->
+    <div class="doc-header">
+      <div class="doc-title">ใบตรวจรับพัสดุ / ใบรับรองผลการปฏิบัติงาน</div>
+      <div class="doc-subtitle">โครงการพัฒนาระบบจัดเก็บสถิติเชิงลึกจังหวัดสกลนคร (EduData Sakon)</div>
+    </div>
+
+    <!-- Contract Details Table -->
+    <table class="contract-details-table">
+      <tr>
+        <td style="width:16%; font-weight:700;">สัญญาเลขที่:</td>
+        <td style="width:34%; border-bottom:1px dotted #555;">สน. ๑๐๒/๒๕๖๙</td>
+        <td style="width:16%; font-weight:700;">ลงวันที่:</td>
+        <td style="width:34%; border-bottom:1px dotted #555;">๑๕ มีนาคม ๒๕๖๙</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;">ผู้ว่าจ้าง:</td>
+        <td style="border-bottom:1px dotted #555;" colspan="3">สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาสกลนคร</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;">ผู้รับจ้าง:</td>
+        <td style="border-bottom:1px dotted #555;" colspan="3">บริษัท เทคโนโลยีการศึกษาไทย จำกัด</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;">งวดส่งมอบ:</td>
+        <td style="border-bottom:1px dotted #555;">งวดสุดท้าย (งวดที่ ๑ — แล้วเสร็จสมบูรณ์)</td>
+        <td style="font-weight:700;">วันส่งมอบงาน:</td>
+        <td style="border-bottom:1px dotted #555;">๔ มิถุนายน ๒๕๖๙</td>
+      </tr>
+    </table>
+
+    <p style="font-weight:700; margin-bottom:10px;">เช็คลิสต์ตรวจรับผลงานจ้างแยกตามข้อกำหนด TOR (Deliverables Validation):</p>
+
+    <!-- Checklist grid -->
+    <table class="checklist-table">
+      <thead>
+        <tr>
+          <th style="width:7%;">ข้อที่</th>
+          <th style="width:38%;">ข้อกำหนดขอบเขตงานจ้าง (TOR Specification)</th>
+          <th style="width:35%;">ผลการส่งมอบของโครงการ (EduData Sakon Deliverables)</th>
+          <th style="width:10%;" class="text-center">ผล UAT</th>
+          <th style="width:10%;" class="text-center">ตรวจรับ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="text-center">1</td>
+          <td><strong>ระบบฐานข้อมูลเชิงสัมพันธ์แบบคลาวด์</strong> มีโครงสร้างตารางอ้างอิงรหัสสังกัดที่ชัดเจน</td>
+          <td>ฐานข้อมูล Google Sheets 6 ตารางย่อย (`Users`, `Settings`, `FormTemplates`, `Data`, `AuditLogs`, `GisCoords`)</td>
+          <td class="text-center" style="color:green; font-weight:700;">ผ่าน</td>
+          <td class="text-center" style="font-size:16px;">☑</td>
+        </tr>
+        <tr>
+          <td class="text-center">2</td>
+          <td><strong>หน้าจอรายงานข้อมูล (Data Entry)</strong> รองรับการกรอกข้อมูลและบันทึกแบบร่าง (Draft)</td>
+          <td>เมนู Data Entry บนเว็บแบบ Dynamic Layout เปลี่ยนคำถามตามฟอร์มที่เลือก บันทึกสลับแบบร่าง/นำส่งตรวจได้</td>
+          <td class="text-center" style="color:green; font-weight:700;">ผ่าน</td>
+          <td class="text-center" style="font-size:16px;">☑</td>
+        </tr>
+        <tr>
+          <td class="text-center">3</td>
+          <td><strong>ระบบนำเข้าข้อมูลผ่านไฟล์ Excel/CSV</strong> ที่มีฟังก์ชันป้องกันปัญหาการเข้ารหัสไทยแตกตัวพิมพ์</td>
+          <td>ฟังก์ชันดาวน์โหลดแม่แบบ CSV อัตโนมัติระบุรหัส UTF-8 BOM ทำให้เปิด Excel ไม่เพี้ยน และระบบ Validation Preview เช็คเออเร่อแดง</td>
+          <td class="text-center" style="color:green; font-weight:700;">ผ่าน</td>
+          <td class="text-center" style="font-size:16px;">☑</td>
+        </tr>
+        <tr>
+          <td class="text-center">4</td>
+          <td><strong>ระบบแดชบอร์ดสถิตินโยบายกลาง (BI Dashboard)</strong> และแผนที่ GIS แสดงสถานการณ์รายพื้นที่</td>
+          <td>แดชบอร์ดกราฟิก ECharts สถิติสะสมนักเรียน/ครู ตาราง Leaderboard และแผนที่ปักหมุด GIS 3 ชั้นข้อมูลจำลองความหนาแน่น</td>
+          <td class="text-center" style="color:green; font-weight:700;">ผ่าน</td>
+          <td class="text-center" style="font-size:16px;">☑</td>
+        </tr>
+        <tr>
+          <td class="text-center">5</td>
+          <td><strong>การบูรณาการระบบปัญญาประดิษฐ์ (AI Chatbot)</strong> ช่วยประมวลผลวาดภาพชาร์ตจากคำสั่ง</td>
+          <td>ระบบ Conversational BI Assistant คอนเน็ก Gemini 1.5 Flash แปลงภาษาไทยพิมพ์คำถามทั่วไปออกมาเป็นกราฟ ECharts JSON</td>
+          <td class="text-center" style="color:green; font-weight:700;">ผ่าน</td>
+          <td class="text-center" style="font-size:16px;">☑</td>
+        </tr>
+        <tr>
+          <td class="text-center">6</td>
+          <td><strong>ระบบแจ้งเตือนทวงถามอัตโนมัติด้วย AI</strong> และร่างจดหมายทวงเฉพาะรายส่งตรงเมลเป้าหมาย</td>
+          <td>ระบบ AI Auto-Dunning Email ดึงรายชื่ออีเมลค้างส่ง ร่างหนังสือภาษาทางการผ่านเอไอ และส่งอีเมลจริงด้วย MailApp</td>
+          <td class="text-center" style="color:green; font-weight:700;">ผ่าน</td>
+          <td class="text-center" style="font-size:16px;">☑</td>
+        </tr>
+        <tr>
+          <td class="text-center">7</td>
+          <td><strong>การสรุปผลเชิงนโยบายระดับผู้บริหาร</strong> สามารถแปลงข้อมูลกราฟส่งทางเมลผู้บริหาร</td>
+          <td>ระบบ AI Executive Briefing จัดวางรายงานสรุปขนาด A4 สรุปประเด็น AI และแคปกราฟเป็น Base64 PNG แนบส่งอีเมลตรง</td>
+          <td class="text-center" style="color:green; font-weight:700;">ผ่าน</td>
+          <td class="text-center" style="font-size:16px;">☑</td>
+        </tr>
+        <tr>
+          <td class="text-center">8</td>
+          <td><strong>ระบบต่อเวลาเซสชัน (Heartbeat)</strong> และการควบคุมความมั่นคงปลอดภัย</td>
+          <td>สคริปต์ตรวจสถานะ RAM แคชและ Session Heartbeat ทำงานขยายเวลาทุก 25 นาทีอัตโนมัติ และใช้ LockService กันเขียนทับ</td>
+          <td class="text-center" style="color:green; font-weight:700;">ผ่าน</td>
+          <td class="text-center" style="font-size:16px;">☑</td>
+        </tr>
+        <tr>
+          <td class="text-center">9</td>
+          <td><strong>การจัดทำคู่มือและการถ่ายทอดเทคโนโลยี</strong> คู่มือแอดมิน คู่มือเจ้าหน้าที่สังกัดเริ่มจาก 0 และผังสเปกระบบ</td>
+          <td>ส่งมอบคู่มือ HTML 3 เรื่องหลัก ผังภาพรวม DataFlow โต้ตอบได้จริง และคู่มือบำรุงรักษาติดตั้งระบบ</td>
+          <td class="text-center" style="color:green; font-weight:700;">ผ่าน</td>
+          <td class="text-center" style="font-size:16px;">☑</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="acceptance-verdict">
+      <p style="text-indent: 1.5cm; text-align: justify; margin-bottom: 8px;">
+        คณะกรรมการตรวจรับพัสดุได้ร่วมกันทำการตรวจสอบผลงานจ้างพัฒนาระบบจัดเก็บสถิติเชิงลึกจังหวัดสกลนคร (EduData Sakon) ของบริษัทผู้รับจ้างเทียบขอบเขตงานจ้าง (TOR) แล้วเสร็จสมบูรณ์เรียบร้อยถูกต้องตามสัญญา ผลการ UAT สมบูรณ์ดี
+      </p>
+      <p style="text-indent: 1.5cm; text-align: justify;">
+        คณะกรรมการตรวจรับพัสดุจึงพร้อมใจกันเห็นควรมีมติเป็นเอกฉันท์ **"ตรวจรับพัสดุผลงานจ้างพัฒนาระบบนี้แล้วเสร็จสมบูรณ์"** เพื่ออนุมัติเบิกจ่ายเงินค่าจ้างงวดสุดท้ายให้กับผู้รับจ้างตามเงื่อนไขในสัญญาจ้างและข้อตกลงระดับบริการต่อไป
+      </p>
+    </div>
+
+    <!-- Signatures -->
+    <div class="committee-signatures">
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div style="font-weight:700;">(นายสมบูรณ์ ดีเลิศ)</div>
+        <div style="font-size:13px; color:#444444; margin-top:2px;">ผู้อำนวยการฝ่ายสารสนเทศ สพม.สกลนคร</div>
+        <div style="font-size:12px; color:#666666; font-weight:bold;">ประธานกรรมการตรวจรับ</div>
+      </div>
+      
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div style="font-weight:700;">(นางสาววิภา รักเรียน)</div>
+        <div style="font-size:13px; color:#444444; margin-top:2px;">ศึกษานิเทศก์ สพม.สกลนคร</div>
+        <div style="font-size:12px; color:#666666; font-weight:bold;">กรรมการตรวจรับ</div>
+      </div>
+
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div style="font-weight:700;">(นายอภิสิทธิ์ ใจดี)</div>
+        <div style="font-size:13px; color:#444444; margin-top:2px;">นักวิเคราะห์นโยบายและแผน สพม.สกลนคร</div>
+        <div style="font-size:12px; color:#666666; font-weight:bold;">กรรมการตรวจรับ</div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

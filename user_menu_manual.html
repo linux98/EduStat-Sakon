@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>คู่มือการใช้งานเมนูและสิทธิ์การเข้าถึง — EduData Sakon</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@400;600;700&family=Material+Icons+Round&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #7b1fa2;
+      --primary-light: #f3e5f5;
+      --primary-dark: #4a0072;
+      --blue: #1a73e8;
+      --blue-light: #e8f0fe;
+      --green: #34a853;
+      --green-light: #e6f4ea;
+      --yellow: #fbbc04;
+      --yellow-light: #fef7e0;
+      --red: #ea4335;
+      --red-light: #fce8e6;
+      
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --border: #dadce0;
+      --text: #202124;
+      --text-muted: #5f6368;
+      
+      --radius: 14px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.04);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.06);
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f1013;
+      --surface: #1e1f22;
+      --border: #333539;
+      --text: #e3e3e3;
+      --text-muted: #9aa0a6;
+      --primary-light: rgba(123, 31, 162, 0.15);
+      --blue-light: rgba(26, 115, 232, 0.15);
+      --green-light: rgba(52, 168, 83, 0.15);
+      --yellow-light: rgba(251, 188, 4, 0.15);
+      --red-light: rgba(234, 67, 53, 0.15);
+      --shadow: 0 4px 20px rgba(0,0,0,0.2);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Sarabun', 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    /* Header styling with premium gradient */
+    .header-banner {
+      background: linear-gradient(135deg, var(--primary-dark), #120024);
+      color: white;
+      padding: 48px 24px 120px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-banner::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -20%;
+      width: 140%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(26,115,232,0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .header-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .meta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .header-title {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .header-desc {
+      font-size: 15px;
+      color: rgba(255,255,255,0.7);
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* Floating control bar in center */
+    .control-container {
+      max-width: 1100px;
+      margin: -60px auto 32px;
+      padding: 0 24px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .control-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 24px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    @media (min-width: 768px) {
+      .control-bar {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      max-width: 400px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 16px 12px 42px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      transition: var(--transition);
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .search-box span {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    /* Role Filter Tabs */
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .tab-btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+
+    .tab-btn:hover {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(123, 31, 162, 0.2);
+    }
+
+    /* Color variations for tabs when active */
+    .tab-btn.active.tab-super {
+      background: #c62828;
+      border-color: #c62828;
+      box-shadow: 0 4px 12px rgba(198, 40, 40, 0.2);
+    }
+    .tab-btn.active.tab-admin {
+      background: var(--blue);
+      border-color: var(--blue);
+      box-shadow: 0 4px 12px rgba(26, 115, 232, 0.2);
+    }
+    .tab-btn.active.tab-agency {
+      background: var(--green);
+      border-color: var(--green);
+      box-shadow: 0 4px 12px rgba(52, 168, 83, 0.2);
+    }
+
+    /* Dynamic Theme Switcher */
+    .theme-toggle-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .theme-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .theme-btn:hover {
+      background: var(--bg);
+    }
+
+    /* Main Container Grid */
+    .main-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Section Headers */
+    .section-header {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text);
+    }
+
+    .section-header span {
+      color: var(--primary);
+    }
+
+    /* Menu Cards */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .menu-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      box-shadow: var(--shadow);
+      transition: transform 0.25s, box-shadow 0.25s, background 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .menu-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Header inside card */
+    .card-top {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+    }
+
+    @media (min-width: 768px) {
+      .card-top {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .card-title-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .card-icon.color-dashboard { background: linear-gradient(135deg, var(--primary), var(--blue)); }
+    .card-icon.color-entry { background: linear-gradient(135deg, #0288d1, #00acc1); }
+    .card-icon.color-list { background: linear-gradient(135deg, #43a047, #66bb6a); }
+    .card-icon.color-bi { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); }
+    .card-icon.color-report { background: linear-gradient(135deg, #1565c0, #1e88e5); }
+    .card-icon.color-settings { background: linear-gradient(135deg, #ff8f00, #ffb300); }
+    .card-icon.color-monitor { background: linear-gradient(135deg, #e64a19, #f4511e); }
+    .card-icon.color-system { background: linear-gradient(135deg, #37474f, #546e7a); }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .card-subtitle {
+      font-size: 11px;
+      font-family: 'Outfit', sans-serif;
+      color: var(--text-muted);
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Permission Badges */
+    .badge-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .perm-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .perm-badge.super {
+      background: #ffebee;
+      color: #c62828;
+    }
+    [data-theme="dark"] .perm-badge.super {
+      background: rgba(198, 40, 40, 0.15);
+      color: #ff8a80;
+    }
+
+    .perm-badge.admin {
+      background: var(--blue-light);
+      color: var(--blue);
+    }
+
+    .perm-badge.agency {
+      background: var(--green-light);
+      color: var(--green);
+    }
+
+    /* Content block fields */
+    .card-body-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    @media (min-width: 992px) {
+      .card-body-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .info-column {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .col-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .col-title span {
+      font-size: 16px;
+      color: var(--primary);
+    }
+
+    .col-desc {
+      font-size: 13.5px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Key elements layout */
+    .step-list {
+      list-style: none;
+    }
+
+    .step-list li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .step-list li::before {
+      content: "➔";
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+    }
+
+    /* Callout Inside Card */
+    .card-callout {
+      margin-top: 20px;
+      padding: 12px 18px;
+      border-radius: 8px;
+      border-left: 4px solid;
+      font-size: 12.5px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .card-callout.tip {
+      background: var(--green-light);
+      border-color: var(--green);
+      color: var(--text);
+    }
+    .card-callout.tip span { color: var(--green); }
+
+    .card-callout.warning {
+      background: var(--yellow-light);
+      border-color: var(--yellow);
+      color: var(--text);
+    }
+    .card-callout.warning span { color: var(--yellow); }
+
+    .card-callout.danger {
+      background: var(--red-light);
+      border-color: var(--red);
+      color: var(--text);
+    }
+    .card-callout.danger span { color: var(--red); }
+
+    /* Footer Copyright */
+    .footer-text {
+      text-align: center;
+      margin-top: 60px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    /* CSS for hide elements during filtering */
+    .d-none {
+      display: none !important;
+    }
+
+    .highlight {
+      background: #ffeb3b;
+      color: black;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    [data-theme="dark"] .highlight {
+      background: #ffc107;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Premium Header Banner -->
+  <div class="header-banner">
+    <div class="header-content">
+      <div class="meta-badge">
+        <span class="material-icons-round" style="font-size: 12px;">auto_awesome</span> ROLE-BASED NAVIGATION GUIDE
+      </div>
+      <h1 class="header-title">คู่มือแนะนำเมนูและสิทธิ์การใช้งานรายฟังก์ชัน</h1>
+      <p class="header-desc">เจาะลึกการเข้าถึงและขั้นตอนการป้อนข้อมูล ระบบสารสนเทศการศึกษา จังหวัดสกลนคร (EduData Sakon) แยกบทบาทผู้ใช้งานและการนำทางในระบบอย่างละเอียด</p>
+    </div>
+  </div>
+
+  <!-- Interactive Control Bar -->
+  <div class="control-container">
+    <div class="control-bar">
+      <!-- Search Input -->
+      <div class="search-box">
+        <span class="material-icons-round">search</span>
+        <input type="text" id="searchInput" placeholder="ค้นหาชื่อเมนู, หน้าที่ หรือปุ่ม..." onkeyup="filterManual()">
+      </div>
+
+      <!-- Permission Tabs -->
+      <div class="filter-tabs">
+        <button class="tab-btn active" onclick="setRoleFilter('all', this)">
+          <span class="material-icons-round">apps</span>ทั้งหมด
+        </button>
+        <button class="tab-btn tab-super" onclick="setRoleFilter('super', this)">
+          <span class="material-icons-round">manage_accounts</span>Super Admin
+        </button>
+        <button class="tab-btn tab-admin" onclick="setRoleFilter('admin', this)">
+          <span class="material-icons-round">admin_panel_settings</span>Admin
+        </button>
+        <button class="tab-btn tab-agency" onclick="setRoleFilter('agency', this)">
+          <span class="material-icons-round">business</span>Agency User
+        </button>
+      </div>
+
+      <!-- Dark Mode Switch -->
+      <div class="theme-toggle-container">
+        <button class="theme-btn" onclick="toggleTheme()" title="เปลี่ยนโหมดสี">
+          <span class="material-icons-round" id="themeIcon">dark_mode</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container and List of Menus -->
+  <div class="main-container">
+    
+    <div class="section-header">
+      <span class="material-icons-round">view_list</span>
+      <h2>รายการเมนูและการนำทางของระบบ (เมนูที่ 1 - 10)</h2>
+    </div>
+
+    <div class="menu-grid" id="menuGrid">
+      
+      <!-- MENU 1: Dashboard -->
+      <div class="menu-card" data-roles="super admin agency" data-keywords="dashboard แดชบอร์ดภาพรวมผู้บริหาร แผนที่ gis leaderboard เล่มรายงาน">
+        <div class="card-top">
+          <div class="card-title-group">
+            <div class="card-icon color-dashboard">
+              <span class="material-icons-round">dashboard</span>
+            </div>
+            <div>
+              <div class="card-title">1. แดชบอร์ดภาพรวมผู้บริหาร</div>
+              <div class="card-subtitle">DOM ID: #view-dashboard</div>
+            </div>
+          </div>
+          <div class="badge-container">
+            <span class="perm-badge super"><span class="material-icons-round" style="font-size:13px;">star</span>Super Admin</span>
+            <span class="perm-badge admin"><span class="material-icons-round" style="font-size:13px;">settings</span>Admin</span>
+            <span class="perm-badge agency"><span class="material-icons-round" style="font-size:13px;">business</span>Agency User</span>
+          </div>
+        </div>
+        <div class="card-body-grid">
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">assignment</span> หน้าที่และวัตถุประสงค์</div>
+            <div class="col-desc">ศูนย์วิเคราะห์ข้อมูลสถานศึกษา นักเรียน ครู และเด็กพิเศษแสดงผลด้วยแอนิเมชัน มาพร้อมแผนที่ GIS แสดงตำแหน่งสังกัด และSubmission Leaderboard สำหรับติดตามสถานะนำส่งรายงานของทั้ง 13 สังกัดแบบเรียลไทม์</div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">touch_app</span> วิธีการเข้าถึงและขั้นตอนการคลิก</div>
+            <div class="col-desc">
+              <ul class="step-list">
+                <li>คลิกแถบเมนูข้างซ้าย <strong>"แดชบอร์ดผู้บริหาร"</strong></li>
+                <li>คลิกเลือกชั้นข้อมูลแผนที่ (Layer) มุมขวาบน เช่น Bubble Map เพื่อดูความหนาแน่นของผู้เรียน หรือ Shortage Overlay เพื่อประเมินอัตราครูต่อนักเรียน</li>
+                <li>คลิกปุ่มมาร์กเกอร์บนแผนที่ หรือคลิกแถบสังกัดบน Leaderboard แผนที่จะซูมและอัปเดตสถิติโดยอัตโนมัติ</li>
+              </ul>
+            </div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">navigation</span> เส้นทางการนำทางและระบบหลังบ้าน</div>
+            <div class="col-desc">สลับแท็บโดยซ่อน View อื่นทั้งหมด และแสดง <code>#view-dashboard</code> และแสดงแถบตัวกรองสังกัด <code>#topFilter</code> ด้านบนสุด หลังบ้านจะรันฟังก์ชันดึงสถิติ <code>getDashboardData()</code> เพื่ออัปเดตตัวเลขแอนิเมชัน</div>
+          </div>
+        </div>
+        <div class="card-callout tip">
+          <span class="material-icons-round">auto_awesome</span>
+          <div>
+            <strong>ฟีเจอร์พรีเมียม (briefing pack):</strong> สามารถคลิกปุ่ม <strong>"เล่มรายงานสรุปผู้บริหาร"</strong> เพื่อดึงรูปชาร์ตกราฟ ECharts เป็นรหัสภาพ Base64 นำส่งร่างออกเล่ม A4 พร้อมส่งอีเมลแนบไฟล์รายงานจริงหาผู้บริหารได้ทันที
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU 2: Data Entry -->
+      <div class="menu-card" data-roles="super admin agency" data-keywords="entry รายงานข้อมูลสถิติ กรอกข้อมูล นำเข้า template csv บันทึกแบบร่าง">
+        <div class="card-top">
+          <div class="card-title-group">
+            <div class="card-icon color-entry">
+              <span class="material-icons-round">note_add</span>
+            </div>
+            <div>
+              <div class="card-title">2. รายงานข้อมูลสถิติ (Data Entry Form)</div>
+              <div class="card-subtitle">DOM ID: #view-entry</div>
+            </div>
+          </div>
+          <div class="badge-container">
+            <span class="perm-badge super"><span class="material-icons-round" style="font-size:13px;">star</span>Super Admin</span>
+            <span class="perm-badge admin"><span class="material-icons-round" style="font-size:13px;">settings</span>Admin</span>
+            <span class="perm-badge agency"><span class="material-icons-round" style="font-size:13px;">lock</span>Agency User (ล็อกสังกัด)</span>
+          </div>
+        </div>
+        <div class="card-body-grid">
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">assignment</span> หน้าที่และวัตถุประสงค์</div>
+            <div class="col-desc">ใช้สำหรับป้อนข้อมูลสถิติตามแบบฟอร์มที่เปิดรับ รองรับฟิลด์ข้อมูลไดนามิก มีระบบบันทึกแบบร่าง (Draft) เพื่อกลับมาเขียนต่อ และระบบสร้างแบบฟอร์มไฟล์แม่แบบเพื่อนำเข้าด้วยไฟล์ CSV</div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">touch_app</span> วิธีการเข้าถึงและขั้นตอนการคลิก</div>
+            <div class="col-desc">
+              <ul class="step-list">
+                <li>คลิกเมนู <strong>"รายงานข้อมูลสถิติ"</strong> ที่แถบด้านซ้าย</li>
+                <li><strong>แอดมิน</strong>: เลือกสังกัดและแบบฟอร์ม / <strong>สังกัด</strong>: เลือกเฉพาะแบบฟอร์ม (ระบบล็อกสังกัดตัวเองอัตโนมัติ)</li>
+                <li>คลิก <strong>"ดาวน์โหลดเทมเพลต CSV"</strong> เพื่อนำไปเปิดกรอกใน Excel หรือกรอกบนฟอร์มจริงในหน้าจอ จากนั้นกดบันทึกแบบร่างหรือกดส่งข้อมูล</li>
+              </ul>
+            </div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">navigation</span> เส้นทางการนำทางและระบบหลังบ้าน</div>
+            <div class="col-desc">เมื่อเข้าสู่หน้า <code>#view-entry</code> หลังบ้านจะเรียกฟังก์ชัน <code>loadEntryFormsList()</code> เพื่อดึงโครงสร้างคำถาม JSON Schema. ตอนส่งข้อมูลจะรันสคริปต์ <code>submitData()</code> บนระบบล็อกป้องกันชนกัน <code>LockService</code></div>
+          </div>
+        </div>
+        <div class="card-callout warning">
+          <span class="material-icons-round">info</span>
+          <div>
+            <strong>การเปิดไฟล์ใน Microsoft Excel:</strong> ไฟล์ CSV เทมเพลตที่ดาวน์โหลดผ่านระบบ มีการเพิ่มรหัส UTF-8 BOM (Byte Order Mark) เข้าไปที่จุดเริ่มต้น สามารถดับเบิลคลิกเปิดใน Excel ภาษาไทยได้ทันทีโดยไม่เพี้ยนเป็นภาษาต่างดาว
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU 3: History List -->
+      <div class="menu-card" data-roles="super admin agency" data-keywords="list ประวัติการรายงาน ตารางอนุมัติ ใบนำส่งรายงาน pdf ใบเสร็จ">
+        <div class="card-top">
+          <div class="card-title-group">
+            <div class="card-icon color-list">
+              <span class="material-icons-round">table_chart</span>
+            </div>
+            <div>
+              <div class="card-title">3. ประวัติการรายงาน (Submission History)</div>
+              <div class="card-subtitle">DOM ID: #view-list</div>
+            </div>
+          </div>
+          <div class="badge-container">
+            <span class="perm-badge super"><span class="material-icons-round" style="font-size:13px;">star</span>Super Admin (อนุมัติ/ตีกลับ)</span>
+            <span class="perm-badge admin"><span class="material-icons-round" style="font-size:13px;">settings</span>Admin (อนุมัติ/ตีกลับ)</span>
+            <span class="perm-badge agency"><span class="material-icons-round" style="font-size:13px;">business</span>Agency User (ดู/แก้ไขงานที่ตีกลับ)</span>
+          </div>
+        </div>
+        <div class="card-body-grid">
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">assignment</span> หน้าที่และวัตถุประสงค์</div>
+            <div class="col-desc">พื้นที่ศูนย์รวมผลงานนำส่ง แอดมินจังหวัดสามารถตรวจทานข้อมูลคำตอบโดยละเอียด ดำเนินการอนุมัติ (Approve) หรือตีกลับข้อมูล (Reject) สำหรับผู้รายงานฝั่งสังกัดใช้ตรวจสอบสถานะและเข้าไปแก้ไขงานที่โดนตีกลับได้</div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">touch_app</span> วิธีการเข้าถึงและขั้นตอนการคลิก</div>
+            <div class="col-desc">
+              <ul class="step-list">
+                <li>คลิกเมนู <strong>"ประวัติการรายงาน"</strong> ทางแถบเมนูซ้าย</li>
+                <li>คลิกที่ไอคอนรูป 👁️ (ดูรายละเอียด) ของแถวข้อมูลที่ต้องการตรวจสอบเพื่อดูคำตอบ</li>
+                <li><strong>แอดมิน</strong>: กดปุ่ม <em>"อนุมัติข้อมูล"</em> หรือ <em>"ส่งกลับให้แก้ไข"</em> / <strong>สังกัด</strong>: กดปุ่ม <em>"แก้ไขข้อมูล"</em> กรณีสถานะแสดงเป็นสีส้มส่งกลับแก้ไข</li>
+              </ul>
+            </div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">navigation</span> เส้นทางการนำทางและระบบหลังบ้าน</div>
+            <div class="col-desc">เปลี่ยนหน้าไปยังคอนเทนเนอร์ <code>#view-list</code> หลังบ้านดึงข้อมูลผ่านฟังก์ชัน <code>loadDataList()</code> กรณีอนุมัติ/ส่งกลับจะประมวลผลคำสั่ง <code>updateDataStatus()</code> เพื่อปรับปรุงสถานะชีตฐานข้อมูลตาราง Data</div>
+          </div>
+        </div>
+        <div class="card-callout tip">
+          <span class="material-icons-round">receipt_long</span>
+          <div>
+            <strong>ใบเสร็จรับเงินทางราชการ:</strong> หลังการส่งข้อมูลหรืออนุมัติสำเร็จ ผู้รายงานสามารถกดพิมพ์ <strong>"ใบนำส่งรายงาน (PDF)"</strong> เพื่อดาวน์โหลดเอกสารลงนามใบเสร็จราชการยืนยันการนำส่งสำเร็จเพื่อความน่าเชื่อถือ
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU 4: BI Dashboard Builder -->
+      <div class="menu-card" data-roles="super admin" data-keywords="bi builder ai prompt ชาร์ต echart conversational chatbot บันทึกบอร์ด">
+        <div class="card-top">
+          <div class="card-title-group">
+            <div class="card-icon color-bi">
+              <span class="material-icons-round">insert_chart</span>
+            </div>
+            <div>
+              <div class="card-title">4. BI Dashboard Builder (ระบบออกแบบชาร์ต)</div>
+              <div class="card-subtitle">DOM ID: #view-bi</div>
+            </div>
+          </div>
+          <div class="badge-container">
+            <span class="perm-badge super"><span class="material-icons-round" style="font-size:13px;">star</span>Super Admin Only</span>
+            <span class="perm-badge admin"><span class="material-icons-round" style="font-size:13px;">settings</span>Admin Only</span>
+          </div>
+        </div>
+        <div class="card-body-grid">
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">assignment</span> หน้าที่และวัตถุประสงค์</div>
+            <div class="col-desc">แดชบอร์ดไดนามิกแบบลากวางและปรับขนาดวิดเจ็ตชาร์ตตามต้องการ ช่วยให้จังหวัดสร้างบอร์ดสัญจรวิเคราะห์สถิติประเมินสถานการณ์เฉพาะตัวได้ทันทีโดยไม่ต้องเขียนสคริปต์เว็บ</div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">touch_app</span> วิธีการเข้าถึงและขั้นตอนการคลิก</div>
+            <div class="col-desc">
+              <ul class="step-list">
+                <li>คลิกเมนู <strong>"BI Dashboard Builder"</strong> ภายใต้แถบจัดการ</li>
+                <li>พิมพ์คำสั่งสร้างชาร์ตภาษาไทย เช่น <em>"ช่วยเปรียบเทียบนักเรียนและครู"</em> ในช่องสนทนาสีม่วงของ AI แล้วกดปุ่มสั่งการ</li>
+                <li>ลากจัดเรียงขนาดวิดเจ็ตแผนภูมิ (Drag & Drop) และคลิกปุ่ม <strong>"บันทึกแดชบอร์ด"</strong> เพื่อจัดเก็บลง LocalStorage</li>
+              </ul>
+            </div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">navigation</span> เส้นทางการนำทางและระบบหลังบ้าน</div>
+            <div class="col-desc">เปิดพื้นที่ควบคุมบอร์ด <code>#view-bi</code> เมื่อพิมพ์คำสั่ง AI ระบบจะเรียกฟังก์ชันหลังบ้าน <code>processAiBiPrompt()</code> ส่งข้อมูลและโครงสร้างไปยังโมเดล Gemini 1.5 เพื่อตอบกลับโครงสร้างตั้งค่าชาร์ต JSON</div>
+          </div>
+        </div>
+        <div class="card-callout tip">
+          <span class="material-icons-round">tips_and_updates</span>
+          <div>
+            <strong>เคล็ดลับสั่ง AI:</strong> สามารถใช้ปุ่มสร้างวิดเจ็ตแบบ Manual เพิ่มเติม หรือสั่งล้างบอร์ดผ่านแถบควบคุม BI Builder บันทึกจัดวางวิดเจ็ตจะถูกจดจำไว้ตลอดอายุการเข้าชมหน้าเว็บของผู้ดูแล
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU 5: Report Builder -->
+      <div class="menu-card" data-roles="super admin" data-keywords="report builder รายงานข้อมูล ป๊อปอัป ค้นหา ตาราง csv pdf ดึงข้อมูล">
+        <div class="card-top">
+          <div class="card-title-group">
+            <div class="card-icon color-report">
+              <span class="material-icons-round">article</span>
+            </div>
+            <div>
+              <div class="card-title">5. Report Builder (ระบบดึงรายงานอัจฉริยะ)</div>
+              <div class="card-subtitle">ฟังก์ชัน: openReportBuilder()</div>
+            </div>
+          </div>
+          <div class="badge-container">
+            <span class="perm-badge super"><span class="material-icons-round" style="font-size:13px;">star</span>Super Admin Only</span>
+            <span class="perm-badge admin"><span class="material-icons-round" style="font-size:13px;">settings</span>Admin Only</span>
+          </div>
+        </div>
+        <div class="card-body-grid">
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">assignment</span> หน้าที่และวัตถุประสงค์</div>
+            <div class="col-desc">เครื่องมือสร้างและส่งออกรายงานตามกำหนดคอลัมน์และตัวกรองที่ผู้ใช้ระบุเอง เหมาะสำหรับการรวบรวมข้อมูลดิบเพื่อการวิเคราะห์ทางวิชาการและงานวิจัยภายนอก</div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">touch_app</span> วิธีการเข้าถึงและขั้นตอนการคลิก</div>
+            <div class="col-desc">
+              <ul class="step-list">
+                <li>คลิกเมนู <strong>"Report Builder"</strong> ภายใต้แถบจัดการ</li>
+                <li>เลือกแบบฟอร์มตั้งต้น เลือกคอลัมน์ตัวแปรที่ต้องการนำเสนอ และคลิกปุ่ม <strong>"ดึงข้อมูลดิบ"</strong></li>
+                <li>คลิกเลือกปุ่ม <strong>"Export Excel/CSV"</strong> หรือ <strong>"Export PDF"</strong> บนหัวตารางรายงานที่แสดงผลเพื่อรับไฟล์ดาวน์โหลด</li>
+              </ul>
+            </div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">navigation</span> เส้นทางการนำทางและระบบหลังบ้าน</div>
+            <div class="col-desc">เรียกฟังก์ชัน <code>openReportBuilder()</code> ซึ่งจะทำการรวบรวมข้อมูลผ่านระบบ API ของหลังบ้าน โดยการส่งผลคำตอบ Dynamic JSON String ในชีต Data ออกมาถอดคอลัมน์แล้วสร้างขึ้นเป็นตารางประมวลผล</div>
+          </div>
+        </div>
+        <div class="card-callout warning">
+          <span class="material-icons-round">warning</span>
+          <div>
+            <strong>กรณีข้อมูลขนาดใหญ่:</strong> การเลือกดึงข้อมูลทีละหลายฟอร์มหรือทุกปีการศึกษาพร้อมกัน อาจใช้เวลาโหลดข้อมูลนานกว่าปกติ แนะนำให้ตั้งตัวกรองปีการศึกษาและสังกัดให้แคบลงเพื่อประสิทธิภาพความรวดเร็ว
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU 6: Form Builder -->
+      <div class="menu-card" data-roles="super admin" data-keywords="settings ฟอร์ม สร้างแบบฟอร์ม config กำหนดคำถาม json schema">
+        <div class="card-top">
+          <div class="card-title-group">
+            <div class="card-icon color-settings">
+              <span class="material-icons-round">build_circle</span>
+            </div>
+            <div>
+              <div class="card-title">6. สร้างและจัดการแบบฟอร์ม (Form Settings)</div>
+              <div class="card-subtitle">DOM ID: #view-settings</div>
+            </div>
+          </div>
+          <div class="badge-container">
+            <span class="perm-badge super"><span class="material-icons-round" style="font-size:13px;">star</span>Super Admin Only</span>
+            <span class="perm-badge admin"><span class="material-icons-round" style="font-size:13px;">settings</span>Admin Only</span>
+          </div>
+        </div>
+        <div class="card-body-grid">
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">assignment</span> หน้าที่และวัตถุประสงค์</div>
+            <div class="col-desc">ตัวจัดการโครงสร้างคำถามที่ต้องการจัดเก็บ แอดมินสามารถออกแบบ กำหนดวันส่ง (Deadline) และจำกัดสิทธิ์เฉพาะบางสังกัดที่ต้องการรายงานโดยตรงโดยไม่ต้องป้อนสเปรดชีต</div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">touch_app</span> วิธีการเข้าถึงและขั้นตอนการคลิก</div>
+            <div class="col-desc">
+              <ul class="step-list">
+                <li>คลิกเมนู <strong>"สร้างและจัดการแบบฟอร์ม"</strong> ด้านซ้าย</li>
+                <li>ระบุชื่อแบบฟอร์ม กำหนดวันสิ้นสุด และรายชื่อสังกัดที่ต้องการจัดเก็บ</li>
+                <li>กดปุ่ม <strong>"เพิ่มฟิลด์คำถาม"</strong> ป้อนหัวข้อและรูปแบบตัวแปร (ตัวเลข/ดรอปดาวน์) เมื่อเสร็จสิ้นคลิกปุ่ม <strong>"บันทึกแบบฟอร์ม"</strong></li>
+              </ul>
+            </div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">navigation</span> เส้นทางการนำทางและระบบหลังบ้าน</div>
+            <div class="col-desc">นำเข้าสู่หน้าคอนเทนเนอร์ <code>#view-settings</code> เมื่อกดบันทึกจะรันฟังก์ชันหลังบ้าน <code>saveFormConfig()</code> นำโครงสร้างคำถามเขียนเข้าแผ่นงาน FormTemplates ในรูปแบบโครงสร้าง JSON Schema</div>
+          </div>
+        </div>
+        <div class="card-callout warning">
+          <span class="material-icons-round">warning</span>
+          <div>
+            <strong>ข้อควรระวัง:</strong> การลบฟิลด์หรือการแก้ไขแบบฟอร์มที่เปิดให้รายงานไปแล้ว อาจมีผลกระทบทำให้ประวัติข้อมูลเดิมที่มีการกรอกไว้คลาดเคลื่อนได้ ควรดำเนินการสร้างแบบฟอร์มใหม่แทนการแก้ไขแบบฟอร์มเดิม
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU 7: Monitoring Dunning -->
+      <div class="menu-card" data-roles="super admin" data-keywords="monitor กำกับติดตาม ตาราง matrix ทวงงานด้วย ai อีเมลแจ้งเตือน mailapp">
+        <div class="card-top">
+          <div class="card-title-group">
+            <div class="card-icon color-monitor">
+              <span class="material-icons-round">track_changes</span>
+            </div>
+            <div>
+              <div class="card-title">7. กำกับติดตามและหน่วยทวงถาม AI</div>
+              <div class="card-subtitle">DOM ID: #view-monitor</div>
+            </div>
+          </div>
+          <div class="badge-container">
+            <span class="perm-badge super"><span class="material-icons-round" style="font-size:13px;">star</span>Super Admin Only</span>
+            <span class="perm-badge admin"><span class="material-icons-round" style="font-size:13px;">settings</span>Admin Only</span>
+          </div>
+        </div>
+        <div class="card-body-grid">
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">assignment</span> หน้าที่และวัตถุประสงค์</div>
+            <div class="col-desc">แผงกำกับคิวส่งรายงานแบบตาราง Matrix Grid แบ่งรหัสสีแสดงความคืบหน้า (🟢 สีเขียว = ส่งแล้ว, 🔴 สีแดง = ค้างส่ง) และมีฟังก์ชันปุ่มทวงถามข้อมูลผ่านบริการ AI ของระบบเพื่อความสะดวกรวดเร็ว</div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">touch_app</span> วิธีการเข้าถึงและขั้นตอนการคลิก</div>
+            <div class="col-desc">
+              <ul class="step-list">
+                <li>คลิกเมนู <strong>"กำกับติดตามการรายงาน"</strong> ที่แถบด้านซ้าย</li>
+                <li>สังเกตช่องสังกัดที่มีปุ่มสีม่วงพิเศษ ✨ <strong>"ทวงงานด้วย AI"</strong> แล้วกดคลิก</li>
+                <li>ระบบจะป๊อปอัปแบบร่างจดหมายทวงงาน แอดมินสามารถคลิกเขียนปรับเปลี่ยนข้อความและผู้รับ จากนั้นกดปุ่ม <strong>"ส่งอีเมลทวงถามข้อมูล"</strong></li>
+              </ul>
+            </div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">navigation</span> เส้นทางการนำทางและระบบหลังบ้าน</div>
+            <div class="col-desc">นำเข้าสู่หน้าจอควบคุม <code>#view-monitor</code> เมื่อเริ่มเรียกใช้งานจะรันคำสั่ง <code>loadMonitoringData()</code> หลังบ้าน ส่วนฟังก์ชันทวงถามจะคุยผ่าน API <code>generateAiDunningDraft()</code> และ <code>sendAiDunningEmail()</code> ของหลังบ้าน</div>
+          </div>
+        </div>
+        <div class="card-callout tip">
+          <span class="material-icons-round">mail</span>
+          <div>
+            <strong>เบื้องหลังการส่งจดหมาย:</strong> สคริปต์หลังบ้านใช้บริการ <code>MailApp.sendEmail()</code> ของ Google เพื่อจัดส่ง HTML อีเมลราชการตกแต่งสวยงาม ตรงถึงกล่องข้อความผู้ใช้สังกัดนั้นๆ พร้อมบันทึกประวัติการส่งลงในตาราง Logs
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU 8: Users Modal -->
+      <div class="menu-card" data-roles="super" data-keywords="users จัดการผู้ใช้งาน เพิ่ม ลบ แก้ไข บัญชี รีเซ็ตรหัสผ่าน sha-256">
+        <div class="card-top">
+          <div class="card-title-group">
+            <div class="card-icon color-system">
+              <span class="material-icons-round">manage_accounts</span>
+            </div>
+            <div>
+              <div class="card-title">8. จัดการผู้ใช้งาน (Users Management)</div>
+              <div class="card-subtitle">DOM ID: #usersModal</div>
+            </div>
+          </div>
+          <div class="badge-container">
+            <span class="perm-badge super"><span class="material-icons-round" style="font-size:13px;">star</span>Super Admin Only</span>
+          </div>
+        </div>
+        <div class="card-body-grid">
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">assignment</span> หน้าที่และวัตถุประสงค์</div>
+            <div class="col-desc">พื้นที่ความปลอดภัยในการจัดการบัญชีชื่อผู้ดูแลและเจ้าหน้าที่รายสังกัด สามารถตั้งค่ารหัสผ่านใหม่ กำหนดบทบาท หรือสลับสถานะเพื่อระงับการเข้าสู่ระบบชั่วคราว</div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">touch_app</span> วิธีการเข้าถึงและขั้นตอนการคลิก</div>
+            <div class="col-desc">
+              <ul class="step-list">
+                <li>คลิกเมนู <strong>"จัดการผู้ใช้งาน (Users)"</strong> ภายใต้สิทธิ์จัดการ Super Admin</li>
+                <li>คลิกปุ่ม <strong>"เพิ่มผู้ใช้งานใหม่"</strong> ด้านบนตารางข้อมูล เพื่อสร้างผู้ใช้ใหม่</li>
+                <li>คลิกไอคอนรูปดินสอ ✏️ หลังแถวบัญชีที่ต้องการแก้ไขข้อมูล หรือปุ่มเปลี่ยนรหัสผ่านเพื่อตั้งรหัสใหม่</li>
+              </ul>
+            </div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">navigation</span> เส้นทางการนำทางและระบบหลังบ้าน</div>
+            <div class="col-desc">ระบบรันฟังก์ชัน <code>navigateAndOpen('system','users')</code> เพื่อย้ายหน้าไปหน้าหลักและสั่งกระตุ้น Pop-up Modal <code>#usersModal</code> หลังบ้านจัดการเขียนทับฐานข้อมูลผ่านฟังก์ชัน <code>saveUserEntry()</code></div>
+          </div>
+        </div>
+        <div class="card-callout danger">
+          <span class="material-icons-round">security</span>
+          <div>
+            <strong>ความปลอดภัยรหัสผ่าน:</strong> รหัสผ่านใหม่ของเจ้าหน้าที่ในฐานข้อมูล Google Sheets จะถูกเข้ารหัสแบบทางเดียวด้วยอัลกอริทึม SHA-256 ก่อนจัดเก็บ แม้แต่ Super Admin ก็จะไม่สามารถมองเห็นรหัสผ่านดั้งเดิมได้
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU 9: Master Data GIS Modal -->
+      <div class="menu-card" data-roles="super" data-keywords="masterdata แผนที่ ปักหมุด ค้นหาพิกัด osm click-to-pin lat lng">
+        <div class="card-top">
+          <div class="card-title-group">
+            <div class="card-icon color-system">
+              <span class="material-icons-round">account_balance</span>
+            </div>
+            <div>
+              <div class="card-title">9. ฐานข้อมูล Master Data และแผนที่ GIS</div>
+              <div class="card-subtitle">DOM ID: #masterDataModal</div>
+            </div>
+          </div>
+          <div class="badge-container">
+            <span class="perm-badge super"><span class="material-icons-round" style="font-size:13px;">star</span>Super Admin Only</span>
+          </div>
+        </div>
+        <div class="card-body-grid">
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">assignment</span> หน้าที่และวัตถุประสงค์</div>
+            <div class="col-desc">ศูนย์จัดการข้อมูลอ้างอิงของสถานศึกษา โรงเรียน และพิกัดละติจูด/ลองจิจูดของสำนักงานแต่ละสังกัด เพื่อใช้ประกอบการวิเคราะห์แสดงผลพิกัดแผนที่บนหน้าแดชบอร์ดหลักได้อย่างแม่นยำ</div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">touch_app</span> วิธีการเข้าถึงและขั้นตอนการคลิก</div>
+            <div class="col-desc">
+              <ul class="step-list">
+                <li>คลิกเมนู <strong>"ฐานข้อมูล Master Data"</strong> ที่แถบจัดการด้านซ้าย</li>
+                <li>คลิกปุ่ม <strong>"แก้ไขพิกัด"</strong> ท้ายแถวรายชื่อหน่วยงาน</li>
+                <li>ทดลองคลิกปุ่ม 🔍 <em>ค้นหาพิกัดอัตโนมัติ</em> หรือคลิก 📍 <em>ปักหมุดบนแผนที่ย่อย</em> เพื่อเปิดหน้าต่างและคลิกปักพิกัดบนแผนที่สกลนครจริง แล้วกดยืนยันเพื่อบันทึกพิกัด</li>
+              </ul>
+            </div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">navigation</span> เส้นทางการนำทางและระบบหลังบ้าน</div>
+            <div class="col-desc">นำเข้าผ่านคำสั่ง <code>navigateAndOpen('system','masterdata')</code> เปิด Modal จัดการ <code>#masterDataModal</code> หากคลิกปักหมุดระบบจะซ้อนหน้าต่างย่อย <code>#gisPinMapModal</code> บน Leaflet map ปลายทาง และส่งพิกัดไปจัดเก็บผ่าน <code>saveGisCoord()</code> ของหลังบ้าน</div>
+          </div>
+        </div>
+        <div class="card-callout tip">
+          <span class="material-icons-round">location_on</span>
+          <div>
+            <strong>เครื่องมือระบุตำแหน่ง:</strong> ฟังก์ชันค้นหาตำแหน่งอัตโนมัติทำงานผ่าน API ของ OpenStreetMap (Nominatim Geocoding API) เพื่อถอดข้อความชื่อสำนักงานเป็นพิกัดแผนที่โลกโดยอัตโนมัติ
+          </div>
+        </div>
+      </div>
+
+      <!-- MENU 10: Admin Console -->
+      <div class="menu-card" data-roles="super" data-keywords="system ศูนย์ควบคุม console จัดการรอบปีการศึกษา ล้างปีการศึกษา audit log log">
+        <div class="card-top">
+          <div class="card-title-group">
+            <div class="card-icon color-system">
+              <span class="material-icons-round">admin_panel_settings</span>
+            </div>
+            <div>
+              <div class="card-title">10. ศูนย์ควบคุมระบบ (Admin Console)</div>
+              <div class="card-subtitle">DOM ID: #view-system</div>
+            </div>
+          </div>
+          <div class="badge-container">
+            <span class="perm-badge super"><span class="material-icons-round" style="font-size:13px;">star</span>Super Admin Only</span>
+          </div>
+        </div>
+        <div class="card-body-grid">
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">assignment</span> หน้าที่และวัตถุประสงค์</div>
+            <div class="col-desc">บอร์ดรวมความปลอดภัยสูงสุดสำหรับการตั้งค่าระบบหลัก ตรวจสอบความพร้อมการทำงานของคลาวด์และฐานข้อมูล ดูบันทึกพฤติกรรม (Audit Log) ของแอดมิน และเริ่มรอบปีการศึกษาใหม่ด้วยการ Reset Term</div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">touch_app</span> วิธีการเข้าถึงและขั้นตอนการคลิก</div>
+            <div class="col-desc">
+              <ul class="step-list">
+                <li>คลิกเมนู <strong>"ศูนย์ควบคุม (Admin Console)"</strong> แถบล่างสุดด้านซ้าย</li>
+                <li>คลิกที่การ์ดต่างๆ เช่น <strong>"ประวัติการใช้งาน (Audit Log)"</strong> หรือ <strong>"Session Log"</strong> เพื่อเรียกดูป๊อปอัปประวัติเบื้องหลัง</li>
+                <li>คลิกการ์ด <strong>"จัดการรอบปีการศึกษา"</strong> เพื่อป๊อปอัปหน้าต่างปรับรอบปีการศึกษาและกดเริ่มปีการศึกษาใหม่</li>
+              </ul>
+            </div>
+          </div>
+          <div class="info-column">
+            <div class="col-title"><span class="material-icons-round">navigation</span> เส้นทางการนำทางและระบบหลังบ้าน</div>
+            <div class="col-desc">นำเข้าสู่ส่วนหน้าจอควบคุม <code>#view-system</code> การเรียกดู Logs จะเรียกใช้ <code>getAuditLogs()</code> และ <code>getSessionLogs()</code> การเปลี่ยนรอบปีและล้างตารางจะดำเนินการผ่านฟังก์ชัน <code>executeTermReset()</code> หลังบ้าน</div>
+          </div>
+        </div>
+        <div class="card-callout danger">
+          <span class="material-icons-round">report_problem</span>
+          <div>
+            <strong>ข้อเตือนภัยขั้นวิกฤต:</strong> การกดล้างข้อมูลในส่วนเริ่มรอบปีการศึกษาใหม่ (Term Reset) จะทำการคัดลอกชีต Data ปัจจุบันไปเป็นประวัติ Archive และทำการเคลียร์ฐานข้อมูลหลักให้ว่างเปล่า กรุณาใช้ด้วยความระมัดระวังสูงสุด
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- No results container -->
+    <div id="noResults" class="card" style="display:none; text-align:center; padding:60px; margin-top:20px; border:1px dashed var(--border); background:var(--surface);">
+      <span class="material-icons-round" style="font-size:48px; color:var(--text-muted); opacity:0.5; margin-bottom:12px;">search_off</span>
+      <h4 style="font-size:16px; font-weight:700; color:var(--text);">ไม่พบเมนูหรือฟังก์ชันที่ค้นหา</h4>
+      <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">ลองค้นหาด้วยคำอื่น หรือกดสลับสิทธิ์การเข้าใช้งานด้านบนเพื่อเริ่มต้นใหม่</p>
+    </div>
+
+    <footer class="footer-text">
+      &copy; 2026 สำนักงานศึกษาธิการจังหวัดสกลนคร • พัฒนาขึ้นเพื่อการบริหารจัดการฐานข้อมูลสารสนเทศการศึกษา
+    </footer>
+
+  </div>
+
+  <script>
+    // Theme Manager
+    function initTheme() {
+      const saved = localStorage.getItem('menu_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', saved);
+      updateThemeIcon(saved);
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('menu_theme', next);
+      updateThemeIcon(next);
+    }
+
+    function updateThemeIcon(theme) {
+      const icon = document.getElementById('themeIcon');
+      if (icon) {
+        icon.innerText = theme === 'dark' ? 'light_mode' : 'dark_mode';
+      }
+    }
+
+    // Role-based filtering state
+    let activeRoleFilter = 'all';
+
+    function setRoleFilter(role, btnElement) {
+      activeRoleFilter = role;
+      
+      // Update active class on tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      btnElement.classList.add('active');
+
+      filterManual();
+    }
+
+    // Interactive Search and Role Filter logic
+    function filterManual() {
+      const searchVal = document.getElementById('searchInput').value.trim().toLowerCase();
+      const cards = document.querySelectorAll('.menu-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const cardRoles = card.getAttribute('data-roles').split(' ');
+        const cardKeywords = card.getAttribute('data-keywords').toLowerCase();
+        const cardTitle = card.querySelector('.card-title').innerText.toLowerCase();
+        const cardDesc = card.innerText.toLowerCase();
+
+        // 1. Role Filter check
+        let roleMatches = false;
+        if (activeRoleFilter === 'all') {
+          roleMatches = true;
+        } else if (activeRoleFilter === 'super' && cardRoles.includes('super')) {
+          roleMatches = true;
+        } else if (activeRoleFilter === 'admin' && cardRoles.includes('admin')) {
+          roleMatches = true;
+        } else if (activeRoleFilter === 'agency' && cardRoles.includes('agency')) {
+          roleMatches = true;
+        }
+
+        // 2. Search query check
+        let searchQueryMatches = false;
+        if (searchVal === '') {
+          searchQueryMatches = true;
+        } else if (
+          cardTitle.includes(searchVal) || 
+          cardDesc.includes(searchVal) || 
+          cardKeywords.includes(searchVal)
+        ) {
+          searchQueryMatches = true;
+        }
+
+        // Combine both filters
+        if (roleMatches && searchQueryMatches) {
+          card.classList.remove('d-none');
+          visibleCount++;
+        } else {
+          card.classList.add('d-none');
+        }
+      });
+
+      // Handle no results display
+      const noResultsDiv = document.getElementById('noResults');
+      if (visibleCount === 0) {
+        noResultsDiv.style.display = 'block';
+      } else {
+        noResultsDiv.style.display = 'none';
+      }
+    }
+
+    // Run startup functions
+    initTheme();
+  </script>
+</body>
+</html>

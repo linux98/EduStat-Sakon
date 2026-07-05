@@ -1,0 +1,11 @@
+# Clasp configuration
+.clasp.json
+
+# Backup files
+*-BK00.html
+*BackupOriginal.html
+*BK00.html
+
+# Temp / Scratch files
+scratch/
+.gemini/

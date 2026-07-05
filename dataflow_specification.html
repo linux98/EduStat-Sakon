@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สเปกผังการไหลของข้อมูลฉบับสมบูรณ์ที่สุด — EduData Sakon</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@400;600;700&family=Material+Icons+Round&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #7b1fa2;
+      --primary-light: #f3e5f5;
+      --primary-dark: #4a0072;
+      --accent: #ffb300;
+      --accent-light: #fff8e1;
+      --blue: #1a73e8;
+      --blue-light: #e8f0fe;
+      --green: #34a853;
+      --green-light: #e6f4ea;
+      --yellow: #fbbc04;
+      --yellow-light: #fef7e0;
+      --red: #ea4335;
+      --red-light: #fce8e6;
+      
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --border: #dadce0;
+      --text: #202124;
+      --text-muted: #5f6368;
+      
+      --radius: 14px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.04);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.07);
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f1013;
+      --surface: #1e1f22;
+      --border: #333539;
+      --text: #e3e3e3;
+      --text-muted: #9aa0a6;
+      --primary-light: rgba(123, 31, 162, 0.18);
+      --blue-light: rgba(26, 115, 232, 0.18);
+      --green-light: rgba(52, 168, 83, 0.18);
+      --yellow-light: rgba(251, 188, 4, 0.18);
+      --red-light: rgba(234, 67, 53, 0.18);
+      --accent-light: rgba(255, 179, 0, 0.18);
+      --shadow: 0 4px 20px rgba(0,0,0,0.25);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Sarabun', 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    /* Header styling with premium gradient */
+    .header-banner {
+      background: linear-gradient(135deg, var(--primary-dark), #12011f);
+      color: white;
+      padding: 60px 24px 140px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-banner::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -20%;
+      width: 140%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(123,31,162,0.25) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .header-content {
+      max-width: 1300px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .meta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 22px;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .header-title {
+      font-size: 34px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      line-height: 1.3;
+      font-family: 'Outfit', 'Sarabun', sans-serif;
+    }
+
+    .header-desc {
+      font-size: 15px;
+      color: rgba(255,255,255,0.85);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Tabs navigation bar */
+    .control-container {
+      max-width: 1300px;
+      margin: -65px auto 32px;
+      padding: 0 24px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .control-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px 24px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .stepper-tabs {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      flex: 1;
+      scrollbar-width: thin;
+    }
+
+    .step-tab {
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+
+    .step-tab:hover {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .step-tab.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 4px 14px rgba(123, 31, 162, 0.25);
+    }
+
+    .theme-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+    .theme-btn:hover {
+      background: var(--bg);
+    }
+
+    /* Layout grid */
+    .main-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: var(--shadow);
+      margin-bottom: 32px;
+      transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1.5px solid var(--border);
+      padding-bottom: 14px;
+    }
+
+    .card-title span.title-icon {
+      color: var(--primary);
+      font-size: 24px;
+    }
+
+    p {
+      font-size: 14.5px;
+      color: var(--text);
+      margin-bottom: 18px;
+      line-height: 1.7;
+    }
+
+    /* Callout styling */
+    .callout {
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      margin: 20px 0 24px;
+      border-left: 4px solid;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .callout.tip {
+      background: var(--green-light);
+      border-color: var(--green);
+      color: var(--text);
+    }
+    .callout.tip span { color: var(--green); }
+
+    .callout.warning {
+      background: var(--yellow-light);
+      border-color: var(--yellow);
+      color: var(--text);
+    }
+    .callout.warning span { color: var(--yellow); }
+
+    .callout.important {
+      background: var(--blue-light);
+      border-color: var(--blue);
+      color: var(--text);
+    }
+    .callout.important span { color: var(--blue); }
+
+    .callout.accent {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      color: var(--text);
+    }
+    .callout.accent span { color: var(--accent); }
+
+    /* Visual Architecture Mapper */
+    .arch-diagram-wrapper {
+      background: #12131a;
+      border-radius: 16px;
+      padding: 36px 20px;
+      margin-bottom: 30px;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .arch-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    @media (min-width: 768px) {
+      .arch-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+      }
+    }
+
+    .arch-column {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .arch-node-box {
+      width: 100%;
+      max-width: 260px;
+      background: #1e2030;
+      border: 2px solid #3c405a;
+      border-radius: 12px;
+      padding: 16px;
+      color: #eceff1;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      transition: var(--transition);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .arch-node-box:hover, .arch-node-box.active {
+      border-color: #80deea;
+      background: #26384f;
+      box-shadow: 0 0 20px rgba(0,229,255,0.35);
+      color: #ffffff;
+      transform: translateY(-3px);
+    }
+
+    .arch-node-box.highlight-source {
+      border-color: #81c784;
+      background: #1b382b;
+      box-shadow: 0 0 15px rgba(129,199,132,0.4);
+    }
+
+    .arch-node-box.highlight-dest {
+      border-color: #ffb74d;
+      background: #3e2723;
+      box-shadow: 0 0 15px rgba(255,183,77,0.4);
+    }
+
+    .arch-node-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .arch-node-desc {
+      font-size: 11px;
+      color: #90a4ae;
+      line-height: 1.4;
+    }
+
+    /* Database Schema Section styling */
+    .db-schema-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+
+    @media (min-width: 992px) {
+      .db-schema-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .db-table-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      background: var(--surface);
+    }
+
+    .db-table-header {
+      background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+      color: white;
+      padding: 14px 20px;
+      font-weight: 700;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .db-table-header span.tag {
+      font-size: 11px;
+      background: rgba(255,255,255,0.2);
+      padding: 3px 10px;
+      border-radius: 50px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .db-table-desc {
+      padding: 14px 20px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      line-height: 1.5;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th {
+      background: var(--bg);
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    tr:hover td {
+      background: var(--bg);
+    }
+
+    .badge-key {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+
+    .pk {
+      background: #ffe082;
+      color: #5d4037;
+    }
+    .fk {
+      background: #bbdefb;
+      color: #0d47a1;
+    }
+
+    code {
+      font-family: 'Fira Code', 'Courier New', Courier, monospace;
+      font-size: 12.5px;
+      background: var(--bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--primary-dark);
+    }
+    [data-theme="dark"] code {
+      color: #ffb74d;
+    }
+
+    /* API Reference elements */
+    .search-filter-box {
+      margin-bottom: 24px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .search-input-wrapper span {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 16px 12px 42px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .filter-select {
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13.5px;
+      outline: none;
+      cursor: pointer;
+      min-width: 180px;
+    }
+
+    .api-grid-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      max-height: 800px;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+
+    .api-card-ref {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 22px;
+      transition: var(--transition);
+    }
+
+    .api-card-ref:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow);
+    }
+
+    .api-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .api-card-name {
+      font-family: 'Fira Code', monospace;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--primary-dark);
+    }
+    [data-theme="dark"] .api-card-name {
+      color: #ce93d8;
+    }
+
+    .api-card-badges {
+      display: flex;
+      gap: 6px;
+    }
+
+    .badge-api {
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    .badge-role-super { background: #ffebee; color: #c62828; }
+    .badge-role-admin { background: #e8f5e9; color: #2e7d32; }
+    .badge-role-agency { background: #e3f2fd; color: #1565c0; }
+    .badge-role-guest { background: #eceff1; color: #37474f; }
+    [data-theme="dark"] .badge-role-super { background: rgba(198,40,40,0.25); color: #ff8a80; }
+    [data-theme="dark"] .badge-role-admin { background: rgba(46,125,50,0.25); color: #a5d6a7; }
+    [data-theme="dark"] .badge-role-agency { background: rgba(21,101,192,0.25); color: #90caf9; }
+    [data-theme="dark"] .badge-role-guest { background: rgba(55,71,79,0.25); color: #b0bec5; }
+
+    .api-card-details {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      font-size: 13px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border);
+    }
+
+    @media (min-width: 600px) {
+      .api-card-details {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .api-detail-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .api-detail-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .api-detail-value {
+      font-size: 12.5px;
+      color: var(--text);
+    }
+
+    /* Simulation Layout */
+    .sim-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+
+    @media (min-width: 992px) {
+      .sim-layout {
+        grid-template-columns: 5fr 7fr;
+      }
+    }
+
+    .sim-left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .sim-steps-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sim-step-item {
+      display: flex;
+      gap: 14px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+      background: var(--surface);
+    }
+
+    .sim-step-item:hover {
+      border-color: var(--primary-light);
+      background: var(--bg);
+    }
+
+    .sim-step-item.active {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      box-shadow: 0 4px 12px rgba(123,31,162,0.06);
+    }
+
+    .sim-step-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--border);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .sim-step-item.active .sim-step-num {
+      background: var(--primary);
+      color: white;
+    }
+
+    .sim-step-content {
+      flex: 1;
+    }
+
+    .sim-step-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .sim-step-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Simulation details viewer */
+    .sim-right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .json-data-box {
+      background: #1e1e24;
+      border-radius: 8px;
+      padding: 16px;
+      color: #a5d6a7;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      white-space: pre;
+      border: 1px solid #333;
+      max-height: 250px;
+    }
+
+    .code-snippet-box {
+      background: #263238;
+      border-radius: 8px;
+      padding: 16px;
+      color: #eceff1;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      border: 1px solid #37474f;
+      max-height: 350px;
+    }
+
+    .d-none {
+      display: none !important;
+    }
+
+    /* Custom Scrollbar for better UI */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Banner -->
+  <div class="header-banner">
+    <div class="header-content">
+      <div class="meta-badge">
+        <span class="material-icons-round" style="font-size: 12px;">insights</span> DATAFLOW SPECIFICATION MAP
+      </div>
+      <h1 class="header-title">เอกสารผังการไหลและการแลกเปลี่ยนข้อมูลระบบ (DataFlow Map)</h1>
+      <p class="header-desc">วิเคราะห์ทิศทางการวิ่งของข้อมูลดิบ ตัวเชื่อมต่อ API หลังบ้าน และการจัดเก็บฐานข้อมูลเชิงสัมพันธ์ของระบบ EduData Sakon ตั้งแต่หน้าบ้าน (Browser UI) ตัวกลางความปลอดภัย การควบคุมสัญญาล็อค แหล่งบันทึกข้อมูลหลัก จนถึงสมองวิเคราะห์อย่าง Google Gemini 1.5 Flash AI</p>
+    </div>
+  </div>
+
+  <!-- Control Navigation Bar -->
+  <div class="control-container">
+    <div class="control-bar">
+      <div class="stepper-tabs">
+        <button class="step-tab active" onclick="switchSection('architecture', this)">
+          <span class="material-icons-round">account_tree</span> 1. สถาปัตยกรรม & การไหลของข้อมูล
+        </button>
+        <button class="step-tab" onclick="switchSection('db-schema', this)">
+          <span class="material-icons-round">storage</span> 2. โครงสร้างชีตฐานข้อมูล (Relational)
+        </button>
+        <button class="step-tab" onclick="switchSection('api-endpoints', this)">
+          <span class="material-icons-round">settings_ethernet</span> 3. รายการ API & Helper Functions ทั้งหมด
+        </button>
+        <button class="step-tab" onclick="switchSection('sim-flows', this)">
+          <span class="material-icons-round">play_circle_filled</span> 4. ระบบจำลองการรันธุรกรรม (Tracer)
+        </button>
+      </div>
+      <button class="theme-btn" onclick="toggleTheme()" title="เปลี่ยนโหมดสี">
+        <span class="material-icons-round" id="themeIcon">dark_mode</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="main-container">
+    
+    <!-- SECTION 1: ARCHITECTURE -->
+    <div id="section-architecture" class="card">
+      <h3 class="card-title">
+        <span class="material-icons-round title-icon">bubble_chart</span>
+        <span>1. สถาปัตยกรรมการสื่อสารหลักและการไหลของข้อมูลระบบ</span>
+      </h3>
+      <p>ระบบ EduData Sakon ใช้การสถาปัตยกรรมแบบ <strong>Serverless Model-View-Controller (MVC)</strong> โดยเว็บบราวเซอร์เป็นฝั่งหน้าบ้านโต้ตอบ สื่อสารข้ามเซสชันแบบ Asynchronous ผ่านโปรโตคอลความปลอดภัย <code>google.script.run</code> ไปยัง Google Apps Script Engine หลังบ้านเพื่อควบคุมและดึงข้อมูลจาก Google Sheets (ฐานข้อมูลเชิงสัมพันธ์หลัก) และเรียกใช้ Gemini AI API ในการสังเคราะห์เชิงลึก</p>
+      
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:12px; font-family:'Outfit';">ผังจำลองโครงสร้างสถาปัตยกรรมระบบ (คลิกที่บล็อกเพื่อตรวจสอบหน้าที่การแลกเปลี่ยนข้อมูล)</div>
+      
+      <!-- Graphic Nodes Diagram -->
+      <div class="arch-diagram-wrapper">
+        <div class="arch-grid">
+          
+          <!-- Column 1: Client Side -->
+          <div class="arch-column">
+            <div class="arch-node-box active" id="node-frontend" onclick="clickArchNode('frontend')">
+              <div class="arch-node-title">💻 Browser Frontend UI</div>
+              <div class="arch-node-desc">HTML5, Vanilla CSS, JS Engine, ECharts</div>
+            </div>
+            
+            <div class="arch-node-box" id="node-geocoder" onclick="clickArchNode('geocoder')">
+              <div class="arch-node-title">🌍 Nominatim GIS API</div>
+              <div class="arch-node-desc">ระบบค้นหาพิกัดและแปลงพิกัดอัตโนมัติ</div>
+            </div>
+          </div>
+
+          <!-- Column 2: Middleware & Controller -->
+          <div class="arch-column">
+            <div style="font-size:11px; color:#90a4ae; font-family:'Fira Code'; text-align:center; width:100%;">
+              google.script.run
+              <div style="animation: pulse 1.5s infinite; font-size:14px;">↕</div>
+            </div>
+            
+            <div class="arch-node-box" id="node-backend" onclick="clickArchNode('backend')">
+              <div class="arch-node-title">⚙️ Apps Script Controller</div>
+              <div class="arch-node-desc">รหัส.js, LockService, Trigger, MailApp</div>
+            </div>
+            
+            <div class="arch-node-box" id="node-cache" onclick="clickArchNode('cache')">
+              <div class="arch-node-title">🔑 Cache Service</div>
+              <div class="arch-node-desc">เก็บ Session Token และข้อมูลหน้า Dashboard YoY</div>
+            </div>
+          </div>
+
+          <!-- Column 3: Resource & Engine -->
+          <div class="arch-column">
+            <div class="arch-node-box" id="node-sheets" onclick="clickArchNode('sheets')">
+              <div class="arch-node-title">💾 Google Sheets DB</div>
+              <div class="arch-node-desc">6 แผ่นงานเชื่อมโยง Relational Table</div>
+            </div>
+            
+            <div class="arch-node-box" id="node-gemini" onclick="clickArchNode('gemini')">
+              <div class="arch-node-title">🧠 Gemini 1.5 Flash</div>
+              <div class="arch-node-desc">สกัดสาระสำคัญ เขียนสรุป ร่างจดหมายทวงถาม</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Node Explanation -->
+      <div id="arch-node-explanation" style="padding: 24px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); transition: var(--transition);">
+        <!-- Injected dynamically -->
+      </div>
+      
+      <div class="callout tip">
+        <span class="material-icons-round">info</span>
+        <div>
+          <strong>สัญญาล็อคข้อมูล (Concurrency Lock Protocol):</strong> ทุกกระบวนการที่มีการเขียนลง Google Sheets (เช่น การสร้างฟอร์ม, การบันทึกคำตอบรายงาน) จะมีการใช้ <code>LockService.getScriptLock()</code> กำหนดรอกุญแจล็อคสูงสุด 5,000 มิลลิวินาที เพื่อป้องกันไม่ให้ทรานแซกชันที่ส่งมาพร้อมๆ กันจากผู้กรอกหลายสังกัดเขียนทับแถวเดียวกัน (Race Conditions)
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: RELATIONAL DATABASE SCHEMAS -->
+    <div id="section-db-schema" class="card d-none">
+      <h3 class="card-title">
+        <span class="material-icons-round title-icon">storage</span>
+        <span>2. โครงสร้างการจัดเก็บข้อมูลเชิงสัมพันธ์ใน Google Sheets</span>
+      </h3>
+      <p>ระบบใช้ Google Sheets เป็นระบบจัดเก็บข้อมูลเชิงสัมพันธ์ โดยมีการเชื่อมต่อระหว่างตารางผ่านคีย์หลักและคีย์นอกเพื่อคงสถานะ Referential Integrity ดังนี้:</p>
+      
+      <div class="db-schema-grid">
+        
+        <!-- Table 1: Users -->
+        <div class="db-table-card">
+          <div class="db-table-header">
+            <span>ตารางที่ 1: Users (สิทธิ์ผู้เข้าใช้งาน)</span>
+            <span class="tag">Users Sheet</span>
+          </div>
+          <div class="db-table-desc">ใช้เก็บข้อมูลประจำตัวเพื่อเข้าใช้ระบบ บันทึกชื่อ สังกัด และรหัสผ่านที่ถูกเข้ารหัส SHA-256</div>
+          <table>
+            <thead>
+              <tr>
+                <th>ชื่อฟิลด์</th>
+                <th>ชนิดข้อมูล</th>
+                <th>คีย์</th>
+                <th>คำอธิบาย</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>username</code></td>
+                <td>String (Text)</td>
+                <td><span class="badge-key pk">PK</span></td>
+                <td>ชื่อเข้าใช้งานระบบ (ต้องไม่ซ้ำกัน)</td>
+              </tr>
+              <tr>
+                <td><code>password</code></td>
+                <td>String (SHA-256)</td>
+                <td>-</td>
+                <td>รหัสผ่านที่เข้ารหัสลับรวม Salt ป้องกันแฮกเกอร์</td>
+              </tr>
+              <tr>
+                <td><code>role</code></td>
+                <td>String (Enum)</td>
+                <td>-</td>
+                <td>สิทธิ์: <code>super_admin</code>, <code>admin</code>, <code>agency_user</code></td>
+              </tr>
+              <tr>
+                <td><code>name</code></td>
+                <td>String (Text)</td>
+                <td>-</td>
+                <td>ชื่อ-นามสกุลจริงของเจ้าหน้าที่</td>
+              </tr>
+              <tr>
+                <td><code>agencyId</code></td>
+                <td>String (FK)</td>
+                <td><span class="badge-key fk">FK</span></td>
+                <td>รหัสสังกัดที่เชื่อมไปยัง ตาราง GisCoords / Master Data</td>
+              </tr>
+              <tr>
+                <td><code>status</code></td>
+                <td>String (Enum)</td>
+                <td>-</td>
+                <td>สถานะการใช้งาน: <code>Active</code>, <code>Inactive</code></td>
+              </tr>
+              <tr>
+                <td><code>email</code></td>
+                <td>String (Email)</td>
+                <td>-</td>
+                <td>อีเมลจริงสำหรับการส่งแจ้งเตือนและทวงงาน AI</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table 2: Settings -->
+        <div class="db-table-card">
+          <div class="db-table-header">
+            <span>ตารางที่ 2: Settings (การตั้งค่าระบบ)</span>
+            <span class="tag">Settings Sheet</span>
+          </div>
+          <div class="db-table-desc">เก็บค่าตัวแปรระดับโกลบอลของระบบเพื่อประมวลผลและการอ้างอิงปีการศึกษา</div>
+          <table>
+            <thead>
+              <tr>
+                <th>ชื่อฟิลด์</th>
+                <th>ชนิดข้อมูล</th>
+                <th>คีย์</th>
+                <th>คำอธิบาย</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>key</code></td>
+                <td>String (Text)</td>
+                <td><span class="badge-key pk">PK</span></td>
+                <td>ชื่อคีย์ตั้งค่า เช่น <code>academic_year</code>, <code>system_status</code></td>
+              </tr>
+              <tr>
+                <td><code>value</code></td>
+                <td>String (Text)</td>
+                <td>-</td>
+                <td>ค่าที่กำหนดให้กับคีย์นั้นๆ</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table 3: FormTemplates -->
+        <div class="db-table-card">
+          <div class="db-table-header">
+            <span>ตารางที่ 3: FormTemplates (แบบฟอร์มคำถาม)</span>
+            <span class="tag">Templates Sheet</span>
+          </div>
+          <div class="db-table-desc">เก็บเทมเพลตฟอร์มรายชื่อคอลัมน์ โดยใช้การ Serialize ข้อมูลคำถามย่อยให้อยู่ในฟิลด์เดียวเป็น JSON String ป้องกันตารางชีตแตกกระจาย</div>
+          <table>
+            <thead>
+              <tr>
+                <th>ชื่อฟิลด์</th>
+                <th>ชนิดข้อมูล</th>
+                <th>คีย์</th>
+                <th>คำอธิบาย</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>formId</code></td>
+                <td>String (UUID)</td>
+                <td><span class="badge-key pk">PK</span></td>
+                <td>รหัสระบุแบบฟอร์มเฉพาะ</td>
+              </tr>
+              <tr>
+                <td><code>formName</code></td>
+                <td>String (Text)</td>
+                <td>-</td>
+                <td>ชื่อเรื่อง/หัวข้อแบบรายงานเก็บข้อมูล</td>
+              </tr>
+              <tr>
+                <td><code>agencyId</code></td>
+                <td>String (Text)</td>
+                <td>-</td>
+                <td>รายชื่อสังกัดที่ต้องส่ง (คั่นด้วยเครื่องหมายจุลภาค `,`)</td>
+              </tr>
+              <tr>
+                <td><code>deadline</code></td>
+                <td>String (Date)</td>
+                <td>-</td>
+                <td>วันที่กำหนดส่งสุดท้ายของแบบรายงานนี้</td>
+              </tr>
+              <tr>
+                <td><code>formConfig</code></td>
+                <td>JSON (String)</td>
+                <td>-</td>
+                <td>โครงสร้างฟิลด์ ย่อย ประเภทข้อมูล ตัวอย่างคำตอบ กราฟิกการ์ด</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table 4: Data -->
+        <div class="db-table-card">
+          <div class="db-table-header">
+            <span>ตารางที่ 4: Data (ผลนำส่งรายงานของหน่วยงาน)</span>
+            <span class="tag">Data Sheet</span>
+          </div>
+          <div class="db-table-desc">บันทึกคำตอบจริงที่แต่ละหน่วยงานนำส่ง โดยข้อมูลคำถามหลายช่องจะถูกยุบมารวมลงในช่อง JSON String ของ `formData`</div>
+          <table>
+            <thead>
+              <tr>
+                <th>ชื่อฟิลด์</th>
+                <th>ชนิดข้อมูล</th>
+                <th>คีย์</th>
+                <th>คำอธิบาย</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>dataId</code></td>
+                <td>String (UUID)</td>
+                <td><span class="badge-key pk">PK</span></td>
+                <td>รหัสรายการคำตอบ</td>
+              </tr>
+              <tr>
+                <td><code>formId</code></td>
+                <td>String (FK)</td>
+                <td><span class="badge-key fk">FK</span></td>
+                <td>รหัสแบบฟอร์มอ้างอิงจาก FormTemplates</td>
+              </tr>
+              <tr>
+                <td><code>agencyId</code></td>
+                <td>String (FK)</td>
+                <td><span class="badge-key fk">FK</span></td>
+                <td>รหัสสังกัดที่นำส่งรายงาน</td>
+              </tr>
+              <tr>
+                <td><code>username</code></td>
+                <td>String (FK)</td>
+                <td><span class="badge-key fk">FK</span></td>
+                <td>บัญชีผู้กรอกนำส่งข้อมูลจริง</td>
+              </tr>
+              <tr>
+                <td><code>status</code></td>
+                <td>String (Enum)</td>
+                <td>-</td>
+                <td>สถานะตรวจรับ: <code>Draft</code>, <code>Pending</code>, <code>Approved</code>, <code>Rejected</code></td>
+              </tr>
+              <tr>
+                <td><code>formData</code></td>
+                <td>JSON (String)</td>
+                <td>-</td>
+                <td>ชุดข้อมูลผลลัพธ์คำตอบทั้งหมดที่กรอกนำส่ง</td>
+              </tr>
+              <tr>
+                <td><code>timestamp</code></td>
+                <td>DateTime</td>
+                <td>-</td>
+                <td>วันและเวลาที่มีการส่งบันทึกเข้าสู่ระบบ</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table 5: AuditLogs -->
+        <div class="db-table-card">
+          <div class="db-table-header">
+            <span>ตารางที่ 5: AuditLogs (ประวัติกิจกรรมระบบ)</span>
+            <span class="tag">Logs Sheet</span>
+          </div>
+          <div class="db-table-desc">เก็บบันทึกประวัติกิจกรรมสำคัญเพื่อความโปร่งใส ปลอดภัย และการตรวจสอบย้อนกลับ</div>
+          <table>
+            <thead>
+              <tr>
+                <th>ชื่อฟิลด์</th>
+                <th>ชนิดข้อมูล</th>
+                <th>คีย์</th>
+                <th>คำอธิบาย</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>logId</code></td>
+                <td>String (UUID)</td>
+                <td><span class="badge-key pk">PK</span></td>
+                <td>รหัสบันทึกกิจกรรมย่อย</td>
+              </tr>
+              <tr>
+                <td><code>timestamp</code></td>
+                <td>DateTime</td>
+                <td>-</td>
+                <td>วันเวลาที่เกิดเหตุการณ์นั้นขึ้น</td>
+              </tr>
+              <tr>
+                <td><code>username</code></td>
+                <td>String (FK)</td>
+                <td><span class="badge-key fk">FK</span></td>
+                <td>บัญชีผู้ใช้ที่เป็นคนสั่งกระทำการ</td>
+              </tr>
+              <tr>
+                <td><code>role</code></td>
+                <td>String (Text)</td>
+                <td>-</td>
+                <td>บทบาทของผู้ปฏิบัติการขณะทำรายการ</td>
+              </tr>
+              <tr>
+                <td><code>action</code></td>
+                <td>String (Text)</td>
+                <td>-</td>
+                <td>ชื่อเหตุการณ์หลัก เช่น <code>login_success</code>, <code>submit_data</code></td>
+              </tr>
+              <tr>
+                <td><code>details</code></td>
+                <td>String (Text)</td>
+                <td>-</td>
+                <td>คำอธิบายเพิ่มเติม เช่น ชื่อแบบฟอร์มที่ลบ หรือผู้ใช้ที่สร้างใหม่</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table 6: GisCoords -->
+        <div class="db-table-card">
+          <div class="db-table-header">
+            <span>ตารางที่ 6: GisCoords (พิกัดภูมิศาสตร์)</span>
+            <span class="tag">GIS Sheet</span>
+          </div>
+          <div class="db-table-desc">เก็บตำแหน่ง GPS ละติจูดและลองจิจูดของสำนักงานแต่ละสังกัด ใช้ปักหมุดในแผนที่และวิเคราะห์ความหนาแน่น</div>
+          <table>
+            <thead>
+              <tr>
+                <th>ชื่อฟิลด์</th>
+                <th>ชนิดข้อมูล</th>
+                <th>คีย์</th>
+                <th>คำอธิบาย</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>agencyId</code></td>
+                <td>String (FK)</td>
+                <td><span class="badge-key pk">PK</span> <span class="badge-key fk">FK</span></td>
+                <td>รหัสสังกัดต้นสังกัดการปักหมุดแผนที่</td>
+              </tr>
+              <tr>
+                <td><code>lat</code></td>
+                <td>Number (Float)</td>
+                <td>-</td>
+                <td>พิกัดละติจูด (Latitude) ทางภูมิศาสตร์</td>
+              </tr>
+              <tr>
+                <td><code>lng</code></td>
+                <td>Number (Float)</td>
+                <td>-</td>
+                <td>พิกัดลองจิจูด (Longitude) ทางภูมิศาสตร์</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <div class="callout warning">
+        <span class="material-icons-round">warning</span>
+        <div>
+          <strong>ทำไมต้องใช้ JSON Stringified:</strong> การเก็บคำตอบคำถามย่อย (ในตารางชีต <code>Data</code> ฟิลด์ <code>formData</code>) และหน้าตาคอลัมน์ของแบบฟอร์ม (ในตารางชีต <code>FormTemplates</code> ฟิลด์ <code>formConfig</code>) เป็นข้อความ JSON แทนการกระจายเป็นคอลัมน์ Excel ทั่วไป ช่วยอำนวยความสะดวกให้ผู้ดูแลระบบสามารถ <strong>แก้ไขประเภทคำถาม เพิ่มคำถาม หรือลบประเภทการกรอกข้อมูลได้ตลอดเวลาแบบ Dynamic</strong> โดยไม่ต้องตามไปสลับ ลบ หรือเพิ่มคอลัมน์ใหม่ใน Excel ดิบ ซึ่งเป็นสาเหตุหลักทำให้ฐานข้อมูลเชิงสัมพันธ์แตกและสูญหาย
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: API & FUNCTIONS REFERENCE -->
+    <div id="section-api-endpoints" class="card d-none">
+      <h3 class="card-title">
+        <span class="material-icons-round title-icon">settings_ethernet</span>
+        <span>3. รายการ API หลังบ้าน & ฟังก์ชันประมวลผลทั้งหมด (รหัส.js)</span>
+      </h3>
+      <p>สรุปรายละเอียดการทำงานของฟังก์ชันหลังบ้านทั้งหมดจำนวน 74 ฟังก์ชัน ที่แบ่งออกเป็น 12 หมวดหมู่การใช้งาน รองรับการกรองตามชื่อหรือหมวดหมู่เพื่อศึกษาโครงสร้างและสิทธิ์การเข้าถึงข้อมูลเบื้องหลัง</p>
+      
+      <!-- Search and filter -->
+      <div class="search-filter-box">
+        <div class="search-input-wrapper">
+          <span class="material-icons-round">search</span>
+          <input type="text" id="apiSearch" class="search-input" placeholder="ค้นหาชื่อฟังก์ชัน..." oninput="filterApis()">
+        </div>
+        <select id="apiCategoryFilter" class="filter-select" onchange="filterApis()">
+          <option value="all">แสดงหมวดหมู่ทั้งหมด</option>
+          <option value="auth">1. สิทธิ์และเซสชันผู้ใช้ (Auth)</option>
+          <option value="cache">2. ระบบจัดการแคชหน่วยความจำ (Cache)</option>
+          <option value="rbac">3. การกรองสิทธิ์และบทบาท (RBAC)</option>
+          <option value="webapp">4. การโหลดหน้าเว็บและจัดแผงควบคุม (Routing)</option>
+          <option value="user_crud">5. บริการจัดการบัญชีสมาชิก (User CRUD)</option>
+          <option value="settings">6. บริการตั้งค่ากลางระบบ (Settings)</option>
+          <option value="templates">7. เทมเพลตและสร้างรายงาน (Templates)</option>
+          <option value="data_tx">8. ธุรกรรมนำส่งและเก็บคำตอบ (Data Submissions)</option>
+          <option value="bi_dashboard">9. ประมวลผลบอร์ด BI แดชบอร์ด (BI & GIS)</option>
+          <option value="ai_engine">10. ระบบเอไอประมวลผลหลัก (Gemini AI)</option>
+          <option value="dunning_mail">11. แจ้งเตือนและทวงถามทางเมล (Mailer)</option>
+          <option value="audit_diagnostics">12. กิจกรรมย้อนหลังและวิเคราะห์ระบบ (Audit & Tools)</option>
+        </select>
+      </div>
+
+      <!-- Scrollable API Container -->
+      <div class="api-grid-container" id="apiGrid">
+        <!-- Rendered dynamically via javascript -->
+      </div>
+    </div>
+
+    <!-- SECTION 4: INTERACTIVE TRANSACTION FLOW TRACER -->
+    <div id="section-sim-flows" class="card d-none">
+      <h3 class="card-title">
+        <span class="material-icons-round title-icon">play_circle_filled</span>
+        <span>4. ระบบโต้ตอบจำลองการวิ่งของข้อมูลตามเหตุการณ์จริง (Tracer)</span>
+      </h3>
+      <p>เลือกกระบวนการทำงานหรือธุรกรรม (Transaction) ด้านล่าง เพื่อจำลองขั้นตอนการส่งข้อมูลจากหน้าจอบราวเซอร์ วิ่งไปยังสคริปต์หลังบ้าน เช็คระบบความปลอดภัย เรียกใช้แคช คิวเขียนฐานข้อมูล หรือคุยกับ Gemini AI</p>
+      
+      <div style="margin-bottom: 24px;">
+        <label for="flowSelect" style="font-size: 13.5px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 8px;">กรุณาเลือกธุรกรรมหลักที่ต้องการตรวจสอบเส้นทางข้อมูล:</label>
+        <select id="flowSelect" class="filter-select" style="width: 100%; max-width: 600px;" onchange="loadSimulationFlow()">
+          <option value="login">1. เส้นทางการล็อกอินและการรักษาความปลอดภัยของเซสชัน (Login & Session)</option>
+          <option value="create_form">2. เส้นทางการสร้างแบบฟอร์มจัดเก็บข้อมูลใหม่ (Form Creation CRUD)</option>
+          <option value="submit_data">3. เส้นทางการกรอกแบบรายงานและการล็อกชนกัน (Data Submission & Lock)</option>
+          <option value="ai_dunning">4. เส้นทางระบบตรวจรายงานและร่างจดหมายทวงถามด้วย AI (AI Dunning Engine)</option>
+          <option value="dashboard_yoy">5. เส้นทางประมวลผลสถิติสะสมแดชบอร์ดหลักและประวัติ YoY (Dashboard & YoY)</option>
+          <option value="chatbot_bi">6. เส้นทางแชทบอทอัจฉริยะแปลงภาษาธรรมชาติเป็นกราฟิกชาร์ต (Conversational BI Assistant)</option>
+          <option value="executive_briefing">7. เส้นทางการจัดทำรายงานส่งตรงทางเมลผู้บริหารเชิงนโยบาย (Executive Summary A4)</option>
+        </select>
+      </div>
+
+      <!-- Simulation Layout Splitter -->
+      <div class="sim-layout">
+        
+        <!-- Left: Steps -->
+        <div class="sim-left-panel">
+          <div style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">ขั้นตอนการทำงานทีละขั้น (คลิกแต่ละขั้นเพื่อสั่งวิเคราะห์)</div>
+          <div class="sim-steps-wrapper" id="simStepsContainer">
+            <!-- Steps injected here -->
+          </div>
+        </div>
+
+        <!-- Right: Raw payload and codes preview -->
+        <div class="sim-right-panel">
+          
+          <div>
+            <div style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px;">การจำลองข้อมูลที่ส่งผ่านระบบ (JSON/Payload Preview)</div>
+            <div class="json-data-box" id="jsonPreviewBox">
+              <!-- JSON payload injected here -->
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px;">ซอร์สโค้ดการประมวลผลแกนหลักใน รหัส.js (Core Javascript Code)</div>
+            <div class="code-snippet-box" id="codeSnippetBox">
+              <!-- Code snippet injected here -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // Theme Manager
+    function initTheme() {
+      const saved = localStorage.getItem('flow_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', saved);
+      updateThemeIcon(saved);
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('flow_theme', next);
+      updateThemeIcon(next);
+    }
+
+    function updateThemeIcon(theme) {
+      const icon = document.getElementById('themeIcon');
+      if (icon) {
+        icon.innerText = theme === 'dark' ? 'light_mode' : 'dark_mode';
+      }
+    }
+
+    // Tab switcher
+    function switchSection(secId, btnElement) {
+      document.getElementById('section-architecture').classList.add('d-none');
+      document.getElementById('section-db-schema').classList.add('d-none');
+      document.getElementById('section-api-endpoints').classList.add('d-none');
+      document.getElementById('section-sim-flows').classList.add('d-none');
+      
+      document.getElementById('section-' + secId).classList.remove('d-none');
+      
+      document.querySelectorAll('.step-tab').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      btnElement.classList.add('active');
+
+      if (secId === 'sim-flows') {
+        loadSimulationFlow();
+      }
+    }
+
+    // Node Descriptions Data (Section 1 Architecture)
+    const ARCH_NODES_DATA = {
+      frontend: {
+        title: "💻 Browser Frontend UI (เว็บบราวเซอร์ผู้ใช้)",
+        desc: "เป็นส่วนการโต้ตอบหน้าเว็บที่ฝั่งไคลเอนต์ พัฒนาขึ้นด้วย HTML5/CSS3 และ JavaScript ควบคุมหน้าตาด้วยระบบ CSS ตัวแปรของระบบ และนำเสนอแผนภูมิรายงานโต้ตอบผ่าน ECharts บราวเซอร์ทำหน้าที่ดักรับคำสั่งผู้ใช้ ตรวจสอบเงื่อนไขกรอกข้อมูลขั้นต้น (Client-side validation) จากนั้นส่งข้อมูลแบบ Asynchronous ไร้รอยต่อข้ามเซิร์ฟเวอร์โดยเรียกคำสั่ง <code>google.script.run</code>"
+      },
+      geocoder: {
+        title: "🌍 Nominatim OpenStreetMap API (ระบบพิกัดภูมิศาสตร์ภายนอก)",
+        desc: "เป็น API สาธารณะภายนอกที่หน้าบ้านเป็นคนเรียกใช้โดยตรงเมื่อผู้ดูแลระบบกดปุ่มช่วยวิเคราะห์พิกัดอัตโนมัติ (Geocoding) หน้ารายการ Master Data ของแผงแอดมิน โดยจะส่งชื่อโรงเรียนหรือชื่อสังกัดเพื่อถอดรหัสออกมาเป็น ละติจูด/ลองจิจูด นำกลับมากรอกในแบบฟอร์มทันทีเพื่อลดภาระงานกรอกมือ"
+      },
+      backend: {
+        title: "⚙️ Apps Script Controller Engine (ตัวกลางประมวลผล)",
+        desc: "ศูนย์กลางควบคุมตรรกะระบบการทำงาน (Controller) ทั้งหมดบนระบบคลาวด์ของ Google ในฝั่งเซิร์ฟเวอร์ (ไฟล์ รหัส.js) มีสิทธิ์เข้าถึง Google Sheets โดยตรง ทำหน้าที่ควบคุมความเข้ากันได้ ปริมาณคิวของฐานข้อมูล สิทธิ์การล็อกอิน จัดสรรและป้องกันทราฟฟิกด้วยสัญญาล็อคสคริปต์ <code>LockService</code> ดึงหรือเขียนข้อมูล ส่งอีเมลออกจริงผ่าน <code>MailApp</code> และเตรียมบริบทข้อมูลเพื่อคุยกับ API ปลายทางอย่าง Gemini AI"
+      },
+      cache: {
+        title: "🔑 Cache Service (ระบบหน่วยความจำชั่วคราวประสิทธิภาพสูง)",
+        desc: "หน่วยความจำระยะสั้นของระบบหลังบ้านที่ดึงข้อมูลขึ้นมาแคชไว้ในหน่วยความจำ RAM ของเครื่องเซิร์ฟเวอร์ Google โดยตรง (ผ่าน <code>CacheService.getScriptCache()</code>) ใช้สำหรับเก็บรหัส Session Token ของการล็อกอิน (อายุ 2 ชั่วโมง) เพื่อรักษาความปลอดภัย และใช้แคชข้อมูลผลการคำนวณสะสมของ Dashboard รายปีที่มีการคำนวณเชิงลึกเปรียบเทียบ YoY ซึ่งช่วยเร่งความเร็วการเปิดหน้าเว็บของผู้ใช้ให้เร็วขึ้นจาก 15 วินาที เหลือ 0.8 วินาที"
+      },
+      sheets: {
+        title: "💾 Google Sheets Relational Database (ฐานข้อมูลชีต)",
+        desc: "เป็นจุดที่เก็บรักษาข้อมูลดิบอย่างยั่งยืนของโครงการทั้งหมด มีโครงสร้าง 6 แผ่นงานย่อยเชื่อมโยงกันด้วยรหัสสังกัดและชื่อผู้ใช้ หลังบ้านทำการอ่านเขียนข้อมูลบนตารางเหล่านี้แบบเป็นชุดเพื่อรักษาความเร็ว มีสัญญาล็อคข้อมูลควบคุมการชนกันไว้รองรับ และเก็บโครงสร้างคำถามเป็น JSON ช่วยป้องกันไฟล์พัง"
+      },
+      gemini: {
+        title: "🧠 Google Gemini 1.5 Flash AI Engine (สมองการประมวลผลร่วม)",
+        desc: "ระบบปัญญาประดิษฐ์อัจฉริยะระดับสูงของกูเกิลที่เชื่อมต่อตรงเข้ากับหลังบ้านผ่าน Apps Script REST API การเรียกแต่ละครั้งจะมีการจัดบริบทคำสั่ง (System Instruction) ที่มีโครงสร้างข้อมูลดิบเพื่อขอให้เอไอคิดวิเคราะห์ ช่วยร่างจดหมายอีเมลทวงถามข้อมูลค้างส่งที่มีรายละเอียดครบถ้วน เขียนบทวิเคราะห์ภาพรวมนโยบายประจำปี และแปลงประโยคคำถามทั่วไปเป็นโครงสร้างกราฟ JSON ในเมนูระบบ BI Chatbot"
+      }
+    };
+
+    function clickArchNode(nodeId) {
+      document.querySelectorAll('.arch-node-box').forEach(box => box.classList.remove('active'));
+      const activeBox = document.getElementById('node-' + nodeId);
+      if (activeBox) activeBox.classList.add('active');
+
+      const data = ARCH_NODES_DATA[nodeId];
+      if (data) {
+        document.getElementById('arch-node-explanation').innerHTML = `
+          <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-dark); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+            <span class="material-icons-round">info</span> ${data.title}
+          </h4>
+          <p style="margin-bottom: 0; font-size: 13.5px; line-height: 1.65; color: var(--text);">${data.desc}</p>
+        `;
+      }
+    }
+
+    // Core 74 Functions Data in Backend (รหัส.js)
+    const APIS_DATA = [
+      { name: "_hashPassword(plain, salt)", cat: "auth", role: "super_admin", read: "-", write: "-", cache: "-", desc: "สร้างการแฮชรหัสผ่านแบบ SHA-256 สำหรับใช้เป็นฐานความปลอดภัยตอนสมัครหรือแก้ไขรหัสผ่าน" },
+      { name: "_encodePassword(plain)", cat: "auth", role: "super_admin", read: "-", write: "-", cache: "-", desc: "ตัวช่วยจัดทำรหัสแฮชพร้อมสุ่ม Salt อัตโนมัติ" },
+      { name: "_verifyPassword(plain, stored)", cat: "auth", role: "super_admin", read: "-", write: "-", cache: "-", desc: "ตรวจสอบรหัสผ่านดิบเปรียบเทียบกับรหัสผ่านที่จัดเก็บไว้ในฐานข้อมูลชีต" },
+      { name: "_createSession(userData)", cat: "auth", role: "guest", read: "-", write: "-", cache: "Write Session (2 Hrs)", desc: "สร้างคีย์ Session Token รหัสผ่านแบบสุ่ม เก็บสิทธิ์และชื่อผู้ใช้ไว้ใน CacheService กำหนดขยายเวลา 2 ชั่วโมง" },
+      { name: "_resolveSession(token)", cat: "auth", role: "guest", read: "-", write: "-", cache: "Read Session", desc: "ถอดรหัส Session Token ตรวจสิทธิ์การรันฟังก์ชันและขยายอายุเซสชัน" },
+      { name: "_invalidateSession(token)", cat: "auth", role: "guest", read: "-", write: "-", cache: "Invalidate Token", desc: "ลบโทเคนออกจาก Cache ล็อกเอาต์ระบบทันที" },
+      { name: "refreshSession(token)", cat: "auth", role: "agency", read: "-", write: "-", cache: "Extend TTL (2 Hrs)", desc: "API สั่งขยายเวลาของเซสชันที่ใกล้หมดอายุออกไปอีก 2 ชั่วโมง" },
+      { name: "_resolveAuth(payload)", cat: "auth", role: "guest", read: "-", write: "-", cache: "Read Session", desc: "ตรวจสอบเซสชันรับและดึงคุณสมบัติของ Payload ทั่วไป" },
+      { name: "_resolveAuthParam(payloadOrRole)", cat: "auth", role: "guest", read: "-", write: "-", cache: "Read Session", desc: "ฟังก์ชัน Helper พิเศษดักจับสิทธิ์สอดรับตำแหน่งพารามิเตอร์" },
+      { name: "verifySession(token)", cat: "auth", role: "guest", read: "-", write: "-", cache: "Read Session", desc: "ตรวจสอบการเชื่อมต่อเซสชันของหน้าเว็บบราวเซอร์ว่าโทเคนยังไม่หมดอายุ" },
+      
+      { name: "_cacheGet(key)", cat: "cache", role: "guest", read: "-", write: "-", cache: "Read key", desc: "ดึงคีย์ข้อมูลความเร็วสูงจาก CacheService" },
+      { name: "_cacheSet(key, value, ttlSeconds)", cat: "cache", role: "guest", read: "-", write: "-", cache: "Write key", desc: "บันทึกคีย์ข้อมูลลง CacheService" },
+      { name: "_cacheSetChunked(key, str, ttlSeconds)", cat: "cache", role: "guest", read: "-", write: "-", cache: "Write Chunks", desc: "ซอยย่อยสปิลิตสตริงขนาดใหญ่จัดเก็บทีละบล็อกในหน่วยความจำ RAM เพื่อข้ามขีดจำกัดขนาดความยาวกูเกิลแคช (100KB)" },
+      { name: "_cacheGetChunked(key)", cat: "cache", role: "guest", read: "-", write: "-", cache: "Read Chunks", desc: "ดึงข้อมูล RAM แคชแบบซอยย่อย นำมารวมกลับคืนเป็นข้อความเดียวกัน" },
+      { name: "_cacheGetSmart(key)", cat: "cache", role: "guest", read: "-", write: "-", cache: "Read Key/Chunks", desc: "Helper ตัดสินใจดึงแคชปกติหรือแคชแยกส่วนแบบอัตโนมัติ" },
+      { name: "_cacheInvalidate(keys)", cat: "cache", role: "guest", read: "-", write: "-", cache: "Delete keys", desc: "คำสั่งสั่งล้างกุญแจหน่วยความจำที่กำหนดทิ้งทันที" },
+      { name: "_invalidateDashboardCache()", cat: "cache", role: "admin", read: "-", write: "-", cache: "Delete Dashboard Keys", desc: "ล้างสถิติแดชบอร์ดสะสมทั้งหมด ทุกสังกัด ทุกปีการศึกษา เพื่อล้างค่าให้สถิติเริ่มคำนวณใหม่" },
+      { name: "clearAllCache()", cat: "cache", role: "super_admin", read: "-", write: "-", cache: "Clear All RAM", desc: "แผงควบคุมแอดมินล้างหน่วยความจำ RAM ทั้งหมดเพื่อเริ่มล้างระบบใหม่" },
+      { name: "getCacheStatus()", cat: "cache", role: "super_admin", read: "-", write: "-", cache: "Inspect Cache", desc: "ตรวจสอบปริมาณกุญแจแคชที่ยังเหลือประมวลผลอยู่เบื้องหลัง" },
+
+      { name: "checkRole(callerRole, predicate, actionName)", cat: "rbac", role: "guest", read: "-", write: "-", cache: "-", desc: "ดักสิทธิ์บทบาทว่าถึงเป้าสิทธิ์ขั้นต่ำสำหรับการรัน API หรือไม่ ถ้าไม่ผ่านระบบจะตัดสิทธิ์ Throw Error ทันที" },
+      { name: "checkAgencyOwnership(callerRole, callerAgencyId, targetAgencyId)", cat: "rbac", role: "guest", read: "-", write: "-", cache: "-", desc: "ตรวจสอบสิทธิ์บัญชีสังกัด ว่าเป็นเจ้าของชุดคำตอบที่จะแก้ไขจริงหรือไม่ (ยกเว้น Admin ที่มีสิทธิ์ข้ามเขตสังกัดได้)" },
+
+      { name: "include(filename)", cat: "webapp", role: "guest", read: "-", write: "-", cache: "-", desc: "ฟังก์ชันหลักฝั่ง Apps Script สำหรับทำ HTML Import แทรกไฟล์ CSS หรือ JS ย่อยใน Index" },
+      { name: "doGet(e)", cat: "webapp", role: "guest", read: "Settings", write: "-", cache: "-", desc: "ตัวเร้าเตอร์เปิดหน้าเว็บ (Routing) ทำการอ่าน query page ส่งหน้า Dashboard หรือ ReportBuilder สู่บราวเซอร์" },
+      { name: "setup()", cat: "webapp", role: "super_admin", read: "-", write: "Users, Settings", cache: "-", desc: "เริ่มระบบครั้งแรก (First-run deployment initialization)" },
+      { name: "getReportBuilderUrl()", cat: "webapp", role: "admin", read: "-", write: "-", cache: "-", desc: "ดึงที่อยู่เว็บของระบบการจัดทำกราฟิก BI" },
+      { name: "getAgencyMasterList()", cat: "webapp", role: "guest", read: "-", write: "-", cache: "-", desc: "ดึงรายการและรายชื่อสังกัดหลักทั้ง 13 สังกัดของจังหวัดสกลนคร" },
+      { name: "resolveAgencyId(raw)", cat: "webapp", role: "guest", read: "-", write: "-", cache: "-", desc: "ฟังก์ชัน Helper แปลงชื่อสังกัดภาษาไทยกลับมาเป็นรหัสสังกัดภายใน" },
+      { name: "logAction(userRole, action, details)", cat: "webapp", role: "guest", read: "-", write: "AuditLogs", cache: "-", desc: "บันทึกข้อมูลบันทึกกิจกรรมย่อยเพื่อความโปร่งใสในทางราชการ" },
+      { name: "initSetup()", cat: "webapp", role: "super_admin", read: "Users", write: "Users, Settings", cache: "-", desc: "สร้างหน้าต่างฐานข้อมูลเริ่มต้นเมื่อระบบติดตั้งใหม่และสร้างผู้ใช้ระบบ Super Admin แรกสุด" },
+
+      { name: "authenticateUser(payload)", cat: "user_crud", role: "guest", read: "Users", write: "-", cache: "Write Session Token", desc: "ตรวจสอบข้อมูลล็อกอิน หากรหัสผ่านถูกต้องจะสร้างเซสชันโทเคนและคืนสิทธิ์ผู้ใช้" },
+      { name: "logoutUser(sessionToken)", cat: "user_crud", role: "guest", read: "-", write: "-", cache: "Delete Session Token", desc: "ล้างโทเคนและออกจากระบบอย่างปลอดภัย" },
+      { name: "getUsersList(payloadOrRole)", cat: "user_crud", role: "admin", read: "Users", write: "-", cache: "-", desc: "ดึงรายชื่อบัญชีสิทธิ์ทั้งหมดเพื่อนำแสดงในตารางสมาชิก" },
+      { name: "saveUser(payload)", cat: "user_crud", role: "admin", read: "Users", write: "Users", cache: "-", desc: "บันทึกหรืออัปเดตสมาชิกผู้ใช้ใหม่ แอดมินสามารถเพิ่มหรือแก้ไขข้อมูล" },
+      { name: "deleteUser(payload)", cat: "user_crud", role: "super_admin", read: "Users", write: "Users", cache: "-", desc: "ลบบัญชีผู้ใช้จากระบบแบบถาวร" },
+      { name: "resetPassword(payload)", cat: "user_crud", role: "super_admin", read: "Users", write: "Users", cache: "-", desc: "บังคับเปลี่ยนรหัสผ่านของผู้กรอกสังกัดย่อยใหม่ด่วน" },
+      { name: "toggleUserStatus(payload)", cat: "user_crud", role: "admin", read: "Users", write: "Users", cache: "-", desc: "สลับสถานะบัญชีสมาชิก Active/Inactive ระงับการใช้งาน" },
+
+      { name: "getSettings()", cat: "settings", role: "guest", read: "Settings", write: "-", cache: "Read Settings", desc: "ดึงรายการการตั้งค่าของระบบกลางทั้งหมด" },
+      { name: "saveSetting(payload)", cat: "settings", role: "admin", read: "Settings", write: "Settings", cache: "-", desc: "แก้ไขกำหนดการการตั้งค่า เช่น เปลี่ยนรอบปีการศึกษาหรือปีอ้างอิงหลัก" },
+
+      { name: "getAllFormTemplates(payloadOrRole)", cat: "templates", role: "guest", read: "FormTemplates", write: "-", cache: "Read Forms", desc: "ดึงรายการแบบฟอร์มคำถามเพื่อจัดทำเมนู" },
+      { name: "getAvailableFormsForAgency(agencyId)", cat: "templates", role: "agency", read: "FormTemplates", write: "-", cache: "Read Forms_Agency", desc: "ตรวจสอบแบบรายงานที่กำหนดเปิดให้สังกัดเป้าหมายเป็นผู้กรอกข้อมูล" },
+      { name: "_invalidateFormsCache()", cat: "templates", role: "admin", read: "-", write: "-", cache: "Delete Forms Cache", desc: "ลบแคชของโครงสร้างแบบฟอร์มในระบบทั้งหมด" },
+      { name: "saveFormTemplate(payload)", cat: "templates", role: "admin", read: "FormTemplates", write: "FormTemplates", cache: "Invalidate Forms", desc: "บันทึกเทมเพลตฟอร์มคำถามคำสั่งกรอกข้อมูลรายงานในระบบและสั่งเคลียร์แคช" },
+      { name: "deleteFormTemplate(payload)", cat: "templates", role: "admin", read: "FormTemplates", write: "FormTemplates", cache: "Invalidate Forms", desc: "ลบแบบรายงานพร้อมกับคำถามออกจากโครงการ" },
+      { name: "duplicateFormTemplate(payload)", cat: "templates", role: "admin", read: "FormTemplates", write: "FormTemplates", cache: "Invalidate Forms", desc: "ทำสำเนาคัดลอกสร้างแบบฟอร์มรายงานใหม่ขึ้นมาจากแบบฟอร์มเดิม" },
+      { name: "fixFormTemplatesHeader()", cat: "templates", role: "super_admin", read: "FormTemplates", write: "FormTemplates", cache: "-", desc: "สแกนคอลัมน์และแก้ไขตัวแปรหัวข้อตาราง FormTemplates ป้องกันไฟล์บิดเบี้ยว" },
+
+      { name: "updateDataStatus(payload)", cat: "data_tx", role: "admin", read: "Data", write: "Data", cache: "Invalidate Dashboards", desc: "ตรวจสอบและอนุมัติรายงาน (Approved/Rejected) เพื่อให้นำไปคำนวณลงกราฟได้" },
+      { name: "submitData(payload)", cat: "data_tx", role: "agency", read: "Data", write: "Data", cache: "Invalidate Dashboards", desc: "บันทึกผลการนำส่งรายงานจากสังกัด โดยแปลงฟิลด์คำตอบย่อยทั้งหมดเป็นข้อความก้อนเดียว เขียนลงตารางอย่างปลอดภัยผ่านคิวล็อค Concurrency" },
+      { name: "deleteData(payload)", cat: "data_tx", role: "admin", read: "Data", write: "Data", cache: "Invalidate Dashboards", desc: "ลบข้อมูลคำตอบนำส่งของสังกัดทิ้งถาวร" },
+      { name: "getSubmittedData(payloadOrRole, agencyId)", cat: "data_tx", role: "agency", read: "Data", write: "-", cache: "-", desc: "ดึงรายการข้อมูลคำตอบที่กรอกส่งเข้ามาแล้วแยกรายสังกัดย่อย" },
+      { name: "fixDataSheetHeader()", cat: "data_tx", role: "super_admin", read: "Data", write: "Data", cache: "-", desc: "Helper ตรวจสอบแถวหัวข้อของตารางส่งงาน Data เผื่อมีคอลัมน์ขาดหาย" },
+
+      { name: "getDashboardData(payloadOrYear, filterAgency)", cat: "bi_dashboard", role: "guest", read: "Data, FormTemplates, GisCoords", write: "-", cache: "Read/Write Dashboard RAM", desc: "ประมวลผลสรุปเปรียบเทียบสัดส่วนและร้อยละการนำส่งรายงาน แยกตามสังกัด เพื่อสร้าง Leaderboard และข้อมูลแผนที่โต้ตอบ" },
+      { name: "getYoYData()", cat: "bi_dashboard", role: "guest", read: "Data", write: "-", cache: "Read/Write YoY RAM", desc: "วิเคราะห์ข้อมูลสถิติเปรียบเทียบอัตราการเจริญเติบโตแบบ YoY (Year over Year)" },
+      { name: "getMonitoringData(payloadOrRole)", cat: "bi_dashboard", role: "admin", read: "FormTemplates, Data", write: "-", cache: "-", desc: "ประมวลผลตารางเมทริกซ์สลับจุดเพื่อบอกว่ามีหน่วยงานใดบ้างที่ส่ง ล่าช้า หรือค้างส่งรายงานใดอยู่บ้าง" },
+      { name: "saveAgencyGisCoord(payload)", cat: "bi_dashboard", role: "admin", read: "GisCoords", write: "GisCoords", cache: "Invalidate Dashboards", desc: "บันทึกตำแหน่งพิกัดแผนที่ละติจูด/ลองจิจูดของสำนักงานแต่ละสังกัดเพื่อแก้ไขข้อมูลระบบ GIS" },
+      { name: "getAgencyGisCoords()", cat: "bi_dashboard", role: "guest", read: "GisCoords", write: "-", cache: "-", desc: "ดึงพิกัดแผนที่ GIS เพื่อนำมาพล็อตจุดสีหรือพินโชว์บนหน้าจอกลางจังหวัด" },
+
+      { name: "_callGemini(apiKey, contents, maxTokens, temperature, systemInstructionText)", cat: "ai_engine", role: "guest", read: "-", write: "-", cache: "-", desc: "ฟังก์ชันหลักแกนส่งคำสั่ง REST API ไปยังโมเดลปัญญาประดิษฐ์กูเกิล Gemini 1.5 Flash พร้อมระบุ System Instruction" },
+      { name: "askChatbot(payload)", cat: "ai_engine", role: "agency", read: "Data, FormTemplates", write: "AuditLogs", cache: "-", desc: "เชื่อมต่อพิกัด Chatbot ส่งข้อมูลดิบที่ได้รับอนุมัติเฉพาะเรื่องไปประมวลผล เพื่อให้ AI เขียนวิเคราะห์และส่งคำสั่งจัดหน้ากราฟิก JSON มาสร้างชาร์ตทันที" },
+      { name: "verifyChatbotPin(payload)", cat: "ai_engine", role: "agency", read: "Settings", write: "-", cache: "-", desc: "ตรวจสอบ PIN ความปลอดภัยก่อนเข้าสิทธิ์ใช้งานบริการปัญญาประดิษฐ์" },
+      { name: "_cbGetLatestApprovedData(agencyFilter)", cat: "ai_engine", role: "agency", read: "Data", write: "-", cache: "-", desc: "ดึงชุดคำตอบที่ผ่านการอนุมัติล่าสุดของสังกัดเพื่อใช้ป้อนเป็นบริบทประเด็นให้แชทบอทวิเคราะห์" },
+      { name: "_cbBuildContext(question, payload)", cat: "ai_engine", role: "agency", read: "-", write: "-", cache: "-", desc: "Helper ประกอบคำสั่งพร้อมตารางเปรียบเทียบข้อมูลย่อยเป็นเนื้อความบริบทเพื่อส่งให้ Gemini AI ป้องกันคำตอบเลื่อนลอย" },
+      { name: "generateExecutiveSummary(payload)", cat: "ai_engine", role: "admin", read: "Data, FormTemplates", write: "AuditLogs", cache: "-", desc: "วิเคราะห์ภาพรวมผลการเก็บข้อมูลของสังกัดทั้งจังหวัด เพื่อร่างรายงานเชิงนโยบายความกว้าง A4 ส่งตรงสู่คณะผู้บริหารระดับสูง" },
+      { name: "processAiBiPrompt(payload)", cat: "ai_engine", role: "admin", read: "FormTemplates", write: "-", cache: "-", desc: "แปลงภาษาธรรมชาติของผู้ใช้งาน เพื่อวิเคราะห์ประเภทข้อมูลและส่งคืนชาร์ตคอนฟิกและกราฟิกชาร์ตสำหรับหน้า BI" },
+      { name: "generateAiDunningDraft(payload)", cat: "ai_engine", role: "admin", read: "Users, FormTemplates, Data", write: "-", cache: "-", desc: "สแกนหาข้อค้างส่ง ดึงรายชื่ออีเมลผู้รับผิดชอบ และร่างเอกสารทวงถามด้วยภาษาเขียนทางการผ่าน Gemini AI" },
+
+      { name: "sendReminderEmails(payload)", cat: "dunning_mail", role: "admin", read: "Users", write: "-", cache: "-", desc: "ส่งอีเมลแจ้งเตือนการค้างส่งฟอร์มข้อมูลแบบกลุ่มไปยังผู้กรอกที่กำหนด" },
+      { name: "sendEmailNotification(payload)", cat: "dunning_mail", role: "guest", read: "-", write: "-", cache: "-", desc: "Helper กลางของระบบส่งแจ้งเตือนอีเมลทั่วไป" },
+      { name: "sendDeadlineReminders()", cat: "dunning_mail", role: "super_admin", read: "FormTemplates, Users", write: "-", cache: "-", desc: "ระบบตรวจสอบวันกำหนดส่งท้ายของระบบอัตโนมัติ พร้อมส่งอีเมลแจ้งเตือนถึงผู้ค้างส่ง" },
+      { name: "sendAiDunningEmail(payload)", cat: "dunning_mail", role: "admin", read: "-", write: "AuditLogs", cache: "-", desc: "ดำเนินการส่งอีเมลทวงถามฉบับที่ปรับปรุงแล้วจาก AI ไปยังสังกัดที่กำหนดจริงและบันทึกประวัติการกระทำ" },
+      { name: "sendExecutiveBriefingEmail(payload)", cat: "dunning_mail", role: "admin", read: "-", write: "AuditLogs", cache: "-", desc: "ส่งจดหมายสรุปรายงานหน้าปก A4 พร้อมรูปกราฟความก้าวหน้าและคำสรุปของ AI ไปที่กล่องจดหมายผู้บริหารระดับสูง" },
+      { name: "setupDailyTrigger()", cat: "dunning_mail", role: "super_admin", read: "-", write: "-", cache: "-", desc: "จัดทำระบบทริกเกอร์ทำงานรายวัน (Daily Cron Job) ของ Google Apps Script เพื่อคอยแจ้งกำหนดส่งอัตโนมัติ" },
+
+      { name: "getAuditLogs(payloadOrRole)", cat: "audit_diagnostics", role: "admin", read: "AuditLogs", write: "-", cache: "-", desc: "ดึงรายการประวัติและกิจกรรมที่เกิดขึ้นเพื่อนำเสนอหน้า UAT บัญชีควบคุมระบบ" },
+      { name: "getSessionLog(payloadOrRole)", cat: "audit_diagnostics", role: "admin", read: "-", write: "-", cache: "-", desc: "ดึงบันทึกการทำงานของเซสชันที่ใช้งานในระบบปัจจุบัน" },
+      { name: "clearYearlyData(payload)", cat: "audit_diagnostics", role: "super_admin", read: "-", write: "Data", cache: "Invalidate Dashboards", desc: "ล้างข้อมูลนำส่งของปีการศึกษาที่เลือกทิ้งทั้งหมด เพื่อเริ่มปีการศึกษาใหม่" },
+      { name: "debugMonitoringStep()", cat: "audit_diagnostics", role: "super_admin", read: "-", write: "-", cache: "-", desc: "เครื่องมือย่อยสำหรับใช้ตรวจสอบบันทึกผลตรวจสอบทิศทางระบบในแผงโปรแกรม" },
+      { name: "getUpcomingDeadlines(payload)", cat: "audit_diagnostics", role: "guest", read: "FormTemplates", write: "-", cache: "-", desc: "ดึงรายการฟอร์มที่ใกล้หมดกำหนดการจัดส่งในอีก 7 วันข้างหน้า" }
+    ];
+
+    // Filter APIs logic
+    function filterApis() {
+      const query = document.getElementById('apiSearch').value.toLowerCase();
+      const category = document.getElementById('apiCategoryFilter').value;
+      const container = document.getElementById('apiGrid');
+      container.innerHTML = '';
+
+      const filtered = APIS_DATA.filter(api => {
+        const matchesQuery = api.name.toLowerCase().includes(query) || api.desc.toLowerCase().includes(query);
+        const matchesCat = category === 'all' || api.cat === category;
+        return matchesQuery && matchesCat;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-muted); font-size:14px;">ไม่พบฟังก์ชันที่สอดคล้องกับตัวกรอง</div>';
+        return;
+      }
+
+      filtered.forEach(api => {
+        let roleClass = 'badge-role-guest';
+        let roleName = 'บุคคลทั่วไป';
+        if (api.role === 'super_admin') { roleClass = 'badge-role-super'; roleName = 'Super Admin เท่านั้น'; }
+        else if (api.role === 'admin') { roleClass = 'badge-role-admin'; roleName = 'Admin ขึ้นไป'; }
+        else if (api.role === 'agency') { roleClass = 'badge-role-agency'; roleName = 'ผู้ส่งข้อมูลขึ้นไป'; }
+
+        container.innerHTML += `
+          <div class="api-card-ref">
+            <div class="api-card-header">
+              <div class="api-card-name">${api.name}</div>
+              <div class="api-card-badges">
+                <span class="badge-api ${roleClass}">${roleName}</span>
+              </div>
+            </div>
+            <p style="font-size:13px; margin-bottom:8px; line-height:1.5; color:var(--text);">${api.desc}</p>
+            <div class="api-card-details">
+              <div class="api-detail-col">
+                <span class="api-detail-label">อ่านฐานข้อมูล (Read)</span>
+                <span class="api-detail-value"><code>${api.read}</code></span>
+              </div>
+              <div class="api-detail-col">
+                <span class="api-detail-label">เขียนฐานข้อมูล (Write)</span>
+                <span class="api-detail-value"><code>${api.write}</code></span>
+              </div>
+              <div class="api-detail-col">
+                <span class="api-detail-label">ระบบแคช (Cache RAM)</span>
+                <span class="api-detail-value"><code>${api.cache}</code></span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // 7 Transaction Simulation Flows
+    const SIM_FLOWS = {
+      login: {
+        steps: [
+          {
+            title: "1. ส่งข้อมูลเข้าล็อกอินบนบราวเซอร์",
+            desc: "ผู้ใช้งานกรอกชื่อผู้ใช้และรหัสผ่านหน้าบ้าน หน้าบ้านนำรหัสมาเข้ารหัสความปลอดภัยเบื้องต้น (SHA-256) ป้องกันการส่งแบบ Clear text",
+            source: "frontend", dest: "backend",
+            payload: `{\n  "username": "spk_sakon",\n  "password": "hashed_string_via_javascript_sha256"\n}`,
+            code: `// JS_App.html\nfunction login() {\n  var payload = {\n    username: $("#loginUser").val().trim(),\n    password: sha256($("#loginPass").val())\n  };\n  google.script.run.withSuccessHandler(loginSuccess).authenticateUser(payload);\n}`
+          },
+          {
+            title: "2. เซิร์ฟเวอร์หลังบ้านตรวจสอบรหัส",
+            desc: "เซิร์ฟเวอร์หลังบ้าน (รหัส.js) ดึงตาราง Users ขึ้นมาตรวจสอบบัญชี แล้วเรียก `_verifyPassword` เปรียบเทียบรหัสที่บันทึกไว้ในแผ่นงาน",
+            source: "backend", dest: "sheets",
+            payload: `// เรียกฟังก์ชันใน backend\nauthenticateUser(payload);\n\n// ยืนยันสิทธิ์กับฐานข้อมูล Sheets\nvar userRow = findUserInSheet(payload.username);`,
+            code: `// รหัส.js\nfunction authenticateUser(payload) {\n  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Users');\n  var user = findUser(sheet, payload.username);\n  if (user && _verifyPassword(payload.password, user.password)) {\n    return _createSession(user);\n  }\n  throw new Error("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");\n}`
+          },
+          {
+            title: "3. ลงทะเบียนเซสชันในหน่วยความจำแคช",
+            desc: "หากตรวจสอบสิทธิ์ผ่าน ระบบจะสร้าง Session Token สุ่มขึ้นมานำมาบันทึกสิทธิ์ลงใน CacheService อายุ 2 ชั่วโมง (7,200 วินาที)",
+            source: "backend", dest: "cache",
+            payload: `{\n  "sessionToken": "session_6b537ae2_32ea_408e_bca5",\n  "userData": {\n    "username": "spk_sakon",\n    "role": "agency_user",\n    "name": "เจ้าหน้าที่ สพม.สกลนคร"\n  }\n}`,
+            code: `// รหัส.js\nfunction _createSession(userData) {\n  var token = 'session_' + Utilities.getUuid();\n  _cacheSet(token, JSON.stringify(userData), 7200); // 2 hours\n  return { token: token, user: userData };\n}`
+          },
+          {
+            title: "4. หน้าจอยืนยันสิทธิ์การใช้งานและเปิดเมนู",
+            desc: "หน้าจอผู้ใช้งานบันทึกโทเคนลงใน LocalStorage ของบราวเซอร์ และเริ่มต้นทำงานฟังก์ชันตั้งเวลา (Session Heartbeat) เพื่อคอยรีเฟรชสิทธิ์ทุก 25 นาที",
+            source: "cache", dest: "frontend",
+            payload: `// คืนข้อมูลตอบกลับสู่บราวเซอร์\n{\n  "status": "success",\n  "token": "session_6b537ae2_32ea_408e_bca5",\n  "name": "เจ้าหน้าที่ สพม.สกลนคร"\n}`,
+            code: `// JS_App.html\nfunction loginSuccess(res) {\n  localStorage.setItem('session_token', res.token);\n  currentSession = res.user;\n  _startSessionHeartbeat();\n  navigate('dashboard');\n}`
+          }
+        ]
+      },
+      create_form: {
+        steps: [
+          {
+            title: "1. แอดมินตั้งค่าคำถามและกุญแจเก็บข้อมูล",
+            desc: "แอดมินสร้างฟอร์มจัดเก็บบนเมนูบิลเดอร์ กำหนดขอบเขตคอลัมน์ กำหนดสังกัดที่ต้องกรอก และขีดเส้นเวลา (Deadline)",
+            source: "frontend", dest: "backend",
+            payload: `{\n  "token": "session_admin_token_xyz",\n  "formName": "แบบรายงานจำนวนเด็กหลุดออกนอกระบบ 2569",\n  "agencies": "spm_sakon, spk_sakon, primary_sakon",\n  "deadline": "2026-06-30",\n  "fields": [\n    {"id":"field_1", "label":"จำนวนนักเรียนออกกลางคัน", "type":"number", "required":true},\n    {"id":"field_2", "label":"สาเหตุส่วนใหญ่", "type":"text", "required":false}\n  ]\n}`,
+            code: `// ReportBuilder.html\nfunction saveForm() {\n  var payload = {\n    token: getSessionToken(),\n    formName: $("#formName").val(),\n    deadline: $("#deadline").val(),\n    formConfig: JSON.stringify(fieldsArray)\n  };\n  google.script.run.withSuccessHandler(onSaveSuccess).saveFormTemplate(payload);\n}`
+          },
+          {
+            title: "2. ระบบดักความปลอดภัยสิทธิ์เข้าถึง (RBAC)",
+            desc: "เซิร์ฟเวอร์แกะข้อมูลเซสชันเพื่อดักตรวจสอบสิทธิ์ `checkRole` สิทธิ์นี้จำกัดเฉพาะระดับ Admin หรือ Super Admin เท่านั้น",
+            source: "backend", dest: "cache",
+            payload: `// ตรวจสิทธิ์ระดับแอดมิน\ncheckRole(caller.role, predicate_is_admin);`,
+            code: `// รหัส.js\nfunction saveFormTemplate(payload) {\n  var auth = _resolveAuth(payload);\n  checkRole(auth.role, IS_ADMIN_UP, "saveFormTemplate");\n  // ผ่านสิทธิ์การควบคุมระดับเข้าใช้งาน...\n}`
+          },
+          {
+            title: "3. กู้ล็อคสัญญาสคริปต์และบันทึกฐานข้อมูลชีต",
+            desc: "ระบบทำเรื่องขอสิทธิ์ล็อค `LockService` ป้องกันคนเขียนทับกัน เขียนข้อมูลลงชีต `FormTemplates` ด้วย Dynamic JSON String",
+            source: "backend", dest: "sheets",
+            payload: `// บันทึกแถวใหม่ลงตารางชีต FormTemplates\n[\n  "form_9396RDF",\n  "แบบรายงานจำนวนเด็กหลุดออกนอกระบบ 2569",\n  "spm_sakon, spk_sakon",\n  "2026-06-30",\n  "{\\"fields\\":[...]}"\n]`,
+            code: `// รหัส.js\nvar lock = LockService.getScriptLock();\ntry {\n  lock.waitLock(5000);\n  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('FormTemplates');\n  sheet.appendRow([payload.formId, payload.formName, payload.agencies, payload.deadline, payload.formConfig]);\n} finally {\n  lock.releaseLock();\n}`
+          },
+          {
+            title: "4. ล้างหน่วยความจำแคชเพื่ออัปเดตฟอร์มปลายทาง",
+            desc: "ระบบทำการเคลียร์แคชโครงสร้างฟอร์มของทุกโรงเรียนและสังกัด เมื่อผู้ส่งข้อมูลรีเฟรชหน้าจะเห็นการเปลี่ยนแปลงฟอร์มทันที",
+            source: "backend", dest: "cache",
+            payload: `// สั่งเคลียร์แคชที่มีแท็ก:\n"forms_agency_spm_sakon"\n"forms_agency_spk_sakon"`,
+            code: `// รหัส.js\nfunction _invalidateFormsCache() {\n  var cache = CacheService.getScriptCache();\n  // วนลูปสั่งทำลายค่ากุญแจเก่าทิ้ง...\n  cache.remove('all_form_templates');\n}`
+          }
+        ]
+      },
+      submit_data: {
+        steps: [
+          {
+            title: "1. กรอกข้อมูลหรือดาวน์โหลดเทมเพลตนำเข้า CSV",
+            desc: "หน้าจอแสดงผลตาม Dynamic Schema ผู้ใช้เลือกกรอกข้อมูลหรืออัปโหลด CSV (ที่ถอดรหัส UTF-8 BOM มีคอลัมน์และคำตอบครบ)",
+            source: "frontend", dest: "backend",
+            payload: `{\n  "token": "session_6b537ae2_32ea_408e_bca5",\n  "formId": "form_9396RDF",\n  "formData": {\n    "field_1": 42,\n    "field_2": "ปัญหาครอบครัวย้ายถิ่นฐาน"\n  }\n}`,
+            code: `// JS_App.html\nfunction submitFormResponse() {\n  var payload = {\n    token: getSessionToken(),\n    formId: currentFormId,\n    formData: JSON.stringify(formDataValues)\n  };\n  google.script.run.withSuccessHandler(onSubmitSuccess).submitData(payload);\n}`
+          },
+          {
+            title: "2. ตรวจสอบกุญแจสิทธิ์ของเซสชันและปีปัจจุบัน",
+            desc: "เช็คสิทธิ์ผู้ส่งสังกัดกับเจ้าของข้อมูลจริง ตรวจสอบและบังคับให้ส่งข้อมูลในช่วงปีการศึกษาและวันกำหนดส่งตาม Settings",
+            source: "backend", dest: "cache",
+            payload: `// ตรวจความถูกต้องของเซสชันที่แคช...\nCheck: auth.agencyId === payload.agencyId;\nCheck: current_date <= deadline;`,
+            code: `// รหัส.js\nfunction submitData(payload) {\n  var auth = _resolveAuth(payload);\n  checkRole(auth.role, IS_AGENCY_UP, "submitData");\n  // เช็คความเป็นเจ้าของสังกัดความคุ้มกัน...\n}`
+          },
+          {
+            title: "3. เปิดสัญญาล็อคป้องกันเขียนชนและแทรกข้อมูลดิบลงชีต Data",
+            desc: "กู้วัฏจักรล็อคสคริปต์ <code>LockService</code> บันทึกข้อมูลคำตอบลงตารางชีต `Data` พร้อมแนบชื่อบัญชีสังกัดและวันนำส่ง",
+            source: "backend", dest: "sheets",
+            payload: `// แทรกลงตารางชีต Data\n[\n  "data_uuid_112233",\n  "form_9396RDF",\n  "spk_sakon",\n  "spk_sakon_user",\n  "Pending",\n  "{\\"field_1\\":42,\\"field_2\\":\\"ย้ายถิ่นฐาน\\"}",\n  "2026-06-04 13:30:00"\n]`,
+            code: `// รหัส.js\nvar lock = LockService.getScriptLock();\ntry {\n  lock.waitLock(5000);\n  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Data');\n  // สแกนเขียนหรือแทรกบรรทัดใหม่...\n} finally {\n  lock.releaseLock();\n}`
+          },
+          {
+            title: "4. บันทึกประวัติความโปร่งใสและสั่งเคลียร์แคชแดชบอร์ดหลัก",
+            desc: "บันทึกประวัติการส่งข้อมูลเข้าชีต `AuditLogs` ทันทีและล้างแคชแดชบอร์ดของระบบเพื่อให้ข้อมูลอัปเดตแบบเรียลไทม์",
+            source: "backend", dest: "sheets",
+            payload: `// เขียนลงชีต AuditLogs\n[\n  "log_abc_123",\n  "2026-06-04 13:30:05",\n  "spk_sakon_user",\n  "agency_user",\n  "submit_data",\n  "นำส่งฟอร์ม: แบบรายงานจำนวนเด็กหลุดออกนอกระบบ 2569"\n]`,
+            code: `// รหัส.js\nlogAction(auth.role, "submit_data", "ฟอร์ม: " + payload.formId);\n_invalidateDashboardCache();\nreturn { status: "success" };`
+          }
+        ]
+      },
+      ai_dunning: {
+        steps: [
+          {
+            title: "1. แอดมินสแกนตารางเมทริกซ์สถานะและคลิกทวงงาน",
+            desc: "ระบบแสดงความก้าวหน้าการรายงานผ่าน Matrix Grid หากสังกัดใดค้างส่ง จะมีปุ่มรูปไอคอน ✨ ปรากฏขึ้นเพื่อใช้ AI ทวงถามรายบุคคล",
+            source: "frontend", dest: "backend",
+            payload: `{\n  "token": "session_admin_token_xyz",\n  "agencyId": "spk_sakon",\n  "formId": "form_9396RDF"\n}`,
+            code: `// JS_App.html\nfunction triggerAiDunning(agencyId, formId) {\n  var payload = { token: getSessionToken(), agencyId: agencyId, formId: formId };\n  google.script.run.withSuccessHandler(showDunningPreview).generateAiDunningDraft(payload);\n}`
+          },
+          {
+            title: "2. เซิร์ฟเวอร์กู้ข้อมูลอีเมลและรายละเอียดแบบฟอร์มค้างส่ง",
+            desc: "ระบบนำรหัสสังกัดไปสแกนหาอีเมลเจ้าหน้าที่จากตาราง Users และดึงรายละเอียดชื่อฟอร์มและกำหนดส่งจาก FormTemplates",
+            source: "backend", dest: "sheets",
+            payload: `// ค้นหาในชีต Users และ FormTemplates\nTarget: email of "spk_sakon" -> "spk_sakon@edu.go.th"\nDeadline: "2026-06-30"`,
+            code: `// รหัส.js\nfunction generateAiDunningDraft(payload) {\n  var emails = getTargetEmails(payload.agencyId);\n  var form = getFormDetails(payload.formId);\n  // ประกอบบริบทเพื่อเตรียมส่งให้ Gemini...\n}`
+          },
+          {
+            title: "3. สั่งงานระบบสมองกล Gemini 1.5 Flash ร่างหนังสือทวงถาม",
+            desc: "ป้อนข้อมูลและกำหนด System Prompt สั่ง AI ร่างจดหมายทวงถามที่เป็นภาษาเขียนข้าราชการสุภาพแต่เฉียบคม คืนเป็นข้อความ JSON กลับระบบ",
+            source: "backend", dest: "gemini",
+            payload: `System: "คุณคือเลขานุการผู้ว่าราชการสกลนคร..."\nUser Context: "หน่วยงาน สพม.สกลนคร ค้างส่งรายงานจำนวนเด็กหลุดระบบ กำหนดส่ง 2026-06-30 ส่งผู้รับผิดชอบเมล spk_sakon@edu.go.th"`,
+            code: `// รหัส.js\nfunction generateAiDunningDraft(payload) {\n  var prompt = "ร่างจดหมายทวงถามราชการ...";\n  var aiResponse = _callGemini(API_KEY, prompt);\n  return { draft: aiResponse, emails: emails };\n}`
+          },
+          {
+            title: "4. แสดงจดหมายพรีวิวแอดมินกดยืนยันจัดส่งอีเมลจริง",
+            desc: "แอดมินตรวจสอบจดหมายหรือพิมพ์แก้ไขเพิ่มเติม จากนั้นกดยืนยัน เซิร์ฟเวอร์ส่งคำสั่งส่งเมลจริงผ่าน `MailApp` ไปยังเมลเป้าหมายทันที",
+            source: "gemini", dest: "frontend",
+            payload: `// จดหมายจาก AI ส่งต่อถึงกล่องจดหมายจริง\nSubject: "เรื่อง ทวงถามการจัดเก็บข้อมูลเด็กหลุดออกนอกระบบ..."\nRecipient: "spk_sakon@edu.go.th"`,
+            code: `// รหัส.js\nfunction sendAiDunningEmail(payload) {\n  MailApp.sendEmail({\n    to: payload.email,\n    subject: payload.subject,\n    htmlBody: payload.htmlBody\n  });\n  logAction("admin", "send_dunning_email", "ส่งทวงถามไปที่ " + payload.email);\n}`
+          }
+        ]
+      },
+      dashboard_yoy: {
+        steps: [
+          {
+            title: "1. หน้าจอหลักขอข้อมูลประมวลผลสถิติแดชบอร์ด",
+            desc: "เมื่อเปิดหน้าแดชบอร์ด หน้าจอจะขอตัวเลขสถิติภาพรวมจังหวัดและอันดับความก้าวหน้าแยกตามสังกัด (Leaderboard Map)",
+            source: "frontend", dest: "backend",
+            payload: `{\n  "token": "session_6b537ae2_32ea_408e_bca5",\n  "academicYear": "2569",\n  "filterAgency": "all"\n}`,
+            code: `// JS_App.html\nfunction loadDashboard() {\n  google.script.run.withSuccessHandler(renderCharts).getDashboardData("2569", "all");\n}`
+          },
+          {
+            title: "2. ค้นหาข้อมูลสะสมสถิติในหน่วยความจำแคชความเร็วสูง",
+            desc: "ตรวจสอบ RAM แคชเพื่อดึงข้อมูล หากแคชหมดอายุหรือไม่พบข้อมูล ระบบจึงจะทำเรื่องไปดึงข้อมูลจริงจากตารางฐานข้อมูลชีต",
+            source: "backend", dest: "cache",
+            payload: `// ตรวจสอบคีย์ใน RAM แคช:\n"dashboard_data_2569_all"`,
+            code: `// รหัส.js\nfunction getDashboardData(year, filter) {\n  var cacheKey = "dashboard_data_" + year + "_" + filter;\n  var cached = _cacheGetSmart(cacheKey);\n  if (cached) return JSON.parse(cached);\n  // ถ้าไม่พบแคช ดึงข้อมูลดิบจาก Sheets...\n}`
+          },
+          {
+            title: "3. ดึงคำตอบชีต ประมวลผลร้อยละ ย้อนหลัง YoY และพิกัดแผนที่",
+            desc: "ดึงชีต Data, FormTemplates และพิกัดจาก GisCoords ค้นหาสถิติย้อนหลังประมวลผลอัตราการเปลี่ยนแปลงแบบปีต่อปี (YoY)",
+            source: "backend", dest: "sheets",
+            payload: `// อ่านชีตฐานข้อมูล\nData (รวบรวมคำตอบและสถานะ)\nGisCoords (ละติจูด/ลองจิจูดสำหรับแผนที่)\nSettings (ปีการศึกษาปัจจุบันและปีย้อนหลัง)`,
+            code: `// รหัส.js\nfunction getDashboardData(year, filter) {\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  var data = ss.getSheetByName('Data').getDataRange().getValues();\n  var coords = getAgencyGisCoords();\n  var yoy = getYoYData();\n  // คำนวณสรุปร้อยละ อัตราครูต่อนักเรียน สัดส่วน Leaderboard...\n}`
+          },
+          {
+            title: "4. บันทึกผลการประมวลผลกลับแคชและส่งวาดภาพกราฟ ECharts",
+            desc: "นำก้อนสถิติที่คิดคำนวณแล้วไปเก็บในแคช (แบบซอยย่อยหลีกเลี่ยงข้อจำกัดความยาว 100KB) และส่งข้อมูลให้บราวเซอร์วาดกราฟทันที",
+            source: "sheets", dest: "frontend",
+            payload: `{\n  "leaderboard": [{"agencyId": "spk_sakon", "progress": 100}, ...],\n  "studentCount": 18450,\n  "teacherCount": 982,\n  "yoyPercent": 4.2,\n  "mapPoints": [{"agencyId": "spk_sakon", "lat": 17.15, "lng": 104.14, "shortageRatio": 18.7}]\n}`,
+            code: `// JS_App.html\nfunction renderCharts(res) {\n  // พล็อตข้อมูลลง ECharts\n  chartLeaderboard.setOption(optionLeaderboard);\n  updateMapMarkers(res.mapPoints);\n  $("#studentSum").text(res.studentCount);\n}`
+          }
+        ]
+      },
+      chatbot_bi: {
+        steps: [
+          {
+            title: "1. ผู้ใช้ส่งคำถามวิเคราะห์ภาษาไทยผ่านช่องสนทนา",
+            desc: "ผู้ส่งรายงานพิมพ์คำถามภาษาธรรมชาติในบอร์ด AI Chatbot เช่น 'ขอนโยบายและกราฟสรุปจำนวนเด็กของสังกัด สพป.'",
+            source: "frontend", dest: "backend",
+            payload: `{\n  "token": "session_6b537ae2_32ea_408e_bca5",\n  "pin": "1234",\n  "message": "ขอนโยบายและกราฟสรุปจำนวนเด็กของสังกัด สพป."\n}`,
+            code: `// JS_App.html\nfunction askAiChatbot() {\n  var payload = { token: getSessionToken(), pin: $("#aiPin").val(), question: $("#aiPromptInput").val() };\n  google.script.run.withSuccessHandler(onChatbotReply).askChatbot(payload);\n}`
+          },
+          {
+            title: "2. ยืนยันรหัสความปลอดภัย PIN และดึงชุดข้อมูลผลรายงานอนุมัติ",
+            desc: "ระบบเซิร์ฟเวอร์เช็ค PIN ที่อนุญาต และเรียก `_cbGetLatestApprovedData` ดึงข้อมูลเฉพาะของสังกัดที่มีสถานะเป็น Approved เท่านั้น",
+            source: "backend", dest: "sheets",
+            payload: `// ค้นหาประวัติอนุมัติของสังกัด\nApproved Data rows: 14 แถวของปีการศึกษาปัจจุบัน`,
+            code: `// รหัส.js\nfunction askChatbot(payload) {\n  verifyChatbotPin(payload.pin);\n  var auth = _resolveAuth(payload);\n  var approvedRows = _cbGetLatestApprovedData(auth.agencyId);\n  // จัดสรรข้อความเพื่อใช้โยนให้ปัญญาประดิษฐ์...\n}`
+          },
+          {
+            title: "3. ส่งชุดข้อมูลและคำถามสร้างข้อความบวกโครงสร้างกราฟ ECharts JSON",
+            desc: "ส่งข้อมูลดิบและ Prompt คำสั่งเข้าสมอง Gemini สั่งให้ตอบคำถามวิเคราะห์ในรูปแบบสองส่วนคือ คำบรรยายและโครงสร้าง JSON ชาร์ต",
+            source: "backend", dest: "gemini",
+            payload: `System Instruction: "คุณคือบอทวิเคราะห์ฐานข้อมูล หากผู้ใช้งานขอชาร์ต ให้ส่ง ECharts JSON Config แนบในแท็ก [CHART_START]...[CHART_END]"\nUser Context: [Approved Dataset Table] + "ขอนโยบายและกราฟ..."`,
+            code: `// รหัส.js\nfunction askChatbot(payload) {\n  var context = _cbBuildContext(payload.question, approvedRows);\n  var reply = _callGemini(API_KEY, context);\n  return { answerText: reply };\n}`
+          },
+          {
+            title: "4. ฝั่งเว็บบราวเซอร์แยกคำบรรยายพร้อมวาดการ์ดชาร์ตอัตโนมัติ",
+            desc: "บราวเซอร์รับข้อความตอบกลับ สกัดแยกข้อความสรุปบรรยายไปวางในช่องแชท และแกะ ECharts Config ในแท็กวาดชาร์ตบน Widget ทันที",
+            source: "gemini", dest: "frontend",
+            payload: `{\n  "answerText": "จากการวิเคราะห์ข้อมูลเด็ก สพป. มีดังนี้... [CHART_START]{\\"type\\":\\"bar\\",\\"xAxis\\":{\\"data\\":[\\"สพป.1\\",\\"สพป.2\\"]},\\"series\\":[{\\"data\\":[320,150]}]}[CHART_END]"\n}`,
+            code: `// JS_App.html\nfunction onChatbotReply(res) {\n  var parts = extractChartTag(res.answerText);\n  appendChatBubble(parts.text);\n  if (parts.chartJson) {\n    var widget = createDynamicChartWidget(parts.chartJson);\n    $("#chatbotWidgetContainer").append(widget);\n  }\n}`
+          }
+        ]
+      },
+      executive_briefing: {
+        steps: [
+          {
+            title: "1. แอดมินกดเปิดสรุปความก้าวหน้าเพื่อเตรียมรายงานผู้บริหาร",
+            desc: "แอดมินคลิกที่ปุ่มเปิดจัดทำทำเล่มพรีวิว หน้าจอจะทำการดึงสรุปผลคำตอบ และ Capture ภาพชาร์ต ECharts ปัจจุบันออกมาเป็น Base64 PNG",
+            source: "frontend", dest: "backend",
+            payload: `{\n  "token": "session_admin_token_xyz",\n  "charts": [\n    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg...",\n    "data:image/png;base64,mHBORw0KGgoAAAANSUhEUg..."\n  ]\n}`,
+            code: `// JS_App.html\nfunction compileBriefing() {\n  var chartImgs = [\n    chartLeaderboard.getDataURL(),\n    chartSpatialDensity.getDataURL()\n  ];\n  var payload = { token: getSessionToken(), chartImages: chartImgs };\n  google.script.run.withSuccessHandler(onBriefingReady).generateExecutiveSummary(payload);\n}`
+          },
+          {
+            title: "2. วิเคราะห์ความล่าช้าผ่านเอไอและจัดรูปหน้าสรุป A4",
+            desc: "เซิร์ฟเวอร์ส่งสถิติรวมของจังหวัดไปให้ Gemini สรุปภาพรวมและเขียนประเด็นวิเคราะห์นโยบาย (AI Policy Briefing) เป็นข้อความ A4 ภาษาไทยที่สมบูรณ์",
+            source: "backend", dest: "gemini",
+            payload: `System: "คุณคือหัวหน้านักวิเคราะห์กระทรวงศึกษาธิการ..."\nUser Data: "ค้างส่ง 3 สังกัด อนุมัติแล้ว 10 สังกัด จำนวนนักเรียน 45,900 อัตราขาดแคลนเฉลี่ย..."`,
+            code: `// รหัส.js\nfunction generateExecutiveSummary(payload) {\n  var summaryStats = computeStatsAllProvince();\n  var aiBrief = _callGemini(API_KEY, "กรุณาสรุปประเด็นสำหรับผู้บริหาร..." + summaryStats);\n  return { summaryHtml: compileA4Html(aiBrief, payload.chartImages) };\n}`
+          },
+          {
+            title: "3. พรีวิวรายงานหน้าปก A4 ในหน้าจอแอดมิน",
+            desc: "ระบบแปลงรูปภาพชาร์ต Base64 และประเด็นที่ AI วิเคราะห์ประกอบร่วมเข้าด้วยกัน จัด Layout คอนเทนเนอร์ขนาดพอดี A4 เปิดป๊อปอัปให้ตรวจสอบความเรียบร้อย",
+            source: "gemini", dest: "frontend",
+            payload: `{\n  "htmlPage": "<div class='a4-container'><h1>รายงานภาพรวม...</h1><p>บทวิเคราะห์ AI...</p><img src='base64...' /></div>"\n}`,
+            code: `// JS_App.html\nfunction onBriefingReady(res) {\n  $("#briefingModalContainer").html(res.htmlPage);\n  $("#briefingModal").modal('show');\n}`
+          },
+          {
+            title: "4. ยืนยันส่งต่อเมลรายงานผู้บริหารระดับสูง",
+            desc: "แอดมินคลิกปุ่มส่งต่อทางเมล ปลุกระบบส่งต่อ MailApp ทำการเขียนอีเมล HTML สวยงามแนบรายงานและตารางรายงานตรงไปที่กล่องจดหมายผู้บริหารปลายทาง",
+            source: "frontend", dest: "backend",
+            payload: `{\n  "token": "session_admin_token_xyz",\n  "executiveEmail": "superintendent@education.go.th",\n  "subject": "รายงานสรุปเชิงนโยบายความก้าวหน้า EduData Sakon 2569",\n  "bodyHtml": "<html><body>...</body></html>"\n}`,
+            code: `// รหัส.js\nfunction sendExecutiveBriefingEmail(payload) {\n  var auth = _resolveAuth(payload);\n  MailApp.sendEmail({\n    to: payload.executiveEmail,\n    subject: payload.subject,\n    htmlBody: payload.bodyHtml\n  });\n  logAction(auth.role, "send_executive_briefing", "ส่งรายงานไปที่ " + payload.executiveEmail);\n}`
+          }
+        ]
+      }
+    };
+
+    // Load simulation flow
+    function loadSimulationFlow() {
+      const selected = document.getElementById('flowSelect').value;
+      const data = SIM_FLOWS[selected];
+      const container = document.getElementById('simStepsContainer');
+      container.innerHTML = '';
+
+      if (!data || !data.steps) return;
+
+      data.steps.forEach((step, index) => {
+        container.innerHTML += `
+          <div class="sim-step-item ${index === 0 ? 'active' : ''}" onclick="runSimStep('${selected}', ${index}, this)">
+            <div class="sim-step-num">${index + 1}</div>
+            <div class="sim-step-content">
+              <div class="sim-step-title">${step.title}</div>
+              <div class="sim-step-desc">${step.desc}</div>
+            </div>
+          </div>
+        `;
+      });
+
+      // Run step 0 initial setup
+      runSimStep(selected, 0);
+    }
+
+    function runSimStep(flowKey, stepIndex, element) {
+      const flow = SIM_FLOWS[flowKey];
+      if (!flow || !flow.steps[stepIndex]) return;
+
+      const step = flow.steps[stepIndex];
+
+      // Update active states on steps elements
+      if (element) {
+        document.querySelectorAll('.sim-step-item').forEach(item => item.classList.remove('active'));
+        element.classList.add('active');
+      }
+
+      // 1. Highlight relevant architecture nodes
+      document.querySelectorAll('.arch-node-box').forEach(box => {
+        box.classList.remove('active', 'highlight-source', 'highlight-dest');
+      });
+
+      const sourceNode = document.getElementById('node-' + step.source);
+      const destNode = document.getElementById('node-' + step.dest);
+
+      if (sourceNode) sourceNode.classList.add('highlight-source');
+      if (destNode) destNode.classList.add('highlight-dest');
+
+      // 2. Set JSON Data Preview
+      document.getElementById('jsonPreviewBox').innerText = step.payload;
+
+      // 3. Set Code Snippet
+      document.getElementById('codeSnippetBox').innerText = step.code;
+    }
+
+    // Startup Initializations
+    initTheme();
+    clickArchNode('frontend');
+    filterApis();
+  </script>
+</body>
+</html>

@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>รายงานสรุปผลการดำเนินงานส่งมอบระบบ — EduData Sakon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Material+Icons+Round&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #525659;
+      --paper: #ffffff;
+      --text: #111111;
+      --border: #dddddd;
+      --primary: #1a237e;
+      --secondary: #0d47a1;
+      --accent: #2e7d32;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Sarabun', sans-serif;
+      color: var(--text);
+      line-height: 1.6;
+      padding: 40px 0;
+      font-size: 15px;
+    }
+
+    .a4-page {
+      background: var(--paper);
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto 30px;
+      padding: 25mm 20mm 20mm 25mm;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      position: relative;
+      border: 1px solid #cccccc;
+      page-break-after: always;
+    }
+
+    /* Cover Page Specific Styles */
+    .cover-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 247mm; /* 297mm - padding */
+      text-align: center;
+    }
+
+    .cover-top {
+      margin-top: 40px;
+    }
+
+    .logo-placeholder {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+    }
+
+    .logo-placeholder span {
+      font-size: 45px;
+    }
+
+    .cover-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+
+    .cover-subtitle {
+      font-size: 18px;
+      font-weight: 500;
+      color: #555555;
+      margin-bottom: 40px;
+    }
+
+    .cover-divider {
+      width: 150px;
+      height: 4px;
+      background: var(--primary);
+      margin: 0 auto 30px;
+    }
+
+    .cover-middle {
+      margin: 60px 0;
+      font-size: 16px;
+    }
+
+    .cover-middle table {
+      width: 80%;
+      margin: 0 auto;
+      border-collapse: collapse;
+    }
+
+    .cover-middle td {
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .cover-middle td:first-child {
+      font-weight: 700;
+      width: 35%;
+      color: #333333;
+    }
+
+    .cover-bottom {
+      margin-bottom: 40px;
+      font-size: 14px;
+      color: #666666;
+    }
+
+    /* Header for inside pages */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+
+    .page-header-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .page-header-num {
+      font-size: 12px;
+      color: #777777;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 15px;
+      border-left: 5px solid var(--primary);
+      padding-left: 10px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--secondary);
+      margin: 20px 0 10px;
+    }
+
+    /* Standard tables */
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 18px;
+      font-size: 13.5px;
+    }
+
+    .report-table th, .report-table td {
+      border: 1px solid #dddddd;
+      padding: 6px 10px;
+      vertical-align: middle;
+    }
+
+    .report-table th {
+      background: #f7f7f9;
+      font-weight: 700;
+      text-align: center;
+      color: #333333;
+    }
+
+    .report-table tr:nth-child(even) td {
+      background: #fafafa;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+    .text-right {
+      text-align: right;
+    }
+
+    /* Feature Badge */
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: white;
+    }
+    .badge-primary { background: var(--primary); }
+    .badge-success { background: var(--accent); }
+    .badge-secondary { background: #777777; }
+
+    /* Top control panel */
+    .control-panel {
+      max-width: 210mm;
+      margin: 0 auto 20px;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid #cccccc;
+      background: #ffffff;
+      color: #333333;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #f5f5f5;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: #0d1b60;
+    }
+
+    @media print {
+      body {
+        background: transparent;
+        padding: 0;
+        font-size: 12pt;
+      }
+      .control-panel {
+        display: none !important;
+      }
+      .a4-page {
+        box-shadow: none;
+        border: none;
+        margin: 0;
+        width: 100%;
+        padding: 15mm 15mm 15mm 20mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top control panel -->
+  <div class="control-panel">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span class="material-icons-round" style="color:var(--primary);">summarize</span>
+      <span style="font-weight:700;">เอกสารหมายเลข 3: รายงานสรุปผลการดำเนินงานส่งมอบระบบ (Completion Report)</span>
+    </div>
+    <div>
+      <button class="btn btn-primary" onclick="window.print()">
+        <span class="material-icons-round">print</span> สั่งพิมพ์รายงาน (Print to PDF)
+      </button>
+    </div>
+  </div>
+
+  <!-- PAGE 1: COVER PAGE -->
+  <div class="a4-page">
+    <div class="cover-container">
+      <div class="cover-top">
+        <div class="logo-placeholder">
+          <span class="material-icons-round">analytics</span>
+        </div>
+        <div class="cover-title">รายงานสรุปผลการดำเนินงานส่งมอบระบบ<br>และวิศวกรรมสถาปัตยกรรมซอฟต์แวร์</div>
+        <div class="cover-subtitle">โครงการพัฒนาระบบจัดเก็บสถิติเชิงลึกจังหวัดสกลนคร (EduData Sakon)</div>
+        <div class="cover-divider"></div>
+      </div>
+      
+      <div class="cover-middle">
+        <table>
+          <tr>
+            <td>สัญญาเลขที่:</td>
+            <td>สน. ๑๐๒/๒๕๖๙ ลงวันที่ ๑๕ มีนาคม ๒๕๖๙</td>
+          </tr>
+          <tr>
+            <td>หน่วยงานผู้ว่าจ้าง:</td>
+            <td>สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาสกลนคร (สพม.สกลนคร)</td>
+          </tr>
+          <tr>
+            <td>บริษัทผู้รับจ้าง:</td>
+            <td>บริษัท เทคโนโลยีการศึกษาไทย จำกัด</td>
+          </tr>
+          <tr>
+            <td>งวดงานส่งมอบ:</td>
+            <td>งวดสุดท้าย (งวดที่ ๑ — แล้วเสร็จสมบูรณ์ ๑๐๐%)</td>
+          </tr>
+          <tr>
+            <td>วันที่จัดทำเอกสาร:</td>
+            <td>๔ มิถุนายน ๒๕๖๙</td>
+          </tr>
+        </table>
+      </div>
+      
+      <div class="cover-bottom">
+        สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาสกลนคร<br>
+        กระทรวงศึกษาธิการ
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 2: EXECUTIVE SUMMARY & TECHNOLOGY STACK -->
+  <div class="a4-page">
+    <div class="page-header">
+      <span class="page-header-title">รายงานสรุปผลการดำเนินงานส่งมอบระบบ — EduData Sakon</span>
+      <span class="page-header-num">หน้า 2</span>
+    </div>
+
+    <div class="page-title">1. บทสรุปผู้บริหารและข้อมูลเทคนิคทั่วไป</div>
+    
+    <div style="text-align:justify; margin-bottom:15px;">
+      <p style="text-indent: 1.5cm; margin-bottom:10px;">
+        ระบบจัดเก็บสถิติเชิงลึกจังหวัดสกลนคร (EduData Sakon) ได้รับการพัฒนาขึ้นโดยมีเป้าหมายเพื่อปฏิรูประบบการเก็บรวบรวมข้อมูลสถิติทางการศึกษา จากเดิมที่เป็นการดำเนินการผ่านไฟล์เอกสารที่ไม่เป็นระบบ ให้กลายเป็นการส่งรายงานข้อมูลแบบไดนามิกผ่านเว็บคลาวด์แอพพลิเคชันที่รวดเร็ว ถูกต้อง และปลอดภัย ระบบได้รับการพัฒนาด้วยสถาปัตยกรรม Google Apps Script (GAS) ซึ่งช่วยลดค่าใช้จ่ายด้านเซิร์ฟเวอร์ลงเหลือ 0 บาท (Serverless Architecture) ในขณะที่สามารถผสานการทำงานกับ Gemini AI API เพื่อช่วยการวิเคราะห์เชิงลึกได้อย่างมีประสิทธิภาพ
+      </p>
+    </div>
+
+    <div class="section-title">1.1 โครงสร้างเทคโนโลยีที่ใช้ (Technology Stack & Platform)</div>
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th style="width:25%;">องค์ประกอบระบบ</th>
+          <th style="width:40%;">เทคโนโลยีที่ใช้</th>
+          <th style="width:35%;">เหตุผลทางวิศวกรรม</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Runtime Environment</strong></td>
+          <td>Google Apps Script (V8 Engine)</td>
+          <td>Serverless, บูรณาการกับ Google Workspace ได้ง่าย</td>
+        </tr>
+        <tr>
+          <td><strong>Database System</strong></td>
+          <td>Google Sheets (Relational Model Simulation)</td>
+          <td>แชร์สิทธิ์ง่าย แอดมินตรวจสอบข้อมูลดิบผ่านตารางได้ตรงตัว</td>
+        </tr>
+        <tr>
+          <td><strong>Frontend UI/UX</strong></td>
+          <td>HTML5, CSS3 (Vanilla), JavaScript ES6</td>
+          <td>โหลดเร็วสูงสุด ไม่พึ่งพาไลบรารีภายนอกที่หนักเครื่อง</td>
+        </tr>
+        <tr>
+          <td><strong>Visualization Engine</strong></td>
+          <td>Apache ECharts (v5)</td>
+          <td>วาดกราฟอินเตอร์แอคทีฟได้สวยงาม โหลดเร็ว และรองรับมือถือ</td>
+        </tr>
+        <tr>
+          <td><strong>Generative AI Core</strong></td>
+          <td>Gemini 1.5 Flash API via REST (UrlFetchApp)</td>
+          <td>ตอบกลับภาษาไทยอย่างรวดเร็ว แปลงภาษาธรรมชาติเป็นชาร์ตกราฟ</td>
+        </tr>
+        <tr>
+          <td><strong>Map Layer Engine</strong></td>
+          <td>Leaflet JS & OpenStreetMap (OSM)</td>
+          <td>แสดงแผนที่แบบพิกัดละติจูด/ลองจิจูดโดยไม่มีค่าธรรมเนียม API</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="section-title">1.2 ข้อมูลขนาดระบบและสถิติซอร์สโค้ด (Software Architecture Metrics)</div>
+    <p style="margin-bottom:8px;">จากการตรวจสอบขนาดรหัสโปรแกรมทั้งหมดในโครงสร้างโปรเจกต์ มีขนาดไฟล์รวม <strong>937.65 KB</strong> ประกอบด้วยรหัสโปรแกรมรวมทั้งสิ้น <strong>15,495 บรรทัด</strong> แยกรายละเอียดเป็นไฟล์ได้ดังนี้:</p>
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th>ชื่อไฟล์โค้ด</th>
+          <th>ประเภทไฟล์</th>
+          <th class="text-right">จำนวนบรรทัด (Lines)</th>
+          <th class="text-right">ขนาดไฟล์ (SizeBytes)</th>
+          <th>หน้าที่และความรับผิดชอบหลักในระบบ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>รหัส.js</strong></td>
+          <td>JavaScript (Backend)</td>
+          <td class="text-right">2,394 บรรทัด</td>
+          <td class="text-right">134,833 Bytes</td>
+          <td>API Endpoint, ควบคุมชีตและเชื่อมโยง Gemini AI & Email</td>
+        </tr>
+        <tr>
+          <td><strong>JS_App.html</strong></td>
+          <td>JavaScript (Frontend)</td>
+          <td class="text-right">6,052 บรรทัด</td>
+          <td class="text-right">334,510 Bytes</td>
+          <td>การควบคุมฝั่งลูกข่าย (UI Controller), การโหลดข้อมูล, การเรนเดอร์ GIS และ UAT</td>
+        </tr>
+        <tr>
+          <td><strong>JS_BI.html</strong></td>
+          <td>JavaScript (BI Core)</td>
+          <td class="text-right">2,700 บรรทัด</td>
+          <td class="text-right">158,114 Bytes</td>
+          <td>ระบบ Conversational BI และตัวช่วยวาดกราฟสถิติผ่าน AI</td>
+        </tr>
+        <tr>
+          <td><strong>Index.html</strong></td>
+          <td>HTML Template</td>
+          <td class="text-right">2,093 บรรทัด</td>
+          <td class="text-right">159,451 Bytes</td>
+          <td>โครงสร้าง HTML หลักหน้ากากผู้ใช้, โมดูลบอร์ดแผนที่ และป๊อปอัพหน้าต่าง</td>
+        </tr>
+        <tr>
+          <td><strong>ReportBuilder.html</strong></td>
+          <td>HTML / JS Component</td>
+          <td class="text-right">2,044 บรรทัด</td>
+          <td class="text-right">113,806 Bytes</td>
+          <td>ตัวสร้างรายงานและชาร์ตมาตรฐาน (Radar, Scatter, Mixed Line) พร้อมปุ่มส่งออก CSV/PDF</td>
+        </tr>
+        <tr>
+          <td><strong>CSS.html</strong></td>
+          <td>CSS Styles</td>
+          <td class="text-right">212 บรรทัด</td>
+          <td class="text-right">59,438 Bytes</td>
+          <td>รูปแบบธีมสีพรีเมียม (Deep Purple / Navy Blue), CSS Grid, Responsive CSS</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr style="font-weight:700; background:#eeeeee;">
+          <td colspan="2">รวมข้อมูลระบบทั้งสิ้น</td>
+          <td class="text-right">15,495 บรรทัด</td>
+          <td class="text-right">959,642 Bytes (937.65 KB)</td>
+          <td>เสร็จสมบูรณ์เรียบร้อย 100%</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- PAGE 3: DATABASE SCHEMA & CORE MODULES -->
+  <div class="a4-page">
+    <div class="page-header">
+      <span class="page-header-title">รายงานสรุปผลการดำเนินงานส่งมอบระบบ — EduData Sakon</span>
+      <span class="page-header-num">หน้า 3</span>
+    </div>
+
+    <div class="page-title">2. รายละเอียดสถาปัตยกรรมฐานข้อมูลเชิงสัมพันธ์</div>
+    <div class="section-title">2.1 โครงสร้างชีตฐานข้อมูล (Database Schema)</div>
+    <p style="margin-bottom:8px;">ระบบใช้ Google Sheets จำลองแบบ Relational DB โดยมี Referential Integrity ผ่าน `AgencyId` หรือ `FormId` และดึงค่าผ่านแอดเดรสแคชที่เสถียร แยกออกเป็น 6 ชีตหลัก:</p>
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th style="width:20%;">ชื่อตารางชีต</th>
+          <th style="width:30%;">โครงสร้างคอลัมน์ (Fields)</th>
+          <th style="width:15%;">คีย์เชื่อมโยง</th>
+          <th style="width:35%;">หน้าที่การเก็บข้อมูล</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Users</strong></td>
+          <td>Username, PasswordHash, Role, AgencyId, Email, Name</td>
+          <td>PK: Username</td>
+          <td>บัญชีเข้าใช้งานจำแนกสิทธิ์ Super Admin, Admin, Agency</td>
+        </tr>
+        <tr>
+          <td><strong>Settings</strong></td>
+          <td>SettingKey, SettingValue, Description, LastUpdated</td>
+          <td>PK: SettingKey</td>
+          <td>การตั้งค่าระบบและ Deadline กำหนดส่งรายงาน</td>
+        </tr>
+        <tr>
+          <td><strong>FormTemplates</strong></td>
+          <td>FormId, Title, FieldsJson, Status, CreatedBy, CreatedAt</td>
+          <td>PK: FormId</td>
+          <td>โครงสร้างคำถามฟิลด์แบบฟอร์มที่แอดมินสร้างขึ้นแบบ Dynamic</td>
+        </tr>
+        <tr>
+          <td><strong>Data</strong></td>
+          <td>DataId, FormId, AgencyId, SubmissionDataJson, Status, SubmittedAt</td>
+          <td>FK: FormId, AgencyId</td>
+          <td>ข้อมูลดิบที่สถาบันนำเข้าและส่งรายงาน รวมถึงแบบร่าง (Draft)</td>
+        </tr>
+        <tr>
+          <td><strong>AuditLogs</strong></td>
+          <td>LogId, Timestamp, Username, ActionType, Detail, IpAddress</td>
+          <td>FK: Username</td>
+          <td>บันทึกกิจกรรมความปลอดภัยเพื่อใช้ในการทวนสอบ (Audit Trail)</td>
+        </tr>
+        <tr>
+          <td><strong>GisCoords</strong></td>
+          <td>AgencyId, Lat, Lng, StudentCount, TeacherCount, NeedsTeacher</td>
+          <td>PK/FK: AgencyId</td>
+          <td>พิกัดแผนที่ GIS จำนวนครู-นักเรียนของโรงเรียนสังกัด เพื่อเรนเดอร์ GIS Map</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="section-title">2.2 รายละเอียดฟังก์ชันระบบเด่นส่งมอบจ้าง (The "WOW" Feature Suite)</div>
+    <div style="font-size:13.5px; line-height:1.5;">
+      <ul style="margin-left:20px;">
+        <li style="margin-bottom:8px;">
+          <strong>ระบบแผนที่อินเตอร์แอคทีฟจับคู่ตารางคะแนน (GIS Map & Leaderboard Sync)</strong>: แผนที่แสดงเลเยอร์ความหนาแน่นของผู้เรียน สลับเฉดสีครูค้างส่ง และการลิงก์ความก้าวหน้าโรงเรียน (Leaderboard) เมื่อคลิกที่อันดับจะดึงพิกัดแผนที่ซูมเข้าทันทีและอัปเดตแบบไร้การกระตุก (Silent Reload)
+        </li>
+        <li style="margin-bottom:8px;">
+          <strong>ผู้ช่วยส่วนตัววิเคราะห์ข้อมูลระดับอัจฉริยะ (Conversational BI Assistant)</strong>: การรับค่าผ่านกล่องอินพุตคำถามภาษาไทย เช่น <em>"ขอชาร์ตสัดส่วนครูต่อนักเรียนรายอำเภอเป็น Radar Chart"</em> ส่งเข้า Gemini AI แปลงเป็นโครงสร้าง JSON อัตโนมัติและดึงข้อมูลจากฐานข้อมูลมาวาดชาร์ตกราฟบนจอแอดมินใน 3 วินาที
+        </li>
+        <li style="margin-bottom:8px;">
+          <strong>ระบบเตือนทวงงานแบบกำหนดบุคคลด้วย AI (AI Auto-Dunning Email)</strong>: ระบบแสกนตรวจสอบโรงเรียนที่เลยกำหนดดีดไลน์อัตโนมัติ สรุปจำนวนวันค้างส่ง แล้วสั่งการให้ AI ร่างหนังสือทางการที่มีเนื้อหาดุดันแต่สุภาพส่งตรงผ่านอีเมลผู้บริหารโรงเรียนนั้นทันทีพร้อมลงบันทึกประวัติการทวงถามลงตาราง AuditLogs
+        </li>
+        <li style="margin-bottom:8px;">
+          <strong>ชุดรายงานนโยบายแปลง Base64 สู่ผู้บริหาร (AI Executive Briefing Pack)</strong>: ถ่ายภาพหน้าจอของ ECharts ออกมาเป็น Base64 PNG จากนั้นผสานบทสรุปเชิงลึกของ AI พิมพ์แบบประทับตรา A4 แล้วทำการส่งตรงไปยังอีเมลส่วนตัวของหัวหน้าหน่วยงานในคลิกเดียว
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- PAGE 4: UAT & SIGN-OFF -->
+  <div class="a4-page">
+    <div class="page-header">
+      <span class="page-header-title">รายงานสรุปผลการดำเนินงานส่งมอบระบบ — EduData Sakon</span>
+      <span class="page-header-num">หน้า 4</span>
+    </div>
+
+    <div class="page-title">3. ผลการทดสอบการรับมอบจากผู้ใช้ (UAT) และการลงนาม</div>
+    
+    <div class="section-title">3.1 ตารางผลการทดสอบการยอมรับระบบโดยผู้ใช้งาน (UAT Test Summary)</div>
+    <p style="margin-bottom:8px;">การทดสอบ UAT จัดขึ้นระหว่างวันที่ ๑ - ๓ มิถุนายน ๒๕๖๙ โดยมีตัวแทนผู้ใช้จากสพม.สกลนคร และสถาบันการศึกษารวม ๑๕ คนเข้าร่วม มีผลการทดสอบดังนี้:</p>
+    
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th style="width:8%;">รหัสทดสอบ</th>
+          <th style="width:25%;">หัวข้อทดสอบการใช้งาน</th>
+          <th style="width:42%;">เกณฑ์การยอมรับ (Acceptance Criteria)</th>
+          <th style="width:13%;" class="text-center">ผลการทดสอบ</th>
+          <th style="width:12%;" class="text-center">หมายเหตุ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="text-center">UAT-01</td>
+          <td>การลงชื่อเข้าใช้งานและการรักษาเซสชัน</td>
+          <td>สลับสิทธิ์ได้ถูกต้อง และขยายเวลาเซสชันด้วย Heartbeat ทุก 25 นาทีสำเร็จ</td>
+          <td class="text-center" style="color:green; font-weight:700;">ผ่าน (100%)</td>
+          <td class="text-center">เสถียร</td>
+        </tr>
+        <tr>
+          <td class="text-center">UAT-02</td>
+          <td>การสร้างฟอร์มจัดเก็บข้อมูลเชิงลึก</td>
+          <td>ผู้ดูแลระบบสามารถเพิ่มฟิลด์ประเภทต่างๆ และจำลองฟอร์มออกมาแสดงทันที</td>
+          <td class="text-center" style="color:green; font-weight:700;">ผ่าน (100%)</td>
+          <td class="text-center">ดีเยี่ยม</td>
+        </tr>
+        <tr>
+          <td class="text-center">UAT-03</td>
+          <td>การบันทึกแบบร่างและส่งข้อมูล</td>
+          <td>สังกัดโรงเรียนบันทึกแบบร่างได้ และเปลี่ยนสถานะเป็นส่งเพื่อรออนุมัติได้ถูกต้อง</td>
+          <td class="text-center" style="color:green; font-weight:700;">ผ่าน (100%)</td>
+          <td class="text-center">ถูกต้อง</td>
+        </tr>
+        <tr>
+          <td class="text-center">UAT-04</td>
+          <td>การนำเข้าข้อมูลผ่านไฟล์แม่แบบ CSV</td>
+          <td>เปิดไฟล์ CSV ด้วย Excel ภาษาไทยไม่เพี้ยน และตรวจจับข้อผิดพลาดก่อนนำเข้าได้</td>
+          <td class="text-center" style="color:green; font-weight:700;">ผ่าน (100%)</td>
+          <td class="text-center">BOM ทำงาน</td>
+        </tr>
+        <tr>
+          <td class="text-center">UAT-05</td>
+          <td>การใช้ AI Conversational BI</td>
+          <td>ส่งคำถามภาษาไทยแล้วได้กราฟแสดงผลบนหน้าจอภายในเวลาเฉลี่ย 3 วินาที</td>
+          <td class="text-center" style="color:green; font-weight:700;">ผ่าน (100%)</td>
+          <td class="text-center">รวดเร็ว</td>
+        </tr>
+        <tr>
+          <td class="text-center">UAT-06</td>
+          <td>การปักหมุด GIS ค้นหาพิกัด</td>
+          <td>ค้นหาอำเภอ/โรงเรียนผ่าน OSM Nominatim API และอัปเดตพิกัดถูกต้อง</td>
+          <td class="text-center" style="color:green; font-weight:700;">ผ่าน (100%)</td>
+          <td class="text-center">แม่นยำ</td>
+        </tr>
+        <tr>
+          <td class="text-center">UAT-07</td>
+          <td>ระบบ Dunning Email ทวงหนี้ด้วย AI</td>
+          <td>สั่งพิมพ์จดหมายทวงงานผ่าน AI แนบลิงก์ฟอร์มค้างส่ง และส่งเมลออกจริงได้</td>
+          <td class="text-center" style="color:green; font-weight:700;">ผ่าน (100%)</td>
+          <td class="text-center">ส่งตรงผู้รับ</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="section-title">3.2 ลงชื่อส่งมอบและลงรับรายงานดำเนินงานการส่งมอบระบบ</div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px;">
+      <div style="border: 1px solid #ccc; padding: 15px; border-radius: 6px; text-align: center;">
+        <div style="font-weight: 700; margin-bottom: 30px; border-bottom: 2px solid var(--primary); padding-bottom: 6px; color: var(--primary);">ผู้ส่งมอบงาน (ผู้รับจ้าง)</div>
+        <div style="height: 50px; border-bottom: 1px solid #000; margin: 15px auto; width: 80%;"></div>
+        <div style="font-weight: 700;">(นายณัฐภัทร วรภัทรดิลก)</div>
+        <div style="font-size:13px; color:#555; margin-top:2px;">กรรมการผู้จัดการ บริษัท เทคโนโลยีการศึกษาไทย จำกัด</div>
+        <div style="font-size:12px; color:#777; margin-top:2px;">วันที่: ๔ / มิถุนายน / ๒๕๖๙</div>
+      </div>
+      
+      <div style="border: 1px solid #ccc; padding: 15px; border-radius: 6px; text-align: center;">
+        <div style="font-weight: 700; margin-bottom: 30px; border-bottom: 2px solid var(--primary); padding-bottom: 6px; color: var(--primary);">ผู้รับมอบงาน (ประธานตรวจรับ)</div>
+        <div style="height: 50px; border-bottom: 1px solid #000; margin: 15px auto; width: 80%;"></div>
+        <div style="font-weight: 700;">(นายสมบูรณ์ ดีเลิศ)</div>
+        <div style="font-size:13px; color:#555; margin-top:2px;">ผู้อำนวยการฝ่ายสารสนเทศ สพม.สกลนคร</div>
+        <div style="font-size:12px; color:#777; margin-top:2px;">วันที่: ๔ / มิถุนายน / ๒๕๖๙</div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

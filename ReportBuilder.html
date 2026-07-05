@@ -1,0 +1,2126 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Report Builder — EduData Sakon</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<!-- html2pdf library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<!-- echarts loaded dynamically -->
+<style>
+:root{
+  --blue:#1a73e8;--blue-d:#1557b0;--blue-l:#d2e3fc;--blue-ll:#e8f0fe;
+  --green:#1e8e3e;--green-l:#ceead6;--green-ll:#e6f4ea;
+  --red:#d93025;--red-l:#f4c7c3;--red-ll:#fce8e6;
+  --yellow:#f29900;--yellow-l:#feefc3;
+  --surface:#fff;--bg:#f1f3f4;--s1:#f8f9fa;--s2:#f1f3f4;
+  --text:#202124;--text-2:#3c4043;--muted:#5f6368;--hint:#9aa0a6;
+  --border:#dadce0;--border-l:#e8eaed;
+  --ribbon-h:48px;--left-w:240px;--right-w:280px;--footer-h:32px;
+  --e1:0 1px 2px rgba(60,64,67,.1),0 1px 3px 1px rgba(60,64,67,.06);
+  --e2:0 1px 2px rgba(60,64,67,.1),0 2px 6px 2px rgba(60,64,67,.08);
+  --e3:0 4px 8px 3px rgba(60,64,67,.06),0 1px 3px rgba(60,64,67,.12);
+  --r:8px;--t:.18s cubic-bezier(.4,0,.2,1);
+  font-family:'Google Sans','Sarabun',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);}
+.mi{font-family:'Material Icons Round'!important;font-size:18px;vertical-align:middle;}
+
+#titlebar{height:40px;background:#2b2d31;display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;}
+#titlebar .tb-logo{display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;font-weight:600;}
+#titlebar .tb-logo .mi{font-size:20px;color:#4fc3f7;}
+#titlebar .tb-title{color:#adb5bd;font-size:12px;margin-left:4px;}
+#titlebar .tb-actions{margin-left:auto;display:flex;gap:6px;}
+#titlebar .tb-btn{height:26px;padding:0 10px;border-radius:4px;border:none;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;font-family:'Google Sans',sans-serif;}
+.tb-btn.primary{background:#1a73e8;color:#fff;}
+.tb-btn.primary:hover{background:#1557b0;}
+.tb-btn.ghost{background:rgba(255,255,255,.08);color:#e9ecef;border:1px solid rgba(255,255,255,.12);}
+.tb-btn.ghost:hover{background:rgba(255,255,255,.15);}
+#titlebar input#reportTitle{background:transparent;border:none;color:#fff;font-size:13px;font-weight:600;font-family:'Google Sans',sans-serif;outline:none;width:220px;border-bottom:1px solid transparent;padding-bottom:1px;}
+#titlebar input#reportTitle:focus{border-bottom-color:#4fc3f7;}
+
+#ribbon{height:var(--ribbon-h);background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:stretch;padding:0 8px;gap:2px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.rib-group{display:flex;align-items:center;gap:2px;padding:4px 8px;border-right:1px solid var(--border-l);}
+.rib-group:last-child{border-right:none;}
+.rib-btn{height:36px;padding:0 10px;border-radius:6px;border:none;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;font-weight:600;color:var(--muted);min-width:44px;transition:var(--t);font-family:'Google Sans',sans-serif;}
+.rib-btn .mi{font-size:18px;color:var(--muted);}
+.rib-btn:hover{background:var(--blue-ll);color:var(--blue);}
+.rib-btn:hover .mi{color:var(--blue);}
+.rib-btn.active{background:var(--blue-ll);color:var(--blue);}
+.rib-btn.active .mi{color:var(--blue);}
+.rib-btn.danger:hover{background:var(--red-ll);color:var(--red);}
+.rib-btn.danger:hover .mi{color:var(--red);}
+.rib-sep{width:1px;background:var(--border-l);margin:8px 4px;align-self:stretch;}
+
+#workspace{display:flex;height:calc(100vh - 40px - var(--ribbon-h) - var(--footer-h));overflow:hidden;}
+
+#left-panel{width:var(--left-w);background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
+.lp-header{padding:10px 12px 8px;border-bottom:1px solid var(--border-l);flex-shrink:0;}
+.lp-tabs{display:flex;gap:2px;margin-bottom:8px;}
+.lp-tab{flex:1;height:26px;border-radius:5px;border:none;background:transparent;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'Google Sans',sans-serif;transition:var(--t);}
+.lp-tab.active{background:var(--blue-ll);color:var(--blue);}
+.lp-search{position:relative;}
+.lp-search input{width:100%;height:28px;padding:0 8px 0 28px;border:1.5px solid var(--border-l);border-radius:6px;font-size:11px;background:var(--s1);outline:none;font-family:'Google Sans',sans-serif;color:var(--text);}
+.lp-search input:focus{border-color:var(--blue);}
+.lp-search .mi{position:absolute;left:7px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--hint);}
+.lp-body{flex:1;overflow-y:auto;padding:8px;}
+
+.ds-group{margin-bottom:6px;}
+.ds-group-hd{display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;color:var(--text-2);user-select:none;transition:var(--t);}
+.ds-group-hd:hover{background:var(--s1);}
+.ds-group-hd .mi{font-size:14px;color:var(--blue);}
+.ds-group-hd .toggle-icon{font-size:12px;color:var(--hint);margin-left:auto;transition:.15s;}
+.ds-group-body{padding-left:8px;margin-top:2px;}
+.field-item{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:grab;font-size:11px;color:var(--text-2);user-select:none;transition:var(--t);border:1.5px solid transparent;}
+.field-item:hover{background:var(--blue-ll);color:var(--blue);}
+.field-item.in-report{background:var(--green-ll);color:var(--green);border-color:var(--green-l);}
+.field-item .fi-type{font-size:10px;padding:1px 5px;border-radius:3px;font-weight:700;flex-shrink:0;}
+.fi-num{background:#e8f0fe;color:#1a73e8;}
+.fi-txt{background:#e6f4ea;color:#1e8e3e;}
+.fi-date{background:#fef3e2;color:#f29900;}
+.fi-pct{background:#fce8e6;color:#d93025;}
+.field-item .fi-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+#canvas-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);position:relative;}
+#canvas-toolbar{height:32px;background:#fff;border-bottom:1px solid var(--border-l);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;}
+.ct-btn{height:22px;padding:0 8px;border-radius:4px;border:1px solid var(--border-l);background:var(--surface);font-size:10px;font-weight:600;cursor:pointer;color:var(--text-2);display:flex;align-items:center;gap:4px;font-family:'Google Sans',sans-serif;}
+.ct-btn .mi{font-size:13px;}
+.ct-btn:hover{border-color:var(--blue);color:var(--blue);}
+.ct-zoom{font-size:11px;color:var(--muted);font-weight:600;min-width:42px;text-align:center;}
+#canvas-area{flex:1;overflow:auto;padding:24px;display:flex;align-items:flex-start;justify-content:center;}
+#report-page{width:794px;min-height:1000px;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.12),0 8px 24px rgba(0,0,0,.06);border-radius:2px;position:relative;display:flex;flex-direction:column;}
+
+.page-section{position:relative;border:1px dashed transparent;transition:var(--t);}
+.page-section:hover{border-color:#adb5bd;}
+.page-section.active{border-color:var(--blue);}
+.sec-label{position:absolute;top:-20px;left:0;font-size:9px;font-weight:700;color:var(--hint);letter-spacing:.5px;text-transform:uppercase;background:var(--bg);padding:0 4px;border-radius:3px;}
+.sec-handle{position:absolute;bottom:-1px;left:0;right:0;height:4px;background:var(--blue);opacity:0;cursor:ns-resize;border-radius:0 0 2px 2px;}
+.page-section:hover .sec-handle{opacity:.3;}
+
+#rpt-header{padding:20px 32px 12px;border-bottom:2px solid var(--border-l);min-height:80px;}
+.rpt-title-input{font-size:22px;font-weight:700;color:var(--text);border:none;outline:none;width:100%;font-family:'Google Sans',sans-serif;}
+.rpt-subtitle-input{font-size:12px;color:var(--muted);border:none;outline:none;width:100%;font-family:'Google Sans',sans-serif;margin-top:4px;}
+.rpt-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:10px;color:var(--hint);}
+
+#rpt-body{flex:1;padding:8px 24px 32px;min-height:600px;overflow:visible;}
+
+.rpt-element{
+  position:relative;display:block;width:100%;
+  margin-top:40px;margin-bottom:0;
+  border:1.5px solid transparent;border-radius:6px;
+  background:#fff;
+  transition:border-color .15s,box-shadow .15s;
+}
+.rpt-element:hover{border-color:var(--border);}
+.rpt-element.selected{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,115,232,.10);}
+.rpt-element .elem-toolbar{
+  position:absolute;top:-34px;left:-1px;
+  background:var(--blue);border-radius:6px 6px 0 0;
+  display:none;align-items:center;gap:2px;padding:4px 8px;
+  z-index:20;white-space:nowrap;
+  box-shadow:0 -2px 8px rgba(26,115,232,.2);
+}
+.rpt-element.selected .elem-toolbar{display:flex;}
+#rpt-body > .rb-drop-zone:first-child + .rpt-element{margin-top:6px;}
+.elem-tb-btn{width:24px;height:24px;border-radius:4px;border:none;background:rgba(255,255,255,.15);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.1s;}
+.elem-tb-btn:hover{background:rgba(255,255,255,.28);}
+.elem-tb-btn .mi{font-size:14px;}
+.elem-tb-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.85);padding:0 8px 0 2px;white-space:nowrap;letter-spacing:.3px;}
+
+.rb-drop-zone{
+  width:100%;height:8px;border-radius:4px;margin:2px 0;
+  transition:height .15s ease,background .15s,border-color .15s;
+  border:2px dashed transparent;cursor:default;
+}
+.rb-drop-zone.dz-active{
+  height:36px;background:rgba(26,115,232,.08);border-color:var(--blue);
+}
+
+.kpi-row{display:grid;gap:12px;}
+.kpi-card{background:var(--s1);border-radius:8px;padding:14px 16px;border:1px solid var(--border-l);min-width:0;overflow:hidden;}
+
+/* ── Column Layout System ── */
+.rpt-col-wrap{display:grid;gap:12px;width:100%;}
+.rpt-col-wrap.cols-1{grid-template-columns:1fr;}
+.rpt-col-wrap.cols-2{grid-template-columns:1fr 1fr;}
+.rpt-col-wrap.cols-3{grid-template-columns:1fr 1fr 1fr;}
+.rpt-col-wrap.cols-4{grid-template-columns:1fr 1fr 1fr 1fr;}
+.rpt-col-item{min-width:0;overflow:hidden;}
+
+/* ── Layout row (หลาย elements ใน 1 แถว) ── */
+.rpt-row-wrap{display:grid;gap:8px;width:100%;align-items:start;}
+.rpt-row-wrap.row-1{grid-template-columns:1fr;}
+.rpt-row-wrap.row-2{grid-template-columns:1fr 1fr;}
+.rpt-row-wrap.row-3{grid-template-columns:1fr 1fr 1fr;}
+.rpt-row-wrap.row-4{grid-template-columns:1fr 1fr 1fr 1fr;}
+
+/* column picker UI */
+.col-picker{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px;}
+.col-pick-btn{padding:8px 4px;border-radius:7px;border:1.5px solid var(--border-l);background:var(--surface);cursor:pointer;text-align:center;transition:.12s;}
+.col-pick-btn:hover{border-color:var(--blue);background:var(--blue-ll);}
+.col-pick-btn.active{border-color:var(--blue);background:var(--blue);}
+.col-pick-btn .cpb-vis{display:flex;gap:2px;justify-content:center;margin-bottom:4px;}
+.col-pick-btn .cpb-bar{height:20px;border-radius:3px;background:var(--border);}
+.col-pick-btn.active .cpb-bar{background:rgba(255,255,255,.5);}
+.col-pick-btn:hover:not(.active) .cpb-bar{background:var(--blue-l);}
+.col-pick-btn .cpb-label{font-size:9px;font-weight:700;color:var(--muted);}
+.col-pick-btn.active .cpb-label{color:rgba(255,255,255,.85);}
+.kpi-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;}
+.kpi-icon .mi{font-size:18px;}
+.kpi-val{font-size:26px;font-weight:800;line-height:1;margin-bottom:4px;}
+.kpi-lbl{font-size:10px;color:var(--muted);font-weight:600;}
+.kpi-trend{font-size:10px;font-weight:600;margin-top:6px;display:flex;align-items:center;gap:3px;}
+
+.chart-box-rpt{background:#fff;border:1px solid var(--border-l);border-radius:8px;overflow:hidden;}
+.chart-box-rpt .chart-hd{padding:10px 14px;border-bottom:1px solid var(--border-l);display:flex;align-items:center;gap:8px;}
+.chart-box-rpt .chart-hd-title{font-size:12px;font-weight:700;color:var(--text);}
+.chart-box-rpt .chart-area{padding:8px;}
+
+.data-tbl{width:100%;border-collapse:collapse;font-size:11px;}
+.data-tbl thead th{background:var(--blue);color:#fff;padding:8px 10px;text-align:left;font-weight:700;font-size:10px;letter-spacing:.3px;}
+.data-tbl thead th:first-child{border-radius:4px 0 0 0;}
+.data-tbl thead th:last-child{border-radius:0 4px 0 0;}
+.data-tbl tbody tr:nth-child(even) td{background:#f8f9fa;}
+.data-tbl tbody td{padding:7px 10px;border-bottom:1px solid var(--border-l);color:var(--text);}
+.data-tbl tbody tr:hover td{background:var(--blue-ll);}
+.data-tbl tfoot td{padding:7px 10px;background:var(--s2);font-weight:700;font-size:10px;color:var(--text-2);border-top:2px solid var(--border);}
+
+.rpt-textbox{padding:10px 14px;border-radius:6px;outline:none;min-height:32px;font-family:'Google Sans','Sarabun',sans-serif;}
+.rpt-textbox[contenteditable="true"]{border:1px dashed var(--blue);background:var(--blue-ll);}
+
+#right-panel{width:var(--right-w);background:#fff;border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
+.rp-header{padding:10px 14px 0;border-bottom:1px solid var(--border-l);flex-shrink:0;}
+.rp-tabs{display:flex;margin-bottom:0;}
+.rp-tab{flex:1;height:32px;border:none;background:transparent;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;font-family:'Google Sans',sans-serif;transition:var(--t);}
+.rp-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+.rp-body{flex:1;overflow-y:auto;padding:12px;}
+.rp-section{margin-bottom:14px;}
+.rp-sec-title{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border-l);}
+.rp-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.rp-label{font-size:11px;color:var(--text-2);font-weight:500;min-width:70px;flex-shrink:0;}
+.rp-input{flex:1;height:26px;padding:0 8px;border:1.5px solid var(--border-l);border-radius:5px;font-size:11px;background:var(--s1);outline:none;font-family:'Google Sans',sans-serif;color:var(--text);}
+.rp-input:focus{border-color:var(--blue);background:#fff;}
+.rp-select{flex:1;height:26px;padding:0 6px;border:1.5px solid var(--border-l);border-radius:5px;font-size:11px;background:var(--s1);outline:none;font-family:'Google Sans',sans-serif;color:var(--text);cursor:pointer;}
+.rp-select:focus{border-color:var(--blue);}
+.rp-color{width:32px;height:26px;border:1.5px solid var(--border-l);border-radius:5px;cursor:pointer;padding:2px;}
+.rp-toggle{position:relative;width:32px;height:18px;flex-shrink:0;}
+.rp-toggle input{opacity:0;width:0;height:0;}
+.rp-slider{position:absolute;inset:0;background:var(--border);border-radius:9px;cursor:pointer;transition:.3s;}
+.rp-slider:before{content:'';position:absolute;width:12px;height:12px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.rp-toggle input:checked + .rp-slider{background:var(--blue);}
+.rp-toggle input:checked + .rp-slider:before{transform:translateX(14px);}
+.color-swatches{display:flex;flex-wrap:wrap;gap:4px;}
+.c-sw{width:20px;height:20px;border-radius:4px;cursor:pointer;border:2px solid transparent;transition:.12s;}
+.c-sw:hover,.c-sw.active{border-color:var(--text);}
+
+#statusbar{height:var(--footer-h);background:#2b2d31;display:flex;align-items:center;padding:0 12px;gap:16px;flex-shrink:0;}
+.sb-item{font-size:10px;color:#adb5bd;display:flex;align-items:center;gap:4px;}
+.sb-item .mi{font-size:12px;}
+.sb-dot{width:6px;height:6px;border-radius:50%;}
+.dot-green{background:#4caf50;}
+.dot-yellow{background:#ffb74d;}
+
+#elem-picker{position:absolute;top:40px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:1000;display:none;padding:12px;width:480px;animation:fadeIn .15s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateX(-50%) translateY(-8px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+.ep-title{font-size:11px;font-weight:700;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.ep-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.ep-item{padding:10px;border:1.5px solid var(--border-l);border-radius:8px;cursor:pointer;text-align:center;transition:var(--t);}
+.ep-item:hover{border-color:var(--blue);background:var(--blue-ll);}
+.ep-item .mi{font-size:24px;color:var(--muted);display:block;margin-bottom:5px;}
+.ep-item:hover .mi{color:var(--blue);}
+.ep-item span{font-size:10px;font-weight:600;color:var(--text-2);}
+
+.canvas-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:400px;color:var(--hint);gap:12px;}
+.canvas-empty .mi{font-size:48px;opacity:.3;}
+.canvas-empty p{font-size:13px;font-weight:600;}
+.canvas-empty small{font-size:11px;opacity:.7;text-align:center;max-width:260px;line-height:1.6;}
+
+.drop-zone{border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;color:var(--hint);font-size:11px;transition:var(--t);margin-bottom:12px;}
+.drop-zone.drag-over{border-color:var(--blue);background:var(--blue-ll);color:var(--blue);}
+
+#preview-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;display:none;align-items:center;justify-content:center;}
+#preview-overlay.on{display:flex;}
+#preview-modal{background:#fff;border-radius:12px;width:90vw;height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 48px rgba(0,0,0,.2);}
+#preview-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:#f8f9fa;}
+#preview-body{flex:1;overflow:auto;padding:24px;background:#e9ecef;}
+#preview-page{background:#fff;width:794px;margin:0 auto;box-shadow:0 2px 12px rgba(0,0,0,.1);padding:40px;}
+
+#run-panel{position:fixed;right:0;top:0;bottom:0;width:420px;background:#fff;border-left:1px solid var(--border);z-index:8000;display:none;flex-direction:column;box-shadow:-4px 0 16px rgba(0,0,0,.1);}
+#run-panel.on{display:flex;}
+.run-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.run-body{flex:1;overflow-y:auto;padding:16px;}
+.run-param{margin-bottom:14px;}
+.run-param label{font-size:11px;font-weight:700;color:var(--text-2);display:block;margin-bottom:5px;}
+.run-param input,.run-param select{width:100%;height:34px;padding:0 10px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:'Google Sans',sans-serif;outline:none;}
+.run-param input:focus,.run-param select:focus{border-color:var(--blue);}
+.run-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;}
+
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+[draggable]{user-select:none;}
+.dragging{opacity:.5;}
+
+#rb-toasts{position:fixed;bottom:52px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px;}
+.rb-toast{padding:10px 16px;border-radius:8px;font-size:12px;font-weight:600;background:#fff;border:1px solid var(--border);box-shadow:var(--e2);animation:toastIn .25s ease;display:flex;align-items:center;gap:8px;}
+.rb-toast.success{background:var(--green-ll);border-color:var(--green-l);color:var(--green);}
+.rb-toast.error{background:var(--red-ll);border-color:var(--red-l);color:var(--red);}
+.rb-toast.info{background:var(--blue-ll);border-color:var(--blue-l);color:var(--blue);}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:none;}}
+
+.insert-zone{height:8px;border-radius:4px;transition:var(--t);margin:2px 0;}
+.insert-zone.drag-over{height:32px;background:var(--blue-ll);border:2px dashed var(--blue);}
+
+/* Print/PDF Export Styles */
+.pdf-export {
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  width: 794px !important;
+  height: auto !important;
+  min-height: auto !important;
+  display: block !important;
+  overflow: visible !important;
+  background: #fff !important;
+}
+.pdf-export .page-section {
+  border-color: transparent !important;
+}
+.pdf-export .sec-label,
+.pdf-export .sec-handle,
+.pdf-export .elem-toolbar,
+.pdf-export .rb-drop-zone,
+.pdf-export .insert-zone {
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.pdf-export .rpt-element {
+  margin-top: 15px !important;
+  margin-bottom: 15px !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+}
+.pdf-export .rpt-element.selected {
+  box-shadow: none !important;
+}
+.pdf-export .rpt-col-wrap,
+.pdf-export .rpt-row-wrap {
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+}
+</style>
+</head>
+<body>
+
+<!-- TITLEBAR -->
+<div id="titlebar">
+  <div class="tb-logo">
+    <span class="mi">bar_chart</span>
+    EduData Sakon
+  </div>
+  <span class="tb-title">›</span>
+  <input type="text" id="reportTitle" value="รายงานสถิติการศึกษา จังหวัดสกลนคร" placeholder="ชื่อรายงาน..." />
+  <div class="tb-actions">
+    <button class="tb-btn ghost" onclick="rbSave()"><span class="mi">save</span> บันทึก</button>
+    <button class="tb-btn ghost" onclick="rbTogglePreview()"><span class="mi">preview</span> Preview</button>
+    <button class="tb-btn ghost" onclick="rbExportPDF()"><span class="mi">picture_as_pdf</span> PDF</button>
+    <button class="tb-btn primary" onclick="rbRun()"><span class="mi">play_arrow</span> รันรายงาน</button>
+  </div>
+</div>
+
+<!-- RIBBON -->
+<div id="ribbon">
+  <div class="rib-group">
+    <button class="rib-btn" onclick="rbUndo()" title="Undo"><span class="mi">undo</span>Undo</button>
+    <button class="rib-btn" onclick="rbRedo()" title="Redo"><span class="mi">redo</span>Redo</button>
+  </div>
+  <div class="rib-group">
+    <button class="rib-btn" onclick="rbAddElement('kpi')" title="เพิ่ม KPI Cards"><span class="mi">speed</span>KPI</button>
+    <button class="rib-btn" onclick="rbAddElement('table')" title="เพิ่มตารางข้อมูล"><span class="mi">table_chart</span>ตาราง</button>
+    <button class="rib-btn" onclick="rbAddElement('chart_bar')" title="เพิ่มกราฟแท่ง"><span class="mi">bar_chart</span>Bar</button>
+    <button class="rib-btn" onclick="rbAddElement('chart_line')" title="เพิ่มกราฟเส้น"><span class="mi">show_chart</span>Line</button>
+    <button class="rib-btn" onclick="rbAddElement('chart_pie')" title="เพิ่มกราฟวงกลม"><span class="mi">pie_chart</span>Pie</button>
+    <button class="rib-btn" onclick="rbAddElement('chart_radar')" title="เพิ่มกราฟเรดาร์"><span class="mi">radar</span>Radar</button>
+    <button class="rib-btn" onclick="rbAddElement('chart_scatter')" title="เพิ่มกราฟกระจาย"><span class="mi">bubble_chart</span>Scatter</button>
+    <button class="rib-btn" onclick="rbAddElement('chart_mixed')" title="เพิ่มกราฟผสม"><span class="mi">multiline_chart</span>Mixed</button>
+    <button class="rib-btn" onclick="rbAddElement('text')" title="เพิ่มกล่องข้อความ"><span class="mi">title</span>ข้อความ</button>
+    <button class="rib-btn" onclick="rbAddElement('image')" title="เพิ่มรูปภาพ/โลโก้"><span class="mi">image</span>รูปภาพ</button>
+    <button class="rib-btn" onclick="rbAddElement('divider')" title="เพิ่มเส้นคั่น"><span class="mi">horizontal_rule</span>เส้นคั่น</button>
+  </div>
+  <div class="rib-group">
+    <button class="rib-btn" onclick="rbAlignLeft()" title="จัดซ้าย"><span class="mi">format_align_left</span>ซ้าย</button>
+    <button class="rib-btn" onclick="rbAlignCenter()" title="จัดกลาง"><span class="mi">format_align_center</span>กลาง</button>
+    <button class="rib-btn" onclick="rbAlignRight()" title="จัดขวา"><span class="mi">format_align_right</span>ขวา</button>
+  </div>
+  <div class="rib-group">
+    <button class="rib-btn" onclick="rbToggleGrid()" title="แสดง Grid"><span class="mi">grid_on</span>Grid</button>
+    <button class="rib-btn" onclick="rbToggleSnap()" title="Snap to Grid"><span class="mi">grid_4x4</span>Snap</button>
+  </div>
+  <div class="rib-group">
+    <button class="rib-btn" onclick="rbDeleteSelected()" title="ลบองค์ประกอบที่เลือก" class="danger"><span class="mi">delete</span>ลบ</button>
+    <button class="rib-btn" onclick="rbDupeSelected()" title="ทำสำเนา"><span class="mi">content_copy</span>สำเนา</button>
+  </div>
+  <div class="rib-group" style="margin-left:auto;">
+    <button class="rib-btn" onclick="rbLoadData()"><span class="mi">sync</span>โหลดข้อมูล</button>
+  </div>
+</div>
+
+<!-- MAIN WORKSPACE -->
+<div id="workspace">
+
+  <!-- LEFT: DATA PANEL -->
+  <div id="left-panel">
+    <div class="lp-header">
+      <div class="lp-tabs">
+        <button class="lp-tab active" onclick="lpSwitchTab('fields',this)">ข้อมูล/Fields</button>
+        <button class="lp-tab" onclick="lpSwitchTab('elements',this)">องค์ประกอบ</button>
+      </div>
+      <div class="lp-search">
+        <span class="mi">search</span>
+        <input type="text" id="fieldSearch" placeholder="ค้นหาฟิลด์..." oninput="lpFilterFields(this.value)"/>
+      </div>
+    </div>
+    <div class="lp-body" id="lp-body">
+      <!-- Fields panel (default) -->
+      <div id="tab-fields">
+        <div style="font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.3px;margin-bottom:6px;padding:0 4px;">ลากฟิลด์ไปวางในรายงาน หรือดับเบิลคลิกเพื่อเพิ่ม</div>
+        <div id="field-tree"></div>
+      </div>
+      <!-- Elements panel -->
+      <div id="tab-elements" style="display:none;">
+        <div style="font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.3px;margin-bottom:8px;padding:0 4px;">รายการองค์ประกอบในรายงาน</div>
+        <div id="elem-tree"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER: CANVAS -->
+  <div id="canvas-wrap">
+    <div id="canvas-toolbar">
+      <button class="ct-btn" onclick="rbZoomOut()"><span class="mi">remove</span></button>
+      <span class="ct-zoom" id="zoomLabel">100%</span>
+      <button class="ct-btn" onclick="rbZoomIn()"><span class="mi">add</span></button>
+      <button class="ct-btn" onclick="rbZoomFit()"><span class="mi">fit_screen</span>Fit</button>
+      <div style="width:1px;height:16px;background:var(--border-l);margin:0 4px;"></div>
+      <button class="ct-btn" onclick="rbToggleRuler()"><span class="mi">straighten</span>Ruler</button>
+      <span style="margin-left:auto;font-size:10px;color:var(--hint);" id="canvas-info">A4 Portrait • 794×1123px</span>
+    </div>
+    <div id="canvas-area" ondragover="event.preventDefault()" ondrop="canvasDrop(event)">
+      <div id="report-page" style="transform-origin:top center;">
+        <!-- Report Header -->
+        <div class="page-section" id="rpt-header" onclick="selectSection('header')">
+          <div class="sec-label">Header</div>
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+            <div style="flex:1;">
+              <input class="rpt-title-input" id="rptMainTitle" value="รายงานสถิติการศึกษา จังหวัดสกลนคร" placeholder="ชื่อรายงาน..."/>
+              <input class="rpt-subtitle-input" id="rptSubTitle" value="สำนักงานศึกษาธิการจังหวัดสกลนคร | ปีการศึกษา 2568" placeholder="คำอธิบาย..."/>
+              <div class="rpt-meta">
+                <span id="rptDate">สร้างเมื่อ: <span id="rptDateVal">—</span></span>
+                <span id="rptParams">ฟิลเตอร์: <span id="rptParamVal">ทั้งหมด</span></span>
+              </div>
+            </div>
+            <div style="width:60px;height:60px;background:linear-gradient(135deg,#1a73e8,#0d47a1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:16px;">
+              <span class="mi" style="color:#fff;font-size:28px;">school</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report Body -->
+        <div id="rpt-body"
+             ondragover="event.preventDefault();event.currentTarget.classList.add('drag-over')"
+             ondragleave="event.currentTarget.classList.remove('drag-over')"
+             ondrop="bodyDrop(event)">
+          <div class="canvas-empty" id="canvas-empty">
+            <span class="mi">insert_chart</span>
+            <p>ยังไม่มีองค์ประกอบในรายงาน</p>
+            <small>ลากฟิลด์จากซ้ายมาวางที่นี่ หรือคลิกปุ่มด้านบน Ribbon เพื่อเพิ่มองค์ประกอบ</small>
+          </div>
+        </div>
+
+        <!-- Report Footer -->
+        <div class="page-section" style="padding:10px 32px;border-top:2px solid var(--border-l);display:flex;justify-content:space-between;align-items:center;" id="rpt-footer">
+          <div class="sec-label">Footer</div>
+          <div contenteditable="true" class="rpt-textbox" style="font-size:10px;color:var(--hint);">ระบบสารสนเทศด้านการศึกษา จังหวัดสกลนคร — EduData Sakon Enterprise</div>
+          <div style="font-size:10px;color:var(--hint);">หน้า 1 / 1</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: PROPERTIES PANEL -->
+  <div id="right-panel">
+    <div class="rp-header">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+        <span class="mi" style="font-size:16px;color:var(--blue);">tune</span>
+        คุณสมบัติ
+        <span id="prop-elem-type" style="font-size:10px;background:var(--blue-ll);color:var(--blue);padding:2px 8px;border-radius:100px;margin-left:auto;">— ไม่ได้เลือก —</span>
+      </div>
+      <div class="rp-tabs">
+        <button class="rp-tab active" onclick="rpSwitchTab('props',this)">คุณสมบัติ</button>
+        <button class="rp-tab" onclick="rpSwitchTab('data',this)">ข้อมูล</button>
+        <button class="rp-tab" onclick="rpSwitchTab('format',this)">รูปแบบ</button>
+      </div>
+    </div>
+    <div class="rp-body" id="rp-body">
+      <!-- Default state -->
+      <div id="rp-no-selection" style="text-align:center;padding:32px 16px;color:var(--hint);">
+        <span class="mi" style="font-size:36px;display:block;margin-bottom:8px;opacity:.4;">touch_app</span>
+        <div style="font-size:12px;font-weight:600;margin-bottom:4px;">ยังไม่ได้เลือกองค์ประกอบ</div>
+        <div style="font-size:11px;">คลิกที่องค์ประกอบในรายงานเพื่อดูและแก้ไขคุณสมบัติ</div>
+      </div>
+      <div id="rp-props-content" style="display:none;"></div>
+    </div>
+
+    <!-- Data Preview at bottom -->
+    <div style="border-top:1px solid var(--border-l);padding:10px 12px;background:var(--s1);flex-shrink:0;">
+      <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.3px;margin-bottom:6px;">DATA PREVIEW</div>
+      <div id="data-preview-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <div style="font-size:10px;color:var(--text-2);">📊 สังกัด: <strong id="dp-agency">—</strong></div>
+        <div style="font-size:10px;color:var(--text-2);">🏫 สถานศึกษา: <strong id="dp-school">—</strong></div>
+        <div style="font-size:10px;color:var(--text-2);">👤 ผู้เรียน: <strong id="dp-student">—</strong></div>
+        <div style="font-size:10px;color:var(--text-2);">📋 รายงาน: <strong id="dp-report">—</strong></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div id="statusbar">
+  <div class="sb-item"><div class="sb-dot dot-green"></div> ระบบพร้อมใช้งาน</div>
+  <div class="sb-item"><span class="mi">grid_on</span> <span id="sb-grid">Grid: OFF</span></div>
+  <div class="sb-item"><span class="mi">select_all</span> <span id="sb-selected">ไม่ได้เลือก</span></div>
+  <div class="sb-item" style="margin-left:auto;"><span class="mi">schedule</span> <span id="sb-time">—</span></div>
+  <div class="sb-item"><span class="mi">storage</span> <span id="sb-elements">0 องค์ประกอบ</span></div>
+</div>
+
+<!-- PREVIEW OVERLAY -->
+<div id="preview-overlay" onclick="if(event.target===this)rbTogglePreview()">
+  <div id="preview-modal">
+    <div id="preview-header">
+      <span class="mi" style="color:var(--blue);">preview</span>
+      <div style="font-weight:700;font-size:14px;">Preview รายงาน</div>
+      <div style="margin-left:auto;display:flex;gap:8px;">
+        <button class="tb-btn ghost" style="background:#f1f3f4;color:var(--text);border:1px solid var(--border);" onclick="rbExportPDF()"><span class="mi">picture_as_pdf</span> Export PDF</button>
+        <button class="tb-btn ghost" style="background:#f1f3f4;color:var(--text);border:1px solid var(--border);" onclick="rbPrint()"><span class="mi">print</span> พิมพ์</button>
+        <button class="tb-btn ghost" style="background:#f1f3f4;color:var(--text);border:1px solid var(--border);" onclick="rbTogglePreview()"><span class="mi">close</span> ปิด</button>
+      </div>
+    </div>
+    <div id="preview-body"><div id="preview-content"></div></div>
+  </div>
+</div>
+
+<!-- RUN REPORT PANEL -->
+<div id="run-panel">
+  <div class="run-header">
+    <span class="mi" style="color:var(--blue);">play_circle</span>
+    <div>
+      <div style="font-weight:700;font-size:13px;">รันรายงาน</div>
+      <div style="font-size:10px;color:var(--muted);">กำหนดพารามิเตอร์แล้วกด Run</div>
+    </div>
+    <button class="tb-btn ghost" style="margin-left:auto;background:#f1f3f4;color:var(--text);border:1px solid var(--border);" onclick="rbCloseRun()"><span class="mi">close</span></button>
+  </div>
+  <div class="run-body">
+    <div class="run-param">
+      <label>ปีการศึกษา</label>
+      <select id="param-year">
+        <option value="all">ทุกปี</option>
+        <option value="2568" selected>2568</option>
+        <option value="2567">2567</option>
+        <option value="2566">2566</option>
+      </select>
+    </div>
+    <div class="run-param">
+      <label>สังกัด</label>
+      <select id="param-agency">
+        <option value="all">ทุกสังกัด</option>
+        <option value="OBEC_1">สพป.สกลนคร เขต 1</option>
+        <option value="OBEC_2">สพป.สกลนคร เขต 2</option>
+        <option value="OBEC_3">สพป.สกลนคร เขต 3</option>
+        <option value="OBEC_M">สพม.สกลนคร</option>
+        <option value="VEC">อาชีวศึกษา</option>
+        <option value="OPEC">สช. (เอกชน)</option>
+        <option value="DLA">อปท. (ท้องถิ่น)</option>
+        <option value="DOLE">สกร.</option>
+        <option value="BUDDHIST">พระปริยัติธรรม</option>
+        <option value="BPP">ตชด.</option>
+        <option value="SPECIAL">การศึกษาพิเศษ</option>
+        <option value="HIGHER">อุดมศึกษา</option>
+        <option value="NURSERY">สถานรับเลี้ยงเด็ก/ศพด.</option>
+      </select>
+    </div>
+    <div class="run-param">
+      <label>ประเภทรายงาน</label>
+      <select id="param-rtype">
+        <option value="summary">สรุปภาพรวม</option>
+        <option value="detail">รายละเอียด</option>
+        <option value="comparison">เปรียบเทียบ</option>
+      </select>
+    </div>
+    <div class="run-param">
+      <label>รูปแบบการแสดงผล</label>
+      <select id="param-format">
+        <option value="table">ตาราง</option>
+        <option value="chart">กราฟ</option>
+        <option value="both">ทั้งตารางและกราฟ</option>
+      </select>
+    </div>
+    <div style="background:var(--blue-ll);border:1px solid var(--blue-l);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--blue-d);">
+      <strong>ข้อมูลที่จะดึง:</strong><br/>
+      สถิติการศึกษาจังหวัดสกลนคร จาก Google Sheets<br/>
+      ที่มา: ระบบ EduData Sakon v2.1
+    </div>
+  </div>
+  <div class="run-footer">
+    <button class="tb-btn ghost" style="flex:1;background:#f1f3f4;color:var(--text);border:1px solid var(--border);height:36px;" onclick="rbCloseRun()">ยกเลิก</button>
+    <button class="tb-btn primary" style="flex:2;height:36px;" onclick="rbRunReport()">
+      <span class="mi">play_arrow</span> รันรายงาน
+    </button>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div id="rb-toasts"></div>
+
+<script>
+var RB_INIT_TOKEN = '<?= initToken ?>';
+</script>
+<script>
+window.onerror = function(msg, src, line, col, err) {
+  console.error("RB Error:", msg, "at line", line);
+  return false;
+};
+
+// ── Dynamic ECharts Loader ──────────────────────────────────────
+function loadECharts(callback) {
+  if (typeof echarts !== 'undefined') { callback(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js';
+  s.onload = callback;
+  document.head.appendChild(s);
+}
+
+// ════════════════════════════════════════════════════════════════
+//  REPORT BUILDER — Complete Engine
+// ════════════════════════════════════════════════════════════════
+
+// ── State ─────────────────────────────────────────────────────
+var RB = {
+  elements:     [],
+  selected:     null,
+  nextId:       1,
+  zoom:         1.0,
+  showGrid:     false,
+  snapGrid:     false,
+  history:      [],
+  future:       [],
+  data:         null,
+  sessionToken: '',
+  params:       { year:'2568', agency:'all', rtype:'summary', format:'both' }
+};
+
+// ── AGENCY MAP ────────────────────────────────────────────────
+var AGENCY_MAP = {
+  "OBEC_1":"สพป.สกลนคร เขต 1","OBEC_2":"สพป.สกลนคร เขต 2",
+  "OBEC_3":"สพป.สกลนคร เขต 3","OBEC_M":"สพม.สกลนคร",
+  "VEC":"อาชีวศึกษา","OPEC":"สช. (เอกชน)","DLA":"อปท. (ท้องถิ่น)",
+  "DOLE":"สกร. (ส่งเสริมการเรียนรู้)","BUDDHIST":"พระปริยัติธรรม",
+  "BPP":"ตชด.","SPECIAL":"การศึกษาพิเศษ","HIGHER":"อุดมศึกษา",
+  "NURSERY":"สถานรับเลี้ยงเด็ก/ศพด."
+};
+
+// ── Field Definitions ─────────────────────────────────────────
+var FIELD_CATALOG = [
+  { group:'📊 สถิติภาพรวมจังหวัด', icon:'bar_chart', color:'#1a73e8', fields:[
+    { name:'school_total',   label:'จำนวนสถานศึกษา',     type:'num', unit:'แห่ง',  key:'totalSchools'  },
+    { name:'student_total',  label:'จำนวนผู้เรียนรวม',   type:'num', unit:'คน',    key:'totalStudents' },
+    { name:'teacher_total',  label:'จำนวนครูและบุคลากร', type:'num', unit:'คน',    key:'totalTeachers' },
+    { name:'special_total',  label:'ผู้เรียนพิเศษรวม',   type:'num', unit:'คน',    key:'totalSpecial'  },
+    { name:'pending_count',  label:'รายงานรออนุมัติ',     type:'num', unit:'ฉบับ',  key:'pendingCount'  },
+  ]},
+  { group:'🎓 ผู้เรียนแยกระดับ', icon:'school', color:'#34a853', fields:[
+    { name:'std_pre',   label:'ก่อนประถมศึกษา', type:'num', unit:'คน', key:'std_pre'   },
+    { name:'std_p',     label:'ประถมศึกษา',     type:'num', unit:'คน', key:'std_p'     },
+    { name:'std_m_ton', label:'มัธยมต้น',        type:'num', unit:'คน', key:'std_m_ton' },
+    { name:'std_m_plai',label:'มัธยมปลาย',       type:'num', unit:'คน', key:'std_m_plai'},
+    { name:'std_voc',   label:'ปวช./ปวส.',       type:'num', unit:'คน', key:'std_voc'   },
+  ]},
+  { group:'♿ ผู้เรียนพิเศษ', icon:'accessibility', color:'#9c27b0', fields:[
+    { name:'spc_autistic', label:'ออทิสติก',           type:'num', unit:'คน', key:'spc_autistic' },
+    { name:'spc_physical', label:'บกพร่องทางร่างกาย',  type:'num', unit:'คน', key:'spc_physical' },
+    { name:'spc_mental',   label:'บกพร่องสติปัญญา',   type:'num', unit:'คน', key:'spc_mental'   },
+  ]},
+  { group:'🏫 แยกตามสังกัด', icon:'account_balance', color:'#e91e63', fields:[
+    { name:'agency_name',    label:'ชื่อสังกัด',          type:'txt', unit:'',    key:'agencyName'    },
+    { name:'agency_schools', label:'สถานศึกษา/สังกัด',   type:'num', unit:'แห่ง',key:'agencySchools' },
+    { name:'agency_students',label:'ผู้เรียน/สังกัด',     type:'num', unit:'คน',  key:'agencyStudents'},
+    { name:'agency_teachers',label:'ครู/สังกัด',          type:'num', unit:'คน',  key:'agencyTeachers'},
+    { name:'completion_pct', label:'% ส่งรายงานแล้ว',    type:'pct', unit:'%',   key:'completionPct' },
+  ]},
+  { group:'📅 วันที่/ช่วงเวลา', icon:'calendar_today', color:'#f29900', fields:[
+    { name:'report_date',  label:'วันที่รายงาน',   type:'date', unit:'', key:'reportDate'  },
+    { name:'submit_date',  label:'วันที่ส่งข้อมูล',type:'date', unit:'', key:'submitDate'  },
+    { name:'academic_year',label:'ปีการศึกษา',     type:'txt',  unit:'', key:'academicYear'},
+  ]},
+  { group:'📋 สถานะการรายงาน', icon:'fact_check', color:'#00bcd4', fields:[
+    { name:'status_approved',label:'จำนวนอนุมัติ',   type:'num', unit:'ฉบับ',key:'approved' },
+    { name:'status_pending', label:'จำนวนรออนุมัติ',  type:'num', unit:'ฉบับ',key:'pending'  },
+    { name:'status_rejected',label:'จำนวนส่งกลับ',    type:'num', unit:'ฉบับ',key:'rejected' },
+    { name:'not_submitted',  label:'ยังไม่ส่งรายงาน', type:'num', unit:'แห่ง',key:'notSent'  },
+  ]},
+];
+
+// ── MOCK DATA (ใช้เมื่อไม่มี backend) ────────────────────────
+var MOCK_DATA = {
+  totalSchools: 1247, totalStudents: 183650, totalTeachers: 9842, totalSpecial: 3420,
+  pendingCount: 7,
+  std_pre: 28540, std_p: 73460, std_m_ton: 45230, std_m_plai: 27680, std_voc: 8740,
+  spc_autistic: 890, spc_physical: 1340, spc_mental: 1190,
+  academicYear: '2568',
+  agencySummary: {
+    labels:['สพป.เขต 1','สพป.เขต 2','สพป.เขต 3','สพม.','อาชีวะ','สช.','อปท.','สกร.','ปริยัติ','ตชด.','การศึกษาพิเศษ','อุดม','ศพด.'],
+    schools:[420,380,290,85,42,18,24,12,8,6,3,2,4],
+    students:[72000,65000,52000,38000,8200,2800,3500,1800,1200,950,720,380,1100],
+    teachers:[3600,3200,2600,1800,420,140,180,90,60,48,36,20,52],
+    approved:[3,3,3,3,3,3,3,3,2,2,1,1,2],
+    pending:[0,0,0,0,0,0,0,0,1,1,2,2,1],
+    rejected:[0,0,0,0,0,0,0,0,0,0,0,0,0],
+    completionPct:[100,100,100,100,100,100,100,100,67,67,33,33,67],
+  },
+  approved:29, pending:7, rejected:0, notSent:4
+};
+
+// ════════════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+  rbLoadData();
+  renderFieldTree();
+  updateClock();
+  setInterval(updateClock, 1000);
+  updateRptDate();
+  updateStatusBar();
+});
+
+function updateClock() {
+  var el = document.getElementById('sb-time');
+  if (el) el.innerText = new Date().toLocaleTimeString('th-TH');
+}
+function updateRptDate() {
+  var el = document.getElementById('rptDateVal');
+  if (el) el.innerText = new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+}
+
+// ── Load Data ─────────────────────────────────────────────────
+function rbLoadData() {
+  rbToast('กำลังโหลดข้อมูลจากระบบ...','info');
+  // Try to call parent Apps Script, else use mock
+  if (typeof google !== 'undefined' && google.script) {
+    google.script.run
+      .withSuccessHandler(function(d) {
+        RB.data = d;
+        updateDataPreview(d);
+        rbToast('โหลดข้อมูลสำเร็จ','success');
+        if (RB.elements.length > 0) rbRefreshAllElements();
+      })
+      .withFailureHandler(function() {
+        RB.data = MOCK_DATA;
+        updateDataPreview(MOCK_DATA);
+        rbToast('ใช้ข้อมูลตัวอย่าง (Mock)','info');
+      })
+      .getDashboardData({ sessionToken: RB.sessionToken, filterYear: 'all', filterAgency: 'all' });
+  } else {
+    setTimeout(function() {
+      RB.data = MOCK_DATA;
+      updateDataPreview(MOCK_DATA);
+      rbToast('ข้อมูลตัวอย่างโหลดแล้ว','success');
+      if (RB.elements.length > 0) rbRefreshAllElements();
+    }, 600);
+  }
+}
+
+function updateDataPreview(d) {
+  if (!d) return;
+  var ag = document.getElementById('dp-agency');
+  var sc = document.getElementById('dp-school');
+  var st = document.getElementById('dp-student');
+  var rp = document.getElementById('dp-report');
+  if (ag) ag.innerText = '13 สังกัด';
+  if (sc) sc.innerText = (d.totalSchools||0).toLocaleString();
+  if (st) st.innerText = (d.totalStudents||0).toLocaleString();
+  if (rp) rp.innerText = ((d.approved||0)+(d.pending||0)) + ' ฉบับ';
+}
+
+// ── Field Tree ────────────────────────────────────────────────
+function renderFieldTree(filter) {
+  var tree = document.getElementById('field-tree');
+  if (!tree) return;
+  filter = (filter||'').toLowerCase();
+  tree.innerHTML = '';
+  FIELD_CATALOG.forEach(function(grp) {
+    var visibleFields = grp.fields.filter(function(f) {
+      return !filter || f.label.toLowerCase().includes(filter) || f.name.includes(filter);
+    });
+    if (visibleFields.length === 0) return;
+    var gDiv = document.createElement('div');
+    gDiv.className = 'ds-group';
+    var hd = document.createElement('div');
+    hd.className = 'ds-group-hd';
+    hd.innerHTML = '<span class="mi" style="color:'+grp.color+'">'+grp.icon+'</span>'
+      + '<span>'+grp.group+'</span>'
+      + '<span class="toggle-icon mi">expand_more</span>';
+    var body = document.createElement('div');
+    body.className = 'ds-group-body';
+    hd.addEventListener('click', function() {
+      var isOpen = body.style.display !== 'none';
+      body.style.display = isOpen ? 'none' : '';
+      hd.querySelector('.toggle-icon').innerText = isOpen ? 'chevron_right' : 'expand_more';
+    });
+    visibleFields.forEach(function(f) {
+      var inReport = RB.elements.some(function(e) {
+        return e.fields && e.fields.some(function(ef){ return ef.name === f.name; });
+      });
+      var item = document.createElement('div');
+      item.className = 'field-item' + (inReport?' in-report':'');
+      item.draggable = true;
+      item.dataset.field = JSON.stringify(f);
+      var typeClass = {num:'fi-num',txt:'fi-txt',date:'fi-date',pct:'fi-pct'}[f.type]||'fi-txt';
+      var typeLabel = {num:'#',txt:'A',date:'D',pct:'%'}[f.type]||'A';
+      item.innerHTML = '<span class="fi-type '+typeClass+'">'+typeLabel+'</span>'
+        + '<span class="fi-name">'+f.label+'</span>'
+        + (inReport?'<span class="mi" style="font-size:12px;color:var(--green);">check_circle</span>':'');
+      item.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('field', JSON.stringify(f));
+        item.classList.add('dragging');
+      });
+      item.addEventListener('dragend', function() { item.classList.remove('dragging'); });
+      item.addEventListener('dblclick', function() { rbAddFieldToReport(f); });
+      body.appendChild(item);
+    });
+    gDiv.appendChild(hd);
+    gDiv.appendChild(body);
+    tree.appendChild(gDiv);
+  });
+}
+
+function lpFilterFields(val) { renderFieldTree(val); }
+
+function lpSwitchTab(tab, btn) {
+  document.querySelectorAll('.lp-tab').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById('tab-fields').style.display    = tab==='fields'   ? '' : 'none';
+  document.getElementById('tab-elements').style.display  = tab==='elements' ? '' : 'none';
+  if (tab === 'elements') renderElemTree();
+}
+
+function renderElemTree() {
+  var tree = document.getElementById('elem-tree');
+  if (!tree) return;
+  if (RB.elements.length === 0) {
+    tree.innerHTML = '<div style="text-align:center;padding:20px;color:var(--hint);font-size:11px;">ยังไม่มีองค์ประกอบ</div>';
+    return;
+  }
+  tree.innerHTML = '';
+  RB.elements.forEach(function(elem, idx) {
+    var item = document.createElement('div');
+    var isSelected = RB.selected === elem.id;
+    item.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:11px;margin-bottom:2px;border:1.5px solid '+(isSelected?'var(--blue)':'transparent')+';background:'+(isSelected?'var(--blue-ll)':'transparent');
+    var iconMap = {kpi:'speed',table:'table_chart',chart_bar:'bar_chart',chart_line:'show_chart',chart_pie:'pie_chart',chart_radar:'radar',chart_scatter:'bubble_chart',chart_mixed:'multiline_chart',text:'title',divider:'horizontal_rule',image:'image'};
+    item.innerHTML = '<span class="mi" style="font-size:14px;color:var(--muted);">'+(iconMap[elem.type]||'widgets')+'</span>'
+      + '<span style="flex:1;">'+(elem.title||elem.type)+'</span>'
+      + '<span style="font-size:10px;color:var(--hint);">#'+(idx+1)+'</span>';
+    item.addEventListener('click', function() { rbSelectElement(elem.id); });
+    tree.appendChild(item);
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+//  ELEMENT MANAGEMENT
+// ════════════════════════════════════════════════════════════════
+function rbAddElement(type) {
+  rbSaveHistory();
+  var elem = createDefaultElement(type);
+  RB.elements.push(elem);
+  renderReport();
+  rbSelectElement(elem.id);
+  updateStatusBar();
+  rbToast('เพิ่ม '+getTypeLabel(type)+' แล้ว','success');
+}
+
+function rbAddFieldToReport(field) {
+  rbSaveHistory();
+  var fsEl = document.getElementById('fieldSearch');
+  var fsVal = fsEl ? fsEl.value : '';
+  // ── ถ้า field เป็นตัวเลข (num/pct) → เพิ่มใน KPI element ──
+  if (field.type === 'num' || field.type === 'pct') {
+    var existingKpi = RB.elements.find(function(e){ return e.type==='kpi'; });
+    if (existingKpi) {
+      if (!existingKpi.kpiFields) existingKpi.kpiFields = [];
+      // ป้องกันซ้ำ
+      var alreadyIn = existingKpi.kpiFields.some(function(f){ return f.name===field.name; });
+      if (alreadyIn) {
+        rbSaveHistory(); // undo the extra save
+        rbToast('"'+field.label+'" มีใน KPI แล้ว', 'info');
+        return;
+      }
+      existingKpi.kpiFields.push(field);
+      existingKpi.cols = existingKpi.kpiFields.length;
+      existingKpi.title = 'KPI Cards';
+      renderReport();
+      renderFieldTree(fsVal);
+      rbToast('เพิ่ม "'+field.label+'" ใน KPI Cards แล้ว', 'success');
+      return;
+    }
+  }
+  // ── ถ้ามีตารางอยู่แล้ว → เพิ่ม field ในตาราง ──
+  var existingTable = RB.elements.find(function(e){ return e.type==='table'; });
+  if (existingTable && field.type !== 'num') {
+    if (!existingTable.fields) existingTable.fields = [];
+    var inTable = existingTable.fields.some(function(f){ return f.name===field.name; });
+    if (inTable) {
+      rbToast('"'+field.label+'" มีในตารางแล้ว', 'info');
+      return;
+    }
+    existingTable.fields.push(field);
+    renderReport();
+    renderFieldTree(fsVal);
+    rbToast('เพิ่ม "'+field.label+'" ในตาราง', 'success');
+    return;
+  }
+  // ── สร้าง element ใหม่ ──
+  var newType = (field.type === 'num' || field.type === 'pct') ? 'kpi' : 'table';
+  var elem = createDefaultElement(newType);
+  if (newType === 'kpi') {
+    elem.kpiFields = [field];
+    elem.cols = 1;
+    elem.colSpan = 12;
+    elem.title = 'KPI Cards';
+  } else {
+    elem.fields = [field];
+    elem.colSpan = 12;
+    elem.title = 'ตารางข้อมูล';
+  }
+  RB.elements.push(elem);
+  renderReport();
+  rbSelectElement(elem.id);
+  renderFieldTree(fsVal);
+  updateStatusBar();
+  rbToast('เพิ่ม "'+field.label+'" ในรายงานแล้ว', 'success');
+}
+
+function createDefaultElement(type) {
+  var id = 'elem_'+(RB.nextId++);
+  var defaults = {
+    kpi:       { title:'KPI Cards',        cols:4,  colSpan:12, style:{} },
+    table:     { title:'ตารางข้อมูล',       fields:[], showTotal:true, maxRows:20, colSpan:12, style:{} },
+    chart_bar: { title:'Bar Chart',        dataSource:'agencySummary', metric:'schools', colSpan:12, style:{} },
+    chart_line:{ title:'Line Chart',       dataSource:'agencySummary', metric:'students', colSpan:12, style:{} },
+    chart_pie: { title:'Pie Chart',        dataSource:'agencySummary', metric:'schools',  colSpan:6,  style:{} },
+    chart_radar: { title:'Radar Chart',    dataSource:'agencySummary', metric:'schools',  colSpan:12, style:{} },
+    chart_scatter:{ title:'Scatter Plot',  dataSource:'agencySummary', metric:'schools',  colSpan:12, style:{} },
+    chart_mixed: { title:'Mixed Chart',    dataSource:'agencySummary', metric:'schools',  colSpan:12, style:{} },
+    text:      { title:'ข้อความ',          content:'พิมพ์ข้อความที่นี่...', fontSize:14, bold:false, align:'left', colSpan:12, style:{} },
+    divider:   { title:'เส้นคั่น',         color:'#dadce0', thickness:1, colSpan:12, style:{} },
+    image:     { title:'รูปภาพ/โลโก้',     src:'', colSpan:12, style:{} },
+  };
+  var base = defaults[type] || { title:type, style:{} };
+  return Object.assign({ id:id, type:type }, base);
+}
+
+function getTypeLabel(type) {
+  var m = {kpi:'KPI Cards',table:'ตารางข้อมูล',chart_bar:'Bar Chart',chart_line:'Line Chart',
+    chart_pie:'Pie Chart',chart_radar:'Radar Chart',chart_scatter:'Scatter Plot',
+    chart_mixed:'Mixed Chart',text:'กล่องข้อความ',divider:'เส้นคั่น',image:'รูปภาพ'};
+  return m[type]||type;
+}
+
+function rbSelectElement(id) {
+  RB.selected = id;
+  document.querySelectorAll('.rpt-element').forEach(function(el) {
+    el.classList.toggle('selected', el.dataset.elemId === id);
+  });
+  var elem = RB.elements.find(function(e){ return e.id===id; });
+  if (elem) renderPropsPanel(elem);
+  updateStatusBar();
+  renderElemTree();
+}
+
+function rbDeleteSelected() {
+  if (!RB.selected) return;
+  rbSaveHistory();
+  RB.elements = RB.elements.filter(function(e){ return e.id!==RB.selected; });
+  RB.selected = null;
+  renderReport();
+  document.getElementById('rp-no-selection').style.display = '';
+  document.getElementById('rp-props-content').style.display = 'none';
+  updateStatusBar();
+  rbToast('ลบองค์ประกอบแล้ว','info');
+}
+
+function rbDupeSelected() {
+  if (!RB.selected) return;
+  rbSaveHistory();
+  var orig = RB.elements.find(function(e){ return e.id===RB.selected; });
+  if (!orig) return;
+  var clone = JSON.parse(JSON.stringify(orig));
+  clone.id = 'elem_'+(RB.nextId++);
+  clone.title = (clone.title||'') + ' (สำเนา)';
+  var idx = RB.elements.findIndex(function(e){ return e.id===RB.selected; });
+  RB.elements.splice(idx+1,0,clone);
+  renderReport();
+  rbSelectElement(clone.id);
+  rbToast('ทำสำเนาแล้ว','success');
+}
+
+// ════════════════════════════════════════════════════════════════
+//  RENDER REPORT  — Vertical Flow + Drag-to-Reorder (No Overlap)
+// ════════════════════════════════════════════════════════════════
+
+// drag state
+var _dragSrcId = null;
+var _dragOverId = null;
+
+function renderReport() {
+  var body  = document.getElementById('rpt-body');
+  var empty = document.getElementById('canvas-empty');
+  if (!body) return;
+
+  Array.from(body.children).forEach(function(child) {
+    if (child.id !== 'canvas-empty') body.removeChild(child);
+  });
+  if (empty) empty.style.display = RB.elements.length === 0 ? 'flex' : 'none';
+  if (RB.elements.length === 0) return;
+
+  // ── จัดกลุ่ม elements เป็น rows ตาม colSpan ──────────────────
+  // แต่ละ "แถว" รวม elements ที่ colSpan รวมกันได้ = 12 (หรือน้อยกว่า)
+  // ถ้า element เดี่ยวมี colSpan=12 → แถวตัวเอง
+  // ถ้า colSpan=6+6 → 1 แถว 2 คอลัมน์
+  // ถ้า colSpan=4+4+4 → 1 แถว 3 คอลัมน์
+  var rows = [];       // array of arrays
+  var currentRow = [];
+  var currentSum = 0;
+
+  RB.elements.forEach(function(elem) {
+    var span = elem.colSpan || 12;
+    if (currentSum + span > 12 && currentRow.length > 0) {
+      rows.push(currentRow);
+      currentRow = [elem];
+      currentSum = span;
+    } else {
+      currentRow.push(elem);
+      currentSum += span;
+      if (currentSum >= 12) {
+        rows.push(currentRow);
+        currentRow = [];
+        currentSum = 0;
+      }
+    }
+  });
+  if (currentRow.length > 0) rows.push(currentRow);
+
+  // ── วาง drop-zone บนสุด (สำหรับ element แรก) ────────────────
+  body.appendChild(makeDropZone('top', null));
+
+  // ── render แต่ละ row ──────────────────────────────────────────
+  rows.forEach(function(rowElems, rowIdx) {
+    // ถ้า row มีหลาย element → ใส่ใน grid
+    if (rowElems.length > 1) {
+      var cols = rowElems.length; // 2, 3, หรือ 4
+      var rowGrid = document.createElement('div');
+      rowGrid.style.cssText = 'display:grid;grid-template-columns:repeat(' + cols + ',1fr);'
+        + 'gap:8px;margin-top:40px;margin-bottom:0;position:relative;';
+
+      rowElems.forEach(function(elem) {
+        var cell = document.createElement('div');
+        cell.style.cssText = 'min-width:0;overflow:hidden;position:relative;';
+        cell.appendChild(makeSingleElem(elem));
+        rowGrid.appendChild(cell);
+      });
+
+      body.appendChild(rowGrid);
+
+    } else {
+      // single element — full width
+      var elem = rowElems[0];
+      body.appendChild(makeSingleElem(elem));
+    }
+
+    // drop zone หลัง row
+    var lastElem = rowElems[rowElems.length - 1];
+    body.appendChild(makeDropZone('after', lastElem.id));
+  });
+
+  // ── Re-draw ECharts ──────────────────────────────────────────
+  setTimeout(function() {
+    RB.elements.forEach(function(elem) {
+      if (['chart_bar','chart_line','chart_pie','chart_radar','chart_scatter','chart_mixed'].indexOf(elem.type) >= 0) {
+        var el = document.getElementById('chart-' + elem.id);
+        if (el) loadECharts(function() { drawEChart(elem, el); });
+      }
+    });
+  }, 80);
+
+  renderElemTree();
+  renderFieldTree((document.getElementById('fieldSearch') || {}).value || '');
+}
+
+// ── สร้าง DOM ของ element เดียว ───────────────────────────────
+function makeSingleElem(elem) {
+  var wrap = document.createElement('div');
+  wrap.className = 'rpt-element';
+  wrap.dataset.elemId = elem.id;
+  wrap.style.cssText = 'position:relative;display:block;width:100%;'
+    + 'margin-top:40px;margin-bottom:0;';
+  if (RB.selected === elem.id) wrap.classList.add('selected');
+  if (elem.bgColor) wrap.style.background = elem.bgColor;
+  if (elem.showBorder && elem.borderColor) wrap.style.borderColor = elem.borderColor;
+
+  // Drag handle
+  var dragHandle = document.createElement('div');
+  dragHandle.style.cssText = 'position:absolute;top:0;left:0;width:24px;bottom:0;'
+    + 'display:flex;align-items:center;justify-content:center;'
+    + 'cursor:grab;z-index:10;opacity:0;transition:.15s;'
+    + 'background:linear-gradient(to right,rgba(26,115,232,.06),transparent);'
+    + 'border-radius:4px 0 0 4px;';
+  dragHandle.innerHTML = '<span class="mi" style="font-size:14px;color:var(--blue);'
+    + 'transform:rotate(90deg);">drag_indicator</span>';
+  dragHandle.title = 'ลากเพื่อเรียงลำดับ';
+  wrap.appendChild(dragHandle);
+
+  wrap.addEventListener('mouseenter', function() { dragHandle.style.opacity='1'; });
+  wrap.addEventListener('mouseleave', function() { dragHandle.style.opacity='0'; });
+
+  dragHandle.setAttribute('draggable', 'true');
+  dragHandle.addEventListener('dragstart', function(e) {
+    _dragSrcId = elem.id;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', elem.id);
+    setTimeout(function() { wrap.style.opacity = '.4'; }, 0);
+  });
+  dragHandle.addEventListener('dragend', function() {
+    wrap.style.opacity = '1';
+    _dragSrcId = null;
+    document.querySelectorAll('.rb-drop-zone').forEach(function(dz) {
+      dz.classList.remove('dz-active');
+      dz.style.height = '8px';
+      dz.style.background = 'transparent';
+      dz.style.borderColor = 'transparent';
+    });
+    _dragOverId = null;
+  });
+
+  // Floating toolbar
+  var tb = document.createElement('div');
+  tb.className = 'elem-toolbar';
+  tb.innerHTML =
+    '<span class="elem-tb-label">' + getTypeLabel(elem.type) + '</span>'
+    + '<button class="elem-tb-btn" onclick="rbMoveElem(\'' + elem.id + '\',-1)" title="เลื่อนขึ้น">'
+      + '<span class="mi">arrow_upward</span></button>'
+    + '<button class="elem-tb-btn" onclick="rbMoveElem(\'' + elem.id + '\',1)"  title="เลื่อนลง">'
+      + '<span class="mi">arrow_downward</span></button>'
+    + '<button class="elem-tb-btn" onclick="rbDupeElem(\'' + elem.id + '\')"   title="ทำสำเนา">'
+      + '<span class="mi">content_copy</span></button>'
+    + '<button class="elem-tb-btn" onclick="rbDeleteElem(\'' + elem.id + '\')" title="ลบ" '
+      + 'style="background:rgba(217,48,37,.25);"><span class="mi">delete</span></button>';
+  wrap.appendChild(tb);
+
+  // Content (left-padded for handle)
+  var contentWrap = document.createElement('div');
+  contentWrap.style.cssText = 'padding-left:24px;';
+  var contentNode = renderElement(elem);
+  contentWrap.appendChild(contentNode);
+  wrap.appendChild(contentWrap);
+
+  // Click to select
+  wrap.addEventListener('click', function(e) {
+    e.stopPropagation();
+    rbSelectElement(elem.id);
+  });
+
+  return wrap;
+}
+
+
+function renderElement(elem) {
+  var d = document.createElement('div');
+  switch(elem.type) {
+    case 'kpi':       d.innerHTML = renderKPI(elem);       break;
+    case 'table':     d.innerHTML = renderTable(elem);     break;
+    case 'chart_bar':
+    case 'chart_line':
+    case 'chart_pie':
+    case 'chart_radar':
+    case 'chart_scatter':
+    case 'chart_mixed': d.innerHTML = renderChart(elem);   break;
+    case 'text':      d.innerHTML = renderText(elem);      break;
+    case 'divider':   d.innerHTML = renderDivider(elem);   break;
+    case 'image':     d.innerHTML = renderImage(elem);     break;
+    default:          d.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:12px;">'+elem.type+'</div>';
+  }
+  return d;
+}
+
+// ── KPI Renderer ─────────────────────────────────────────────
+function renderKPI(elem) {
+  var d = RB.data || MOCK_DATA;
+  var numCols = elem.cols || 4;
+  var fmt = function(n) { return Number(n||0).toLocaleString('th-TH'); };
+  var defaultKpis = [
+    { label:'สถานศึกษา',      val:fmt(d.totalSchools),  unit:'แห่ง', icon:'domain',      color:'#1a73e8' },
+    { label:'ผู้เรียนรวม',    val:fmt(d.totalStudents), unit:'คน',   icon:'groups',      color:'#34a853' },
+    { label:'ครูและบุคลากร',  val:fmt(d.totalTeachers), unit:'คน',   icon:'co_present',  color:'#673ab7' },
+    { label:'ผู้เรียนพิเศษ',  val:fmt(d.totalSpecial),  unit:'คน',   icon:'accessibility',color:'#e91e63' },
+  ];
+  // ถ้ามี kpiField เดี่ยว หรือ kpiFields หลายตัว
+  var kpis;
+  if (elem.kpiFields && elem.kpiFields.length > 0) {
+    kpis = elem.kpiFields.map(function(f) {
+      var v = getFieldValue(f, d);
+      return { label:f.label, val:fmt(v), unit:f.unit||'', icon:'bar_chart', color:f.color||'#1a73e8' };
+    });
+    numCols = kpis.length;
+  } else if (elem.kpiField) {
+    var v = getFieldValue(elem.kpiField, d);
+    kpis = [{ label:elem.kpiField.label, val:fmt(v), unit:elem.kpiField.unit||'', icon:'bar_chart', color:'#1a73e8' }];
+    numCols = 1;
+  } else {
+    kpis = defaultKpis.slice(0, numCols);
+  }
+  // สร้าง grid ที่แสดงครบ numCols columns จริงๆ
+  var gridStyle = 'display:grid;grid-template-columns:repeat(' + numCols + ',1fr);gap:10px;padding:8px;';
+  return '<div style="' + gridStyle + '">'
+    + kpis.map(function(k) {
+        return '<div class="kpi-card">'
+          + '<div class="kpi-icon" style="background:' + k.color + '1a;">'
+            + '<span class="mi" style="color:' + k.color + ';">' + k.icon + '</span>'
+          + '</div>'
+          + '<div class="kpi-val" style="color:' + k.color + ';">' + k.val + '</div>'
+          + '<div style="font-size:10px;color:var(--muted);font-weight:600;">' + k.unit + '</div>'
+          + '<div class="kpi-lbl">' + k.label + '</div>'
+        + '</div>';
+      }).join('')
+  + '</div>';
+}
+
+
+function renderTable(elem) {
+  var d = RB.data || MOCK_DATA;
+  var fields = elem.fields && elem.fields.length > 0
+    ? elem.fields
+    : [
+        { label:'สังกัด',          name:'agency_name',    type:'txt' },
+        { label:'สถานศึกษา (แห่ง)',name:'agency_schools', type:'num' },
+        { label:'ผู้เรียน (คน)',   name:'agency_students',type:'num' },
+        { label:'ครู (คน)',        name:'agency_teachers',type:'num' },
+        { label:'% รายงาน',       name:'completion_pct', type:'pct' },
+      ];
+
+  var summary = d.agencySummary || {};
+  var labels  = summary.labels  || Object.values(AGENCY_MAP);
+  var schools  = summary.schools  || [];
+  var students = summary.students || [];
+  var teachers = summary.teachers || [];
+  var completionPct = summary.completionPct || [];
+  var maxRows = elem.maxRows || 20;
+  var rows = labels.slice(0, maxRows);
+
+  var thead = '<tr>'+fields.map(function(f,i) {
+    return '<th style="'+(i===0?'':'text-align:right;')+'">'+f.label+'</th>';
+  }).join('')+'</tr>';
+
+  var tbody = rows.map(function(lbl, ri) {
+    return '<tr>'+fields.map(function(f, ci) {
+      var val = '-';
+      if (f.name==='agency_name')     val = lbl;
+      else if (f.name==='agency_schools')  val = (schools[ri]||0).toLocaleString();
+      else if (f.name==='agency_students') val = (students[ri]||0).toLocaleString();
+      else if (f.name==='agency_teachers') val = (teachers[ri]||0).toLocaleString();
+      else if (f.name==='completion_pct') {
+        var pct = completionPct[ri]||0;
+        var c = pct>=100?'#34a853':pct>=50?'#f29900':'#d93025';
+        val = '<span style="background:'+c+'1a;color:'+c+';padding:2px 8px;border-radius:4px;font-weight:700;font-size:10px;">'+pct+'%</span>';
+      }
+      else val = getFieldValue(f, d).toString();
+      var align = (f.type==='num'||f.type==='pct') ? 'text-align:right;' : '';
+      return '<td style="'+align+'">'+val+'</td>';
+    }).join('')+'</tr>';
+  }).join('');
+
+  // Totals row
+  var tfoot = '';
+  if (elem.showTotal) {
+    tfoot = '<tfoot><tr>'+fields.map(function(f,i) {
+      var val = '';
+      if (i===0) val = 'รวม';
+      else if (f.name==='agency_schools')  val = schools.reduce(function(a,b){ return a+b; },0).toLocaleString();
+      else if (f.name==='agency_students') val = students.reduce(function(a,b){ return a+b; },0).toLocaleString();
+      else if (f.name==='agency_teachers') val = teachers.reduce(function(a,b){ return a+b; },0).toLocaleString();
+      var align = (f.type==='num'||f.type==='pct') ? 'text-align:right;' : '';
+      return '<td style="'+align+'">'+val+'</td>';
+    }).join('')+'</tr></tfoot>';
+  }
+
+  return '<div style="padding:4px;">'
+    +'<div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px;">'
+      +'<span class="mi" style="font-size:14px;color:var(--blue);">table_chart</span>'+elem.title
+      +'<span style="margin-left:auto;font-size:10px;color:var(--hint);">'+rows.length+' รายการ</span>'
+    +'</div>'
+    +'<div style="overflow-x:auto;border-radius:6px;border:1px solid var(--border-l);">'
+      +'<table class="data-tbl"><thead>'+thead+'</thead><tbody>'+tbody+'</tbody>'+tfoot+'</table>'
+    +'</div></div>';
+}
+
+// ── Chart Renderer ────────────────────────────────────────────
+function renderChart(elem) {
+  var h = elem.chartHeight || 240;
+  var icon = elem.type==='chart_pie'?'pie_chart'
+           : elem.type==='chart_line'?'show_chart'
+           : elem.type==='chart_radar'?'radar'
+           : elem.type==='chart_scatter'?'bubble_chart'
+           : elem.type==='chart_mixed'?'multiline_chart'
+           : 'bar_chart';
+  return '<div class="chart-box-rpt" style="margin:4px;">'
+    +'<div class="chart-hd">'
+      +'<span class="mi" style="font-size:14px;color:var(--blue);">'+icon+'</span>'
+      +'<span class="chart-hd-title">'+elem.title+'</span>'
+    +'</div>'
+    +'<div class="chart-area"><div id="chart-'+elem.id+'" style="height:'+h+'px;width:100%;"></div></div>'
+  +'</div>';
+}
+
+function drawEChart(elem, el) {
+  var existing = echarts.getInstanceByDom(el);
+  if (existing) existing.dispose();
+  var chart = echarts.init(el);
+  var d = RB.data || MOCK_DATA;
+  var summary = d.agencySummary || {};
+  var labels  = summary.labels  || [];
+  var metric  = elem.metric || 'schools';
+  var values  = summary[metric] || [];
+  var palette = ['#1a73e8','#34a853','#fbbc04','#ea4335','#673ab7','#00bcd4','#ff5722','#ff9800'];
+
+  var opt = { backgroundColor:'transparent', color:palette, tooltip:{trigger:'axis'} };
+  var title = { schools:'สถานศึกษา (แห่ง)', students:'ผู้เรียน (คน)', teachers:'ครู (คน)' }[metric] || metric;
+
+  if (elem.type === 'chart_bar') {
+    opt.grid  = { top:8,bottom:60,left:50,right:8 };
+    opt.xAxis = { type:'category',data:labels,axisLabel:{rotate:30,fontSize:9,color:'#5f6368'} };
+    opt.yAxis = { type:'value',axisLabel:{fontSize:9,color:'#5f6368'} };
+    opt.series= [{ type:'bar',data:values.map(function(v,i){ return {value:v,itemStyle:{color:palette[i%palette.length]}}; }),barMaxWidth:36,itemStyle:{borderRadius:[4,4,0,0]},
+      label:{show:true,position:'top',fontSize:9,color:'#5f6368',formatter:function(p){ return p.value.toLocaleString(); }} }];
+  } else if (elem.type === 'chart_line') {
+    opt.grid  = { top:8,bottom:60,left:50,right:8 };
+    opt.xAxis = { type:'category',data:labels,axisLabel:{rotate:30,fontSize:9,color:'#5f6368'} };
+    opt.yAxis = { type:'value',axisLabel:{fontSize:9,color:'#5f6368'} };
+    opt.series= [{ type:'line',data:values,smooth:true,lineStyle:{color:'#1a73e8',width:2.5},symbol:'circle',symbolSize:5,itemStyle:{color:'#1a73e8'},
+      areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#1a73e866'},{offset:1,color:'#1a73e805'}]}} }];
+  } else if (elem.type === 'chart_pie') {
+    opt.tooltip = { trigger:'item' };
+    opt.legend  = { bottom:0, textStyle:{fontSize:9,color:'#5f6368'}, type:'scroll' };
+    opt.series  = [{ type:'pie',radius:['35%','65%'],center:['50%','44%'],
+      data:labels.map(function(l,i){ return {name:l,value:values[i]||0}; }),
+      label:{show:true,fontSize:9,formatter:function(p){ return p.name+'\n'+p.percent.toFixed(1)+'%'; }},
+      itemStyle:{borderRadius:5,borderWidth:2,borderColor:'#fff'} }];
+  } else if (elem.type === 'chart_radar') {
+    // Radar Chart — เปรียบเทียบสัดส่วนเชิงนโยบาย
+    var sliceLen  = Math.min(labels.length, 8);
+    var rStudents = (summary.students || []).slice(0, sliceLen);
+    var maxVal    = Math.max.apply(null, rStudents.concat([1]));
+    opt.tooltip = { trigger:'item' };
+    opt.radar = {
+      indicator: labels.slice(0, sliceLen).map(function(l){ return { name:l, max:maxVal }; }),
+      splitArea: { areaStyle:{ color:['rgba(26,115,232,.04)','rgba(26,115,232,.08)'] } },
+      axisName:  { fontSize:9, color:'#5f6368' }
+    };
+    opt.series = [{ type:'radar', data:[{
+      value: rStudents, name:'ผู้เรียน',
+      areaStyle:{ color:'rgba(26,115,232,.15)' },
+      lineStyle:{ color:'#1a73e8', width:2 },
+      itemStyle:{ color:'#1a73e8' }
+    }] }];
+  } else if (elem.type === 'chart_scatter') {
+    // Scatter Plot — schools vs students
+    var sSchools  = summary.schools  || [];
+    var sStudents = summary.students || [];
+    var scatterData = labels.map(function(l,i){ return [sSchools[i]||0, sStudents[i]||0, l]; });
+    opt.grid  = { top:20,bottom:60,left:60,right:20 };
+    opt.xAxis = { name:'สถานศึกษา (แห่ง)', nameTextStyle:{fontSize:10,color:'#5f6368'}, axisLabel:{fontSize:9,color:'#5f6368'} };
+    opt.yAxis = { name:'ผู้เรียน (คน)',     nameTextStyle:{fontSize:10,color:'#5f6368'}, axisLabel:{fontSize:9,color:'#5f6368'} };
+    opt.series = [{ type:'scatter', data:scatterData,
+      symbolSize:function(d){ return Math.max(8, Math.sqrt(d[1]/500)); },
+      itemStyle:{ color:function(p){ return palette[p.dataIndex%palette.length]; }, opacity:0.85 },
+      label:{ show:true,position:'top',fontSize:8,color:'#5f6368',formatter:function(p){ return p.data[2]; } }
+    }];
+  } else if (elem.type === 'chart_mixed') {
+    // Mixed Bar + Line Chart — สถานศึกษา (bar) + ผู้เรียน (line)
+    var mSchools  = summary.schools  || [];
+    var mStudents = summary.students || [];
+    opt.grid    = { top:30,bottom:60,left:60,right:60 };
+    opt.legend  = { top:4, textStyle:{fontSize:9,color:'#5f6368'} };
+    opt.xAxis   = { type:'category',data:labels,axisLabel:{rotate:30,fontSize:9,color:'#5f6368'} };
+    opt.yAxis   = [
+      { type:'value',name:'สถานศึกษา (แห่ง)',nameTextStyle:{fontSize:9,color:'#1a73e8'},axisLabel:{fontSize:9,color:'#5f6368'} },
+      { type:'value',name:'ผู้เรียน (คน)',    nameTextStyle:{fontSize:9,color:'#34a853'},axisLabel:{fontSize:9,color:'#5f6368'},position:'right' }
+    ];
+    opt.series  = [
+      { name:'สถานศึกษา',type:'bar',yAxisIndex:0,data:mSchools,barMaxWidth:28,
+        itemStyle:{color:'#1a73e8',borderRadius:[3,3,0,0]} },
+      { name:'ผู้เรียน',type:'line',yAxisIndex:1,data:mStudents,smooth:true,
+        lineStyle:{color:'#34a853',width:2.5},symbol:'circle',symbolSize:5,itemStyle:{color:'#34a853'},
+        areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#34a85333'},{offset:1,color:'#34a85305'}]}} }
+    ];
+  }
+  chart.setOption(opt);
+}
+
+// ── Text Renderer ─────────────────────────────────────────────
+function renderText(elem) {
+  var align = elem.align || 'left';
+  var size  = (elem.fontSize||14)+'px';
+  var bold  = elem.bold ? 'font-weight:700;' : '';
+  var color = elem.color || 'var(--text)';
+  return '<div style="padding:10px 14px;text-align:'+align+';font-size:'+size+';'+bold+'color:'+color+';" contenteditable="true" '
+    +'oninput="rbUpdateTextContent(\''+elem.id+'\',this.innerText)">'+(elem.content||'พิมพ์ข้อความที่นี่...')+'</div>';
+}
+
+// ── Divider Renderer ──────────────────────────────────────────
+function renderDivider(elem) {
+  var color = elem.color || '#dadce0';
+  var thick = (elem.thickness||1)+'px';
+  return '<div style="padding:8px 0;"><hr style="border:none;border-top:'+thick+' solid '+color+';margin:0;"/></div>';
+}
+
+// ── Image Renderer ────────────────────────────────────────────
+function renderImage(elem) {
+  return '<div style="padding:8px;text-align:center;">'
+    +(elem.src?'<img src="'+elem.src+'" style="max-width:100%;max-height:120px;border-radius:6px;" />':'<div style="height:80px;background:var(--s2);border-radius:6px;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;color:var(--hint);font-size:11px;cursor:pointer;" onclick="rbPickImage(\''+elem.id+'\')" ><span class="mi" style="font-size:24px;">image</span>&nbsp;คลิกเพื่อเลือกรูป</div>')
+  +'</div>';
+}
+
+function getFieldValue(field, d) {
+  if (!field || !d) return 0;
+  var map = {
+    school_total: d.totalSchools, student_total: d.totalStudents,
+    teacher_total: d.totalTeachers, special_total: d.totalSpecial,
+    pending_count: d.pendingCount, std_pre: d.std_pre, std_p: d.std_p,
+    std_m_ton: d.std_m_ton, std_m_plai: d.std_m_plai, std_voc: d.std_voc,
+    spc_autistic: d.spc_autistic, spc_physical: d.spc_physical, spc_mental: d.spc_mental,
+    status_approved: d.approved, status_pending: d.pending, not_submitted: d.notSent,
+    academic_year: d.academicYear || '2568',
+  };
+  return map[field.name] !== undefined ? map[field.name] : 0;
+}
+
+// ── Move element ──────────────────────────────────────────────
+function rbMoveElem(id, dir) {
+  var idx = RB.elements.findIndex(function(e){ return e.id===id; });
+  if (idx<0) return;
+  var ni = idx+dir;
+  if (ni<0||ni>=RB.elements.length) return;
+  rbSaveHistory();
+  var tmp=RB.elements[idx]; RB.elements[idx]=RB.elements[ni]; RB.elements[ni]=tmp;
+  renderReport();
+}
+function rbDeleteElem(id) {
+  rbSaveHistory();
+  RB.elements = RB.elements.filter(function(e){ return e.id!==id; });
+  if (RB.selected===id) { RB.selected=null; showNoSelection(); }
+  renderReport(); updateStatusBar();
+  rbToast('ลบแล้ว','info');
+}
+function rbDupeElem(id) {
+  rbSaveHistory();
+  var orig = RB.elements.find(function(e){ return e.id===id; });
+  if (!orig) return;
+  var clone = JSON.parse(JSON.stringify(orig));
+  clone.id = 'elem_'+(RB.nextId++);
+  clone.title = (clone.title||'')+' (สำเนา)';
+  var idx = RB.elements.findIndex(function(e){ return e.id===id; });
+  RB.elements.splice(idx+1,0,clone);
+  renderReport(); rbSelectElement(clone.id);
+  rbToast('ทำสำเนาแล้ว','success');
+}
+function rbUpdateTextContent(id, text) {
+  var elem = RB.elements.find(function(e){ return e.id===id; });
+  if (elem) elem.content = text;
+}
+
+// ════════════════════════════════════════════════════════════════
+//  PROPERTIES PANEL
+// ════════════════════════════════════════════════════════════════
+function rpSwitchTab(tab, btn) {
+  document.querySelectorAll('.rp-tab').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  var elem = RB.elements.find(function(e){ return e.id===RB.selected; });
+  if (elem) renderPropsPanel(elem, tab);
+}
+
+function showNoSelection() {
+  document.getElementById('rp-no-selection').style.display='';
+  document.getElementById('rp-props-content').style.display='none';
+  document.getElementById('prop-elem-type').innerText='— ไม่ได้เลือก —';
+}
+
+function renderPropsPanel(elem, activeTab) {
+  document.getElementById('rp-no-selection').style.display='none';
+  var cont = document.getElementById('rp-props-content');
+  cont.style.display='';
+  document.getElementById('prop-elem-type').innerText = getTypeLabel(elem.type);
+  cont.innerHTML = buildPropsHTML(elem, activeTab||'props');
+}
+
+function buildPropsHTML(elem, tab) {
+  var h = '';
+  // ── Props Tab ──────────────────────────────────────────────
+  if (tab==='props') {
+    h += rpSection('ทั่วไป', [
+      rpRow('ชื่อองค์ประกอบ', '<input class="rp-input" value="'+(elem.title||'')+'" oninput="rbUpdateProp(\''+elem.id+'\',\'title\',this.value)"/>'),
+    ]);
+    // ── Column Layout Picker ──
+    h += rpSection('เลย์เอาต์ (Layout)', [buildColPicker(elem)].join(''));
+    if (elem.type==='kpi') {
+      h += rpSection('KPI Cards', [
+        '<div style="font-size:10px;color:var(--muted);margin-bottom:6px;">KPI ที่เลือก: '
+          + ((elem.kpiFields&&elem.kpiFields.length)||0) + ' รายการ</div>',
+        ((elem.kpiFields||[]).map(function(f,fi) {
+          return '<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;'
+            + 'background:var(--blue-ll);border-radius:6px;margin-bottom:4px;font-size:11px;">'
+            + '<span class="mi" style="font-size:12px;color:var(--blue);">speed</span>'
+            + '<span style="flex:1;">' + f.label + ' (' + (f.unit||'-') + ')</span>'
+            + '<button onclick="rbRemoveKpiField(\'' + elem.id + '\',' + fi + ')" '
+              + 'style="background:none;border:none;cursor:pointer;color:var(--red);">'
+              + '<span class="mi" style="font-size:13px;">remove_circle</span></button>'
+            + '</div>';
+        })).join(''),
+        '<div style="font-size:10px;color:var(--muted);margin-top:4px;">ดับเบิลคลิกฟิลด์ # จากซ้ายเพื่อเพิ่ม</div>',
+      ].join(''));
+    }
+    if (elem.type==='table') {
+      h += rpSection('ตาราง', [
+        rpRow('จำนวน Rows สูงสุด', '<input class="rp-input" type="number" value="'+(elem.maxRows||20)+'" min="1" max="100" oninput="rbUpdatePropInt(\''+elem.id+'\',\'maxRows\',this.value)"/>'),
+        rpRow('แสดงผลรวม', '<label class="rp-toggle"><input type="checkbox" '+(elem.showTotal?'checked':'')+' onchange="rbUpdatePropBool(\''+elem.id+'\',\'showTotal\',this.checked)"><span class="rp-slider"></span></label>'),
+      ]);
+    }
+    if (['chart_bar','chart_line','chart_pie','chart_radar','chart_scatter','chart_mixed'].indexOf(elem.type)>=0) {
+      h += rpSection('กราฟ', [
+        rpRow('ชุดข้อมูล', '<select class="rp-select" onchange="rbUpdateProp(\''+elem.id+'\',\'metric\',this.value)">'
+          +[{v:'schools',l:'สถานศึกษา'},{v:'students',l:'ผู้เรียน'},{v:'teachers',l:'ครู'},{v:'approved',l:'อนุมัติแล้ว'},{v:'completionPct',l:'% รายงาน'}]
+          .map(function(o){ return '<option value="'+o.v+'"'+(elem.metric===o.v?' selected':'')+'>'+o.l+'</option>'; }).join('')+'</select>'),
+        rpRow('ความสูง (px)', '<input class="rp-input" type="number" value="'+(elem.chartHeight||240)+'" min="100" max="600" step="20" oninput="rbUpdatePropInt(\''+elem.id+'\',\'chartHeight\',this.value)"/>'),
+      ]);
+    }
+    if (elem.type==='text') {
+      h += rpSection('ข้อความ', [
+        rpRow('ขนาดฟอนต์', '<input class="rp-input" type="number" value="'+(elem.fontSize||14)+'" min="8" max="72" oninput="rbUpdatePropInt(\''+elem.id+'\',\'fontSize\',this.value)"/>'),
+        rpRow('ตัวหนา', '<label class="rp-toggle"><input type="checkbox" '+(elem.bold?'checked':'')+' onchange="rbUpdatePropBool(\''+elem.id+'\',\'bold\',this.checked)"><span class="rp-slider"></span></label>'),
+        rpRow('การจัดแนว', '<select class="rp-select" onchange="rbUpdateProp(\''+elem.id+'\',\'align\',this.value)">'
+          +'<option value="left">ซ้าย</option><option value="center">กลาง</option><option value="right">ขวา</option>'+'</select>'),
+        rpRow('สีข้อความ', '<input class="rp-color" type="color" value="'+(elem.color||'#202124')+'" onchange="rbUpdateProp(\''+elem.id+'\',\'color\',this.value)"/>'),
+      ]);
+    }
+    if (elem.type==='divider') {
+      h += rpSection('เส้นคั่น', [
+        rpRow('สีเส้น', '<input class="rp-color" type="color" value="'+(elem.color||'#dadce0')+'" onchange="rbUpdateProp(\''+elem.id+'\',\'color\',this.value)"/>'),
+        rpRow('ความหนา (px)', '<input class="rp-input" type="number" value="'+(elem.thickness||1)+'" min="1" max="10" oninput="rbUpdatePropInt(\''+elem.id+'\',\'thickness\',this.value)"/>'),
+      ]);
+    }
+  }
+  // ── Data Tab ───────────────────────────────────────────────
+  if (tab==='data') {
+    var d = RB.data || MOCK_DATA;
+    h += rpSection('ข้อมูลที่ใช้', [
+      '<div style="background:var(--s1);border-radius:7px;padding:10px;font-size:11px;">',
+      '<div style="font-weight:700;color:var(--text);margin-bottom:6px;">แหล่งข้อมูล: Google Sheets</div>',
+      '<div style="color:var(--muted);">ระบบ EduData Sakon — ดึงข้อมูลแบบ Real-time</div>',
+      '</div>',
+    ].join(''));
+    if (elem.type==='table') {
+      h += rpSection('ฟิลด์ที่แสดงในตาราง', [
+        '<div style="font-size:10px;color:var(--muted);margin-bottom:6px;">ฟิลด์ที่เลือก: '+(elem.fields||[]).length+' รายการ</div>',
+        (elem.fields||[]).map(function(f) {
+          return '<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--blue-ll);border-radius:6px;margin-bottom:4px;font-size:11px;">'
+            +'<span class="mi" style="font-size:12px;color:var(--blue);">drag_indicator</span>'
+            +'<span style="flex:1;">'+f.label+'</span>'
+            +'<button onclick="rbRemoveField(\''+elem.id+'\',\''+f.name+'\')" style="background:none;border:none;cursor:pointer;color:var(--red);"><span class="mi" style="font-size:13px;">remove_circle</span></button>'
+          +'</div>';
+        }).join('')
+        +'<div style="font-size:10px;color:var(--muted);margin-top:6px;">ลากฟิลด์จากแผงซ้ายเพื่อเพิ่ม</div>',
+      ].join(''));
+    }
+    // Live data values
+    h += rpSection('ค่าข้อมูลปัจจุบัน', [
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">',
+      '<div style="background:var(--s1);border-radius:6px;padding:8px;text-align:center;"><div style="font-size:16px;font-weight:800;color:#1a73e8;">'+(d.totalSchools||0).toLocaleString()+'</div><div style="font-size:9px;color:var(--muted);">สถานศึกษา</div></div>',
+      '<div style="background:var(--s1);border-radius:6px;padding:8px;text-align:center;"><div style="font-size:16px;font-weight:800;color:#34a853;">'+(d.totalStudents||0).toLocaleString()+'</div><div style="font-size:9px;color:var(--muted);">ผู้เรียน</div></div>',
+      '<div style="background:var(--s1);border-radius:6px;padding:8px;text-align:center;"><div style="font-size:16px;font-weight:800;color:#673ab7;">'+(d.totalTeachers||0).toLocaleString()+'</div><div style="font-size:9px;color:var(--muted);">ครู</div></div>',
+      '<div style="background:var(--s1);border-radius:6px;padding:8px;text-align:center;"><div style="font-size:16px;font-weight:800;color:#e91e63;">'+(d.totalSpecial||0).toLocaleString()+'</div><div style="font-size:9px;color:var(--muted);">พิเศษ</div></div>',
+      '</div>',
+    ].join(''));
+  }
+  // ── Format Tab ─────────────────────────────────────────────
+  if (tab==='format') {
+    h += rpSection('การจัดวาง', [
+      rpRow('ระยะห่าง', '<select class="rp-select" onchange="rbUpdateStyle(\''+elem.id+'\',\'padding\',this.value)">'
+        +'<option value="4px">เล็ก (4px)</option><option value="8px" selected>กลาง (8px)</option><option value="16px">ใหญ่ (16px)</option></select>'),
+      rpRow('พื้นหลัง', '<input class="rp-color" type="color" value="'+(elem.bgColor||'#ffffff')+'" onchange="rbUpdateProp(\''+elem.id+'\',\'bgColor\',this.value)"/>'),
+      rpRow('สีขอบ', '<input class="rp-color" type="color" value="'+(elem.borderColor||'#dadce0')+'" onchange="rbUpdateProp(\''+elem.id+'\',\'borderColor\',this.value)"/>'),
+    ]);
+    h += rpSection('Preset Themes', [
+      '<div class="color-swatches">',
+      ['#e8f0fe','#e6f4ea','#fce8e6','#fef3e2','#f3e5f5','#e0f7fa'].map(function(c) {
+        return '<div class="c-sw" style="background:'+c+';" onclick="rbUpdateProp(\''+elem.id+'\',\'bgColor\',\''+c+'\')"></div>';
+      }).join(''),
+      '</div>',
+    ].join(''));
+  }
+  return h;
+}
+
+// ── Drop Zone factory ─────────────────────────────────────────────
+function makeDropZone(pos, afterId) {
+  var dz = document.createElement('div');
+  dz.className = 'rb-drop-zone';
+  dz.dataset.pos     = pos;
+  dz.dataset.afterId = afterId || '';
+  dz.style.cssText   = 'height:8px;border-radius:4px;margin:2px 0;'
+    + 'transition:height .15s,background .15s,border .15s;'
+    + 'border:2px dashed transparent;';
+
+  dz.addEventListener('dragover', function(e) {
+    if (!_dragSrcId) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (_dragOverId !== afterId) {
+      document.querySelectorAll('.rb-drop-zone').forEach(function(z) {
+        z.classList.remove('dz-active');
+        z.style.height      = '8px';
+        z.style.background  = 'transparent';
+        z.style.borderColor = 'transparent';
+      });
+      _dragOverId = afterId;
+      dz.classList.add('dz-active');
+      dz.style.height      = '36px';
+      dz.style.background  = 'rgba(26,115,232,.08)';
+      dz.style.borderColor = 'var(--blue)';
+    }
+  });
+
+  dz.addEventListener('dragleave', function(e) {
+    if (!dz.contains(e.relatedTarget)) {
+      dz.classList.remove('dz-active');
+      dz.style.height      = '8px';
+      dz.style.background  = 'transparent';
+      dz.style.borderColor = 'transparent';
+      if (_dragOverId === afterId) _dragOverId = null;
+    }
+  });
+
+  dz.addEventListener('drop', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // ── Field drop from left panel ──
+    var fieldData = e.dataTransfer.getData('field');
+    if (fieldData) {
+      _dragSrcId  = null;
+      _dragOverId = null;
+      document.querySelectorAll('.rb-drop-zone').forEach(function(z) {
+        z.classList.remove('dz-active');
+        z.style.height      = '8px';
+        z.style.background  = 'transparent';
+        z.style.borderColor = 'transparent';
+      });
+      rbAddFieldToReport(JSON.parse(fieldData));
+      return;
+    }
+
+    // ── Element reorder ──
+    if (!_dragSrcId || _dragSrcId === afterId) return;
+    rbSaveHistory();
+
+    var srcIdx  = RB.elements.findIndex(function(x) { return x.id === _dragSrcId; });
+    var srcElem = RB.elements.splice(srcIdx, 1)[0];
+
+    if (afterId === null) {
+      RB.elements.unshift(srcElem);
+    } else {
+      var targetIdx = RB.elements.findIndex(function(x) { return x.id === afterId; });
+      RB.elements.splice(targetIdx + 1, 0, srcElem);
+    }
+
+    _dragSrcId  = null;
+    _dragOverId = null;
+    renderReport();
+    rbSelectElement(srcElem.id);
+    rbToast('เรียงลำดับแล้ว', 'success');
+  });
+
+  return dz;
+}
+
+
+// ════════════════════════════════════════════════════════════════
+//  COLUMN LAYOUT SYSTEM
+// ════════════════════════════════════════════════════════════════
+
+// สร้าง Column Picker UI สำหรับ Properties Panel
+function buildColPicker(elem) {
+  var cur = elem.colSpan || 12; // 12=เต็ม, 6=ครึ่ง, 4=1/3, 3=1/4
+  var opts = [
+    { span:12, label:'เต็มหน้า',   bars:[1],      desc:'100%'  },
+    { span:6,  label:'2 คอลัมน์', bars:[1,1],    desc:'50/50' },
+    { span:4,  label:'3 คอลัมน์', bars:[1,1,1],  desc:'33/33' },
+    { span:3,  label:'4 คอลัมน์', bars:[1,1,1,1],desc:'25x4'  },
+  ];
+  var html = '<div class="col-picker">';
+  opts.forEach(function(o) {
+    var isActive = cur === o.span;
+    html += '<div class="col-pick-btn' + (isActive ? ' active' : '') + '" '
+      + 'onclick="rbSetColSpan(\'' + elem.id + '\',' + o.span + ')" title="' + o.desc + '">'
+      + '<div class="cpb-vis">'
+      + o.bars.map(function() {
+          return '<div class="cpb-bar" style="flex:1;"></div>';
+        }).join('')
+      + '</div>'
+      + '<div class="cpb-label">' + o.label + '</div>'
+      + '</div>';
+  });
+  html += '</div>';
+  // แสดง current setting
+  var curLabel = opts.find(function(o){ return o.span === cur; });
+  html += '<div style="font-size:10px;color:var(--muted);margin-top:6px;text-align:center;">'
+    + 'ปัจจุบัน: <strong>' + (curLabel ? curLabel.label : 'เต็มหน้า') + '</strong>'
+    + ' <span style="color:var(--hint);">(' + cur + '/12 columns)</span></div>';
+  return html;
+}
+
+// Set column span ของ element (12=เต็ม, 6=ครึ่ง, 4=สาม, 3=สี่)
+function rbSetColSpan(id, span) {
+  var elem = RB.elements.find(function(e){ return e.id === id; });
+  if (!elem) return;
+  rbSaveHistory();
+  elem.colSpan = span;
+  // จัดกลุ่ม elements ใน row เดียวกัน
+  rbRegroupRows();
+  renderReport();
+  if (RB.selected === id) renderPropsPanel(elem, getCurrentRpTab());
+}
+
+// จัดกลุ่ม elements เป็น rows ตาม colSpan
+function rbRegroupRows() {
+  // ไม่ต้องทำอะไร — renderReport จัดการให้เอง
+}
+
+// แปลง colSpan → CSS class
+function colSpanToClass(span) {
+  var map = { 12:'cols-1', 6:'cols-2', 4:'cols-3', 3:'cols-4' };
+  return map[span] || 'cols-1';
+}
+
+function rpSection(title, rows) {
+  return '<div class="rp-section"><div class="rp-sec-title">'+title+'</div>'
+    +(Array.isArray(rows)?rows.join(''):rows)+'</div>';
+}
+function rpRow(label, input) {
+  return '<div class="rp-row"><span class="rp-label">'+label+'</span>'+input+'</div>';
+}
+
+// ── Update Properties ──────────────────────────────────────────
+function rbUpdateProp(id, key, val) {
+  var elem = RB.elements.find(function(e){ return e.id===id; });
+  if (!elem) return;
+  elem[key] = val;
+  renderReport();
+  if (RB.selected===id) renderPropsPanel(elem, getCurrentRpTab());
+}
+function rbUpdatePropInt(id, key, val) { rbUpdateProp(id, key, parseInt(val)||0); }
+function rbUpdatePropBool(id, key, val) { rbUpdateProp(id, key, !!val); }
+function rbUpdateStyle(id, key, val) {
+  var elem = RB.elements.find(function(e){ return e.id===id; });
+  if (!elem) return;
+  if (!elem.style) elem.style={};
+  elem.style[key] = val;
+}
+function rbRemoveKpiField(elemId, fieldIdx) {
+  var elem = RB.elements.find(function(e){ return e.id===elemId; });
+  if (!elem || !elem.kpiFields) return;
+  rbSaveHistory();
+  elem.kpiFields.splice(fieldIdx, 1);
+  elem.cols = elem.kpiFields.length || 1;
+  renderReport();
+  renderPropsPanel(elem, 'props');
+  rbToast('นำ KPI ออกแล้ว', 'info');
+}
+function rbRemoveField(elemId, fieldName) {
+  var elem = RB.elements.find(function(e){ return e.id===elemId; });
+  if (!elem||!elem.fields) return;
+  elem.fields = elem.fields.filter(function(f){ return f.name!==fieldName; });
+  renderReport();
+  renderPropsPanel(elem, 'data');
+  rbToast('นำฟิลด์ออกแล้ว','info');
+}
+function getCurrentRpTab() {
+  var active = document.querySelector('.rp-tab.active');
+  if (!active) return 'props';
+  var txt = active.innerText.trim();
+  if (txt==='ข้อมูล') return 'data';
+  if (txt==='รูปแบบ') return 'format';
+  return 'props';
+}
+
+// ── Drag & Drop onto canvas ───────────────────────────────────
+function canvasDrop(event) {
+  // Handled by rb-drop-zone listeners - do nothing here to prevent double-add
+}
+function bodyDrop(event) {
+  // Only handle if NOT dropped on a drop-zone (rb-drop-zone handles its own drops)
+  if (event.target && event.target.classList && event.target.classList.contains('rb-drop-zone')) return;
+  event.preventDefault();
+  event.stopPropagation();
+  event.currentTarget.classList.remove('drag-over');
+  var fieldData = event.dataTransfer.getData('field');
+  if (fieldData) {
+    rbAddFieldToReport(JSON.parse(fieldData));
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  ZOOM
+// ════════════════════════════════════════════════════════════════
+function rbZoomIn()  { RB.zoom = Math.min(2.0, RB.zoom+0.1); applyZoom(); }
+function rbZoomOut() { RB.zoom = Math.max(0.4, RB.zoom-0.1); applyZoom(); }
+function rbZoomFit() { RB.zoom = 0.85; applyZoom(); }
+function applyZoom() {
+  var page = document.getElementById('report-page');
+  var area = document.getElementById('canvas-area');
+  if (page) page.style.transform = 'scale('+RB.zoom+')';
+  if (area) area.style.minHeight = Math.round(1000*RB.zoom+48)+'px';
+  var zl = document.getElementById('zoomLabel');
+  if (zl) zl.innerText = Math.round(RB.zoom*100)+'%';
+}
+
+// ════════════════════════════════════════════════════════════════
+//  HISTORY (Undo/Redo)
+// ════════════════════════════════════════════════════════════════
+function rbSaveHistory() {
+  RB.history.push(JSON.stringify(RB.elements));
+  if (RB.history.length > 30) RB.history.shift();
+  RB.future = [];
+}
+function rbUndo() {
+  if (RB.history.length===0) { rbToast('ไม่มีการกระทำก่อนหน้า','info'); return; }
+  RB.future.push(JSON.stringify(RB.elements));
+  RB.elements = JSON.parse(RB.history.pop());
+  RB.nextId = Math.max.apply(null, RB.elements.map(function(e){ return parseInt(e.id.replace('elem_',''))||0; }).concat([RB.nextId]))+1;
+  renderReport(); updateStatusBar(); rbToast('Undo','info');
+}
+function rbRedo() {
+  if (RB.future.length===0) { rbToast('ไม่มีการกระทำถัดไป','info'); return; }
+  RB.history.push(JSON.stringify(RB.elements));
+  RB.elements = JSON.parse(RB.future.pop());
+  renderReport(); updateStatusBar(); rbToast('Redo','info');
+}
+
+// ════════════════════════════════════════════════════════════════
+//  SAVE / PREVIEW / RUN / EXPORT
+// ════════════════════════════════════════════════════════════════
+function rbSave() {
+  try {
+    var state = { elements:RB.elements, title:document.getElementById('reportTitle').value,
+      mainTitle:document.getElementById('rptMainTitle').value,
+      subTitle:document.getElementById('rptSubTitle').value };
+    localStorage.setItem('rb_report_state', JSON.stringify(state));
+    rbToast('บันทึกรายงานแล้ว','success');
+  } catch(e) { rbToast('บันทึกไม่สำเร็จ: '+e.message,'error'); }
+}
+
+function rbTogglePreview() {
+  var ov = document.getElementById('preview-overlay');
+  if (!ov) return;
+  if (ov.classList.contains('on')) {
+    ov.classList.remove('on');
+    return;
+  }
+  // Build preview
+  var title   = document.getElementById('rptMainTitle').value;
+  var subtitle= document.getElementById('rptSubTitle').value;
+  var cont    = document.getElementById('preview-content');
+  var page    = document.getElementById('report-page');
+  if (cont && page) {
+    cont.innerHTML = '<div style="background:#fff;width:794px;margin:0 auto;padding:40px;box-shadow:0 2px 12px rgba(0,0,0,.1);border-radius:2px;">'
+      + page.innerHTML + '</div>';
+  }
+  ov.classList.add('on');
+  // Redraw charts in preview
+  setTimeout(function() {
+    RB.elements.forEach(function(elem) {
+      if (['chart_bar','chart_line','chart_pie','chart_radar','chart_scatter','chart_mixed'].indexOf(elem.type)>=0) {
+        var el = cont.querySelector('#chart-'+elem.id);
+        if (el && typeof echarts!=='undefined') drawEChart(elem, el);
+      }
+    });
+  }, 80);
+}
+
+function rbRun() {
+  var rp = document.getElementById('run-panel');
+  if (rp) rp.classList.add('on');
+}
+function rbCloseRun() {
+  var rp = document.getElementById('run-panel');
+  if (rp) rp.classList.remove('on');
+}
+function rbRunReport() {
+  var year   = document.getElementById('param-year').value;
+  var agency = document.getElementById('param-agency').value;
+  RB.params.year   = year;
+  RB.params.agency = agency;
+
+  // Update param display
+  var pv = document.getElementById('rptParamVal');
+  if (pv) {
+    var agLabel = agency==='all'?'ทุกสังกัด':(AGENCY_MAP[agency]||agency);
+    pv.innerText = (year==='all'?'ทุกปี':'ปี '+year) + ' • ' + agLabel;
+  }
+
+  rbCloseRun();
+  rbToast('กำลังดึงข้อมูล...','info');
+
+  if (typeof google !== 'undefined' && google.script) {
+    google.script.run
+      .withSuccessHandler(function(d) {
+        RB.data = d;
+        updateDataPreview(d);
+        renderReport();
+        rbToast('รันรายงานสำเร็จ — ข้อมูลอัปเดตแล้ว','success');
+      })
+      .withFailureHandler(function() {
+        renderReport();
+        rbToast('ใช้ข้อมูลตัวอย่าง (ไม่พบ backend)','info');
+      })
+      .getDashboardData({ sessionToken: RB.sessionToken, filterYear: year, filterAgency: agency });
+  } else {
+    setTimeout(function() {
+      renderReport();
+      rbToast('รันรายงานสำเร็จ (ข้อมูลตัวอย่าง)','success');
+    }, 800);
+  }
+}
+
+function rbRefreshAllElements() { renderReport(); }
+
+function rbExportPDF() {
+  rbToast('กำลังสร้าง PDF...','info');
+  var page = document.getElementById('report-page');
+  if (!page) return;
+  
+  // Save current zoom transform to restore later
+  var prevTransform = page.style.transform;
+  // Temporarily reset CSS transform to prevent html2canvas rendering offsets/scaling cuts
+  page.style.transform = 'none';
+  
+  // Add class to format for PDF export (e.g. display block, hide toolbars/drop zones)
+  page.classList.add('pdf-export');
+  
+  // Temporarily deselect element to hide layout borders and actions
+  var prevSelected = RB.selected;
+  RB.selected = null;
+  document.querySelectorAll('.rpt-element').forEach(function(el){ el.classList.remove('selected'); });
+  
+  if (typeof html2pdf !== 'undefined') {
+    var opt = {
+      margin:       [0.3, 0.3, 0.3, 0.3], // [top, left, bottom, right] margins in inches
+      filename:     'EduData_Report_'+new Date().getTime()+'.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { 
+        scale: 2, 
+        useCORS: true, 
+        logging: false
+      },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+      pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+    
+    // Slight delay to allow DOM to layout as block and hide controls before rendering
+    setTimeout(function() {
+      html2pdf().set(opt).from(page).save().then(function() {
+        rbToast('Export PDF สำเร็จ','success');
+        // Restore editing view
+        page.classList.remove('pdf-export');
+        page.style.transform = prevTransform;
+        if (prevSelected) rbSelectElement(prevSelected);
+        else renderReport();
+      }).catch(function(err) {
+        console.error("PDF Export Error:", err);
+        rbToast('เกิดข้อผิดพลาดในการสร้าง PDF','error');
+        page.classList.remove('pdf-export');
+        page.style.transform = prevTransform;
+        if (prevSelected) rbSelectElement(prevSelected);
+        else renderReport();
+      });
+    }, 150);
+  } else {
+    window.print();
+    rbToast('กดพิมพ์แล้ว — เลือก Save as PDF','info');
+    page.classList.remove('pdf-export');
+    page.style.transform = prevTransform;
+    if (prevSelected) rbSelectElement(prevSelected);
+    else renderReport();
+  }
+}
+
+function rbPrint() { window.print(); }
+
+// Export CSV — ดึงข้อมูลจาก element ที่เป็นตารางและกราฟ แล้วแปลงเป็น CSV
+function rbExportCSV() {
+  var data = RB.data || MOCK_DATA;
+  var rows = [];
+
+  // Header row
+  rows.push(['สังกัด', 'สถานศึกษา', 'ผู้เรียนรวม', 'ครูและบุคลากร', 'ผู้เรียนพิเศษ', 'สื่องอนุมัติ', 'รออนุมัติ', 'ส่งกลับ', 'ครบกำหนด (%)'].join(','));
+
+  // Data rows
+  var summary = data.agencySummary;
+  if (summary && summary.labels) {
+    summary.labels.forEach(function(lbl, i) {
+      var pct = summary.completionPct ? summary.completionPct[i] : '-';
+      rows.push([
+        '"' + lbl + '"',
+        summary.schools ? summary.schools[i] : '-',
+        summary.students ? summary.students[i] : '-',
+        summary.teachers ? summary.teachers[i] : '-',
+        '-',
+        summary.approved ? summary.approved[i] : '-',
+        summary.pending  ? summary.pending[i]  : '-',
+        summary.rejected ? summary.rejected[i] : '-',
+        pct
+      ].join(','));
+    });
+  } else {
+    rows.push(['(ไม่มีข้อมูล — กรุณารันรายงานก่อน)'].join(','));
+  }
+
+  var csvContent = '\uFEFF' + rows.join('\n'); // BOM สำหรับ Excel Thai
+  var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href        = url;
+  a.download    = 'สถิติการศึกษา_' + new Date().getFullYear() + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function() { URL.revokeObjectURL(url); document.body.removeChild(a); }, 500);
+  rbToast('Export CSV สำเร็จ', 'success');
+}
+
+// ════════════════════════════════════════════════════════════════
+//  MISC CONTROLS
+// ════════════════════════════════════════════════════════════════
+function rbToggleGrid() {
+  RB.showGrid = !RB.showGrid;
+  var page = document.getElementById('report-page');
+  if (page) page.style.backgroundImage = RB.showGrid
+    ? 'linear-gradient(to right,#e8eaed 1px,transparent 1px),linear-gradient(to bottom,#e8eaed 1px,transparent 1px)'
+    : 'none';
+  if (page) page.style.backgroundSize = RB.showGrid ? '20px 20px' : 'auto';
+  var sb = document.getElementById('sb-grid');
+  if (sb) sb.innerText = 'Grid: '+(RB.showGrid?'ON':'OFF');
+}
+function rbToggleSnap() { RB.snapGrid = !RB.snapGrid; rbToast('Snap: '+(RB.snapGrid?'ON':'OFF'),'info'); }
+function rbToggleRuler() { rbToast('Ruler toggle (coming soon)','info'); }
+function rbAlignLeft()   { rbToast('จัดซ้าย','info'); }
+function rbAlignCenter() { rbToast('จัดกลาง','info'); }
+function rbAlignRight()  { rbToast('จัดขวา','info'); }
+function rbPickImage(id) {
+  var input = document.createElement('input');
+  input.type='file'; input.accept='image/*';
+  input.onchange = function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      rbUpdateProp(id,'src',ev.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+function updateStatusBar() {
+  var sel = document.getElementById('sb-selected');
+  var el  = document.getElementById('sb-elements');
+  if (sel) {
+    if (RB.selected) {
+      var elem = RB.elements.find(function(e){ return e.id===RB.selected; });
+      sel.innerText = elem ? 'เลือก: '+getTypeLabel(elem.type) : 'ไม่ได้เลือก';
+    } else sel.innerText = 'ไม่ได้เลือก';
+  }
+  if (el) el.innerText = RB.elements.length+' องค์ประกอบ';
+}
+
+// ── Toast ────────────────────────────────────────────────────
+function rbToast(msg, type) {
+  var cont = document.getElementById('rb-toasts');
+  if (!cont) return;
+  var t = document.createElement('div');
+  t.className = 'rb-toast '+(type||'info');
+  var icons = {success:'check_circle',error:'error',info:'info',warning:'warning'};
+  t.innerHTML = '<span class="mi" style="font-size:16px;">'+(icons[type]||'info')+'</span> '+msg;
+  cont.appendChild(t);
+  setTimeout(function() {
+    t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='.3s';
+    setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); },300);
+  }, 3000);
+}
+
+// ── Init: token + saved state ─────────────────────────────────
+(function() {
+  // อ่าน session token ที่ embed มาจาก GAS template
+  RB.sessionToken = (typeof RB_INIT_TOKEN !== 'undefined' && RB_INIT_TOKEN) ? RB_INIT_TOKEN : '';
+
+  // โหลด report state ที่บันทึกไว้
+  try {
+    var saved = localStorage.getItem('rb_report_state');
+    if (saved) {
+      var state = JSON.parse(saved);
+      RB.elements = state.elements || [];
+      RB.nextId = Math.max.apply(null, RB.elements.map(function(e){ return parseInt(e.id.replace('elem_',''))||0; }).concat([1]))+1;
+      if (state.title) document.getElementById('reportTitle').value = state.title;
+      if (state.mainTitle) document.getElementById('rptMainTitle').value = state.mainTitle;
+      if (state.subTitle)  document.getElementById('rptSubTitle').value  = state.subTitle;
+      setTimeout(renderReport, 300);
+    }
+  } catch(e) {}
+
+})();
+
+// Click on empty canvas to deselect
+document.getElementById('canvas-area').addEventListener('click', function(e) {
+  if (e.target === this || e.target.id === 'report-page' || e.target.id === 'rpt-body') {
+    RB.selected = null;
+    document.querySelectorAll('.rpt-element').forEach(function(el){ el.classList.remove('selected'); });
+    showNoSelection();
+    updateStatusBar();
+  }
+});
+
+// ── Section selector (Header/Footer click) ───────────────────────
+function selectSection(sectionId) {
+  document.querySelectorAll('.page-section').forEach(function(s) {
+    s.classList.remove('active');
+  });
+  var el = document.getElementById('rpt-' + sectionId);
+  if (el) el.classList.add('active');
+  // แสดงข้อความใน status bar
+  var sb = document.getElementById('sb-selected');
+  if (sb) sb.innerText = 'Section: ' + sectionId;
+}
+
+
+</script>
+</body>
+</html>

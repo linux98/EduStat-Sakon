@@ -1,0 +1,2695 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduData Sakon - Enterprise Edition</title>
+
+  
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;700&amp;family=Sarabun:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet" />
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  
+  <meta name="theme-color" content="#1a73e8" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="EduData Sakon" />
+  <meta name="mobile-web-app-capable" content="yes" />  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <?!= include('CSS'); ?>
+</head>
+<body onclick="closeAllDropdowns(event)">
+
+  <div id="omnibarBackdrop" onclick="if(event.target===this) toggleOmnibar()">
+    <div class="omnibar" onclick="event.stopPropagation()">
+      <div class="om-search">
+        <span class="material-icons-round">search</span>
+        <input type="text" id="omniInput" placeholder="ค้นหาเมนู หรือ ข้อมูล (ลองพิมพ์ 'แดชบอร์ด')..." onkeyup="filterOmnibar()" />
+        <kbd class="kbd-badge">ESC</kbd>
+      </div>
+      <div class="om-results" id="omniResults">
+        <div class="om-group">เมนูหลัก (Quick Navigation)</div>
+        <button class="om-item" onclick="navigate('dashboard'); toggleOmnibar();">
+          <span class="material-icons-round">dashboard</span> แดชบอร์ดผู้บริหาร
+        </button>
+        <button class="om-item" onclick="navigate('entry'); toggleOmnibar();">
+          <span class="material-icons-round">note_add</span> รายงานข้อมูลสถิติ
+        </button>
+        <button class="om-item" onclick="navigate('list'); toggleOmnibar();">
+          <span class="material-icons-round">table_chart</span> ประวัติการรายงาน
+        </button>
+        <div class="om-group" id="omniAdminGroup" style="display:none;">การจัดการระบบ (Admin)</div>
+        <button class="om-item om-admin" onclick="navigate('bi'); toggleOmnibar();" style="display:none;">
+          <span class="material-icons-round">insert_chart</span>
+          <span>BI Dashboard Builder</span>
+        </button>
+        <button class="om-item om-admin" onclick="navigate('monitor'); toggleOmnibar();" style="display:none;">
+          <span class="material-icons-round">track_changes</span> กำกับติดตามการรายงาน
+        </button>
+        <button class="om-item om-admin" onclick="navigate('system'); toggleOmnibar();" style="display:none;">
+          <span class="material-icons-round">admin_panel_settings</span> ศูนย์ควบคุม (Admin Console)
+        </button>
+        <button class="om-item om-admin" onclick="navigate('settings'); toggleOmnibar();" style="display:none;">
+          <span class="material-icons-round">build_circle</span> สร้างและจัดการแบบฟอร์ม
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="ctxMenu" class="ctx-menu">
+    <button class="ctx-item" onclick="handleCtxAction('view')"><span class="material-icons-round">visibility</span> ดูรายละเอียดข้อมูล</button>
+    <button class="ctx-item" id="ctxPrint" onclick="handleCtxAction('print_receipt')"><span class="material-icons-round" style="color: var(--blue);">print</span> พิมพ์ใบรายงาน (PDF)</button>
+    <div style="height: 1px; background: var(--border-l); margin: 4px 0;"></div>
+    <button class="ctx-item" id="ctxApprove" onclick="handleCtxAction('approve')"><span class="material-icons-round" style="color: var(--green);">check_circle</span> อนุมัติข้อมูลนี้</button>
+    <button class="ctx-item" id="ctxReject" onclick="handleCtxAction('reject')"><span class="material-icons-round" style="color: var(--red);">cancel</span> ส่งกลับให้แก้ไข</button>
+    <div id="ctxDividerAdmin" style="height: 1px; background: var(--border-l); margin: 4px 0;"></div>
+    <button class="ctx-item" onclick="handleCtxAction('copy')"><span class="material-icons-round">content_copy</span> คัดลอก JSON</button>
+  </div>
+
+  <div id="lp">
+    <div class="lp-panel">
+      <div class="g-logo"><span class="material-icons-round">analytics</span></div>
+      <div class="l-h1">EduData Sakon</div>
+      <div class="l-sub">ระบบสารสนเทศด้านการศึกษา ระดับองค์กร<br />จังหวัดสกลนคร</div>
+
+      <form onsubmit="handleLogin(event)">
+        <div class="l-field">
+          <label>ชื่อผู้ใช้งาน (Username)</label>
+          <input type="text" id="loginUsername" placeholder="กรอกชื่อผู้ใช้งาน" autocomplete="username" required />
+        </div>
+        <div class="l-field">
+          <label>รหัสผ่าน (Password)</label>
+          <div style="position:relative; display:flex; align-items:center;">
+            <input type="password" id="loginPassword" placeholder="กรอกรหัสผ่าน" autocomplete="current-password" required style="padding-right:44px; width:100%;" />
+            <button type="button" id="togglePasswordBtn" onclick="togglePasswordVisibility()"
+              style="position:absolute; right:10px; background:none; border:none; cursor:pointer; padding:4px; color:var(--muted); display:flex; align-items:center; transition:color .2s;"
+              title="แสดง/ซ่อนรหัสผ่าน">
+              <span class="material-icons-round" id="togglePasswordIcon" style="font-size:20px;">visibility</span>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn-login" id="loginSubmitBtn"><span class="material-icons-round">login</span> เข้าสู่ระบบ</button>
+      </form>
+      
+      <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; border-top: 1px solid var(--border-l); padding-top: 16px;">
+        <a onclick="openReportIssueModal()" style="font-size: 12.5px; color: var(--muted); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: color .2s;" onmouseover="this.style.color='var(--red-m)'" onmouseout="this.style.color='var(--muted)'">
+          <span class="material-icons-round" style="font-size:16px; color: var(--red-m);">report_problem</span> แจ้งปัญหาการใช้งานระบบ
+        </a>
+        <a onclick="openCheckIssueStatusModal()" style="font-size: 12.5px; color: var(--muted); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: color .2s;" onmouseover="this.style.color='var(--blue)'" onmouseout="this.style.color='var(--muted)'">
+          <span class="material-icons-round" style="font-size:16px; color: var(--blue);">find_in_page</span> ตรวจสอบสถานะปัญหา
+        </a>
+      </div>
+      
+    </div>
+  </div>
+
+  <div id="app">
+
+    <aside class="sb" id="mainSidebar">
+      <div class="sb-top">
+        <div class="sb-logo"><span class="material-icons-round">insights</span></div>
+        <div class="sb-brand">
+          <div class="sb-brand-n">EduData Sakon</div>
+          <div class="sb-brand-s">ระบบสารสนเทศการศึกษา</div>
+        </div>
+      </div>
+      <div class="sb-body">
+        <div class="sb-sec">เมนูหลัก</div>
+        <a class="ni on" id="nav-dashboard" onclick="navigate('dashboard')" title="แดชบอร์ดผู้บริหาร">
+          <span class="material-icons-round">dashboard</span>
+          <span class="ni-lbl">แดชบอร์ดผู้บริหาร</span>
+        </a>
+        <a class="ni" id="nav-entry" onclick="navigate('entry')" title="รายงานข้อมูลสถิติ">
+          <span class="material-icons-round">note_add</span>
+          <span class="ni-lbl">รายงานข้อมูลสถิติ</span>
+        </a>
+        <a class="ni" id="nav-list" onclick="navigate('list')" title="ฐานข้อมูลรายงาน">
+          <span class="material-icons-round">table_chart</span>
+          <span class="ni-lbl">ประวัติการรายงาน</span>
+        </a>
+        
+        <div id="nav-admin-group" style="display: none;">
+          <div class="sb-sec" style="margin-top: 16px;">การจัดการ (Admin)</div>
+          <a class="ni" id="nav-bi" onclick="navigate('bi')" title="BI Dashboard Builder">
+            <span class="material-icons-round ni-ic">insert_chart</span>
+            <span class="ni-lbl">BI Dashboard Builder</span>
+          </a>
+          <a class="ni" id="nav-report" onclick="openReportBuilder()" title="Report Builder">
+            <span class="material-icons-round">article</span>
+            <span class="ni-lbl">Report Builder</span>
+          </a>
+          <a class="ni" id="nav-settings" onclick="navigate('settings')" title="สร้างแบบฟอร์มรายงาน">
+            <span class="material-icons-round">build_circle</span>
+            <span class="ni-lbl">สร้างและจัดการแบบฟอร์ม</span>
+          </a>
+          <a class="ni" id="nav-monitor" onclick="navigate('monitor')" title="กำกับติดตามการรายงาน" style="position:relative;">
+            <span class="material-icons-round">track_changes</span>
+            <span class="ni-lbl">กำกับติดตามการรายงาน</span>
+            <div id="monitorBadge" class="badge-pulse" style="top:8px; right:8px;"></div>
+          </a>
+        </div>
+        
+        <div id="nav-super-group" style="display: none;">
+          <div class="sb-sec" style="margin-top: 16px;">การจัดการระบบ</div>
+          <a class="ni" id="nav-system-users" onclick="navigateAndOpen('system','users')" style="margin-bottom: 2px; cursor:pointer;" title="จัดการผู้ใช้งาน">
+            <span class="material-icons-round">manage_accounts</span>
+            <span class="ni-lbl">จัดการผู้ใช้งาน</span>
+          </a>
+          <a class="ni" id="nav-system-data" onclick="navigateAndOpen('system','masterdata')" style="margin-bottom: 2px; cursor:pointer;" title="ฐานข้อมูลหลัก">
+            <span class="material-icons-round">account_balance</span>
+            <span class="ni-lbl">ฐานข้อมูลหลัก</span>
+          </a>
+          <a class="ni" id="nav-system" onclick="navigate('system')" style="margin-bottom: 2px; cursor:pointer;" title="ศูนย์ควบคุมระบบ">
+            <span class="material-icons-round">admin_panel_settings</span>
+            <span class="ni-lbl">ศูนย์ควบคุมระบบ</span>
+          </a>
+          <a class="ni" id="nav-system-helpdesk" onclick="navigate('helpdesk')" style="cursor:pointer;" title="ศูนย์รับแจ้งปัญหา">
+            <span class="material-icons-round">support_agent</span>
+            <span class="ni-lbl">ศูนย์รับแจ้งปัญหา</span>
+          </a>
+        </div>
+      </div>
+      <div class="sb-footer" id="sbProfileArea">
+        <div class="sb-profile-btn" id="sbProfileBtn" onclick="toggleSBProfileMenu(event)" title="โปรไฟล์ผู้ใช้">
+          <div class="sb-av" id="sbAvatarInitials">A</div>
+          <div class="sb-profile-info">
+            <div class="sb-profile-name" id="sbNameText">ผู้ใช้งาน</div>
+            <div class="sb-profile-role" id="sbRoleText">บทบาท</div>
+          </div>
+          <span class="material-icons-round" style="font-size:18px;color:var(--muted);margin-left:auto;flex-shrink:0;">more_vert</span>
+        </div>
+        <!-- Profile popup (opens upward) -->
+        <div id="sbProfileDropdown" class="sb-profile-dropdown" style="display:none;">
+          <button class="pd-item" onclick="toggleDarkMode(event)">
+            <span class="material-icons-round" id="darkModeIconSB">dark_mode</span>
+            <span id="darkModeTextSB">เปิดโหมดกลางคืน</span>
+          </button>
+          <button class="pd-item" onclick="sessionShowStatus()">
+            <span class="material-icons-round">timer</span>
+            <span>สถานะเซสชัน</span>
+          </button>
+          <button class="pd-item" onclick="openChangePasswordModal()">
+            <span class="material-icons-round">vpn_key</span>
+            <span>เปลี่ยนรหัสผ่าน</span>
+          </button>
+          <div style="height:1px;background:var(--border-l);margin:4px 0;"></div>
+          <button class="pd-item danger" onclick="logout()">
+            <span class="material-icons-round">logout</span>
+            <span>ออกจากระบบ</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <header class="tb" id="mainTopbar">
+        <button class="btn btn-icon btn-ghost" onclick="toggleSidebar(event)" style="margin-right: 4px;" title="ซ่อน/แสดงเมนู">
+          <span class="material-icons-round">menu</span>
+        </button>
+        <div class="live-clock" title="เวลาปัจจุบัน">
+             <span class="material-icons-round" style="font-size: 16px; color: var(--blue);">schedule</span>
+             <span id="liveClockText">--:--:--</span>
+           </div>
+
+        <button class="btn btn-outlined" onclick="toggleOmnibar()" style="margin-right: 12px; color: var(--muted); border-color: var(--border); font-weight: normal; width: 220px; justify-content: space-between;">
+           <span><span class="material-icons-round" style="font-size: 16px; vertical-align: text-bottom; margin-right: 4px;">search</span> ค้นหารวดเร็ว...</span>
+           <kbd class="kbd-badge">Ctrl+K</kbd>
+        </button>
+
+        <div style="flex:1"></div>
+
+        <div class="live-sync-wrap" id="liveSyncWrap" title="เปิดเพื่อดึงข้อมูลอัตโนมัติทุก 5 นาที">
+          <div id="liveSyncDot" style="width:8px;height:8px;border-radius:50%;background:var(--muted);transition:.3s;flex-shrink:0;"></div>
+          <span style="padding-left:2px;">Live Sync</span>
+          <span id="liveSyncCountdown" style="font-size:10px;color:var(--muted);min-width:28px;display:none;"></span>
+          <label class="switch">
+            <input type="checkbox" id="liveSyncToggle" onchange="toggleLiveSync()" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div style="position: relative; cursor: pointer; margin-right: 8px; margin-left: 12px; padding: 4px;" onclick="toggleDarkMode(event)" title="สลับโหมดสว่าง/มืด">
+          <span class="material-icons-round" id="darkModeIcon" style="color: var(--text); font-size: 24px;">dark_mode</span>
+        </div>
+
+        <div class="dropdown-wrap" id="notifWrap">
+          <div style="position: relative; cursor: pointer; margin-right: 16px; padding: 4px;" onclick="toggleNotifMenu(event)" title="การแจ้งเตือน">
+            <span class="material-icons-round" style="color: var(--text-2); font-size: 24px;">notifications</span>
+            <div id="notifBadge" class="badge-pulse"></div>
+            <div id="notifCount" class="notif-count">0</div>
+          </div>
+          <div id="notifDropdown" class="dropdown-menu-custom notif-menu">
+            <div class="nd-header">
+              <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--text);">การแจ้งเตือน</h4>
+              <button class="btn btn-ghost btn-sm" style="font-size: 12px; padding: 0 8px; height: 28px;" onclick="markAllRead(event)">อ่านทั้งหมด</button>
+            </div>
+            <div class="nd-body" id="notifList">
+              <div style="padding: 24px; text-align: center; color: var(--muted); font-size: 13px;">ไม่มีการแจ้งเตือนใหม่</div>
+            </div>
+          </div>
+        </div>
+
+        
+      </header>
+
+      <div class="content">
+
+        <div class="page on" id="view-dashboard">
+          <div class="ph">
+            <div class="ph-left">
+              <div class="ph-title" id="greetingTitle"><span class="material-icons-round">waving_hand</span> สวัสดี, กำลังโหลด...</div>
+              <div class="ph-sub">แดชบอร์ดสรุปผลการปฏิบัติงาน อัปเดตข้อมูลแบบ Real-time (คลิกที่กราฟโดนัทเพื่อกรองข้อมูล)</div>
+            </div>
+            <div class="ph-actions">
+              <div class="search-wrap" style="background: var(--surface); box-shadow: var(--e1);">
+                <span class="material-icons-round" style="color:var(--muted); font-size:18px;">calendar_today</span>
+                <select id="filterYear" onchange="loadDashboardData()" style="padding-right:0;">
+                  <option value="all">ทุกปีการศึกษา</option>
+                </select>
+              </div>
+              <div class="search-wrap" style="background: var(--surface); box-shadow: var(--e1);">
+                <span class="material-icons-round" style="color:var(--muted); font-size:18px;">account_balance</span>
+                <select id="filterAgency" onchange="loadDashboardData()" style="padding-right:0;">
+                  <option value="all">ทุกสังกัด</option>
+                </select>
+              </div>
+              <button class="btn btn-outlined" onclick="loadDashboardData()" title="ซิงค์ข้อมูลล่าสุด"><span class="material-icons-round">sync</span></button>
+              <button class="btn btn-outlined" id="btnAiSummary" onclick="generateAISummary()" title="สรุปเชิงนโยบายด้วย AI" style="gap:5px;"><span class="material-icons-round" style="font-size:16px;">auto_awesome</span> AI สรุป</button>
+              <button class="btn btn-filled" onclick="exportDashboardToPDF()"><span class="material-icons-round">picture_as_pdf</span> PDF</button>
+            </div>
+          </div>
+
+          <!-- AI Forecasting & Policy Simulator Panel -->
+          <div class="card simulator-card" style="margin-bottom:16px; border: 1.5px dashed var(--blue); background: rgba(26, 115, 232, 0.02); transition: all 0.3s ease;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; padding:16px 20px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span class="material-icons-round" style="color:var(--blue); font-size:28px;">psychology</span>
+                <div>
+                  <div style="font-weight:700; font-size:15px; color:var(--text);">🔮 ระบบทำนายแนวโน้ม AI & จำลองแผนนโยบาย (AI & Policy Simulator)</div>
+                  <div style="font-size:12px; color:var(--muted);">จำลองการปรับอัตราการเติบโตผู้เรียน โยกย้ายครู หรือจัดสรรงบพิเศษ เพื่อทำนายอัตราส่วนความขาดแคลน</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <button class="btn btn-sm" id="btnPredictiveAi" onclick="runPredictiveAI()" style="background:linear-gradient(135deg, var(--blue), #2979ff); color:#fff; border:none; display:inline-flex; align-items:center; gap:6px; font-weight:700; box-shadow:0 3px 8px rgba(26,115,232,0.3);"><span class="material-icons-round" style="font-size:15px;">query_stats</span> AI คาดการณ์ 3 ปีล่วงหน้า</button>
+                <div class="toggle-switch-container" style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:12px; font-weight:700; color:var(--text);">เปิดโหมดจำลอง</span>
+                  <label class="switch">
+                    <input type="checkbox" id="simToggle" onchange="toggleSimulationMode(this)">
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Sliders Panel -->
+            <div id="simSlidersPanel" style="display:none; border-top:1px dashed rgba(26,115,232,0.2); padding:20px; background:var(--surface); border-radius:0 0 var(--r) var(--r);">
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:20px; margin-bottom:16px;">
+                <!-- Slider 1 -->
+                <div class="sim-slider-group">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12.5px; font-weight:600;">
+                    <span>🚸 อัตราการเปลี่ยนแปลงผู้เรียน:</span>
+                    <span id="valSimStudent" style="color:#2979ff;">+0%</span>
+                  </div>
+                  <input type="range" id="simStudent" min="-10" max="10" value="0" step="1" oninput="updateSimulationValues()" style="width:100%;">
+                </div>
+                <!-- Slider 2 -->
+                <div class="sim-slider-group">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12.5px; font-weight:600;">
+                    <span>🧑‍🏫 โยกย้ายบุคลากรครู:</span>
+                    <span id="valSimTeacher" style="color:#34a853;">0 อัตรา</span>
+                  </div>
+                  <input type="range" id="simTeacher" min="-50" max="50" value="0" step="5" oninput="updateSimulationValues()" style="width:100%;">
+                </div>
+                <!-- Slider 3 -->
+                <div class="sim-slider-group">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12.5px; font-weight:600;">
+                    <span>💰 งบประมาณพิเศษรายหัว:</span>
+                    <span id="valSimBudget" style="color:var(--blue);">+0%</span>
+                  </div>
+                  <input type="range" id="simBudget" min="-20" max="50" value="0" step="5" oninput="updateSimulationValues()" style="width:100%;">
+                </div>
+              </div>
+              
+              <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; padding:12px 16px; background:var(--blue-ll); border-radius:8px; border:1px solid var(--blue-l);">
+                <div style="font-size:13px; display:flex; align-items:center; gap:8px;">
+                  <span class="material-icons-round" style="color:var(--blue); font-size:18px;">analytics</span>
+                  <span><strong>ผลกระทบจำลอง:</strong> อัตราส่วนครูต่อนักเรียนรวม<span id="lblSimRatioLabel">จังหวัด</span>จะเปลี่ยนเป็น <span id="lblSimRatio" style="font-weight:700; color:#c62828;">1 : —</span></span>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button class="btn btn-ghost btn-sm" onclick="resetSimulation()" style="font-size:11.5px; padding:4px 10px;">รีเซ็ตค่าจำลอง</button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- AI Analytics Result Area -->
+            <div id="predictiveAiResult" style="display:none; border-top:1px dashed rgba(26,115,232,0.2); padding:16px 20px; background:rgba(33,150,243,0.05);">
+              <div style="font-weight:700; font-size:13.5px; color:#1e88e5; display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+                <span class="material-icons-round" style="font-size:18px;">smart_toy</span> 
+                บทวิเคราะห์เชิงนโยบายและคาดการณ์ 3 ปีล่วงหน้าโดย AI:
+              </div>
+              <div id="predictiveAiAnalysisText" style="font-size:13px; line-height:1.6; color:#333; text-align:justify; margin-bottom:8px;">
+                กำลังประมวลผลคำวิเคราะห์...
+              </div>
+              <div style="text-align:right;">
+                <button class="btn btn-ghost btn-sm" onclick="closePredictiveAiPanel()" style="font-size:11.5px; color:#555;">ซ่อนบทวิเคราะห์</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="pdf-export-area">
+            <!-- Executive (Central) Layout -->
+            <div id="executive-dashboard-layout">
+              <div class="stats">
+                <div class="sc c-blue">
+                <div class="sc-icon si-blue"><span class="material-icons-round">domain</span></div>
+                <div class="sc-lbl">สถานศึกษาทั้งหมด (แห่ง)</div>
+                <div class="sc-val" id="dashSchools">0</div>
+              </div>
+              <div class="sc c-green">
+                <div class="sc-icon si-green"><span class="material-icons-round">groups</span></div>
+                <div class="sc-lbl">รวมผู้เรียนทั้งจังหวัด (คน)</div>
+                <div class="sc-val" id="dashStudents">0</div>
+              </div>
+              <div class="sc c-yellow">
+                <div class="sc-icon si-yellow"><span class="material-icons-round">co_present</span></div>
+                <div class="sc-lbl">รวมบุคลากร/ครู (คน)</div>
+                <div class="sc-val" id="dashTeachers">0</div>
+              </div>
+              <div class="sc c-red">
+                <div class="sc-icon si-red"><span class="material-icons-round">diversity_3</span></div>
+                <div class="sc-lbl">ผู้เรียนพิเศษ/เรียนรวม (คน)</div>
+                <div class="sc-val" id="dashSpecial">0</div>
+              </div>
+              </div>
+
+            <!-- ── Last Updated Timestamp Bar ─────────────────────── -->
+            <div id="dashLastUpdatedBar" style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:10px 16px;background:var(--surface);border:1px solid var(--border-l);border-radius:var(--r);box-shadow:var(--e1);">
+              <span class="material-icons-round" style="font-size:18px;color:var(--muted);">update</span>
+              <span style="font-size:13px;color:var(--muted);">อัปเดตล่าสุด:</span>
+              <span id="dashLastUpdated" style="font-size:13px;font-weight:600;color:var(--text);">—</span>
+              <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+                <span style="font-size:12px;color:var(--muted);">รายงานที่ส่งแล้ว</span>
+                <span id="dashSubmittedCount" style="font-size:13px;font-weight:700;color:var(--green);">—</span>
+                <span style="font-size:12px;color:var(--muted);">/ </span>
+                <span id="dashTotalAgency" style="font-size:13px;font-weight:700;color:var(--text);">—</span>
+                <span style="font-size:12px;color:var(--muted);">สังกัด</span>
+                <div style="width:120px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-left:4px;">
+                  <div id="dashOverallProgressBar" style="height:100%;background:linear-gradient(90deg,var(--green),#34a853);border-radius:3px;width:0%;transition:width .8s cubic-bezier(.4,0,.2,1);"></div>
+                </div>
+                <span id="dashOverallPct" style="font-size:12px;font-weight:700;color:var(--green);">0%</span>
+              </div>
+            </div>
+
+            <!-- ── Reporting Progress Bars (Per Agency) ───────────── -->
+            <div id="dashProgressSection" class="card" style="margin-bottom:16px;padding:20px 24px;display:none;">
+              <div class="card-hd" style="margin-bottom:16px;">
+                <div class="card-title">
+                  <span class="material-icons-round" style="color:var(--blue);">fact_check</span>
+                  สถานะการรายงานข้อมูลแต่ละสังกัด
+                </div>
+                <span id="dashProgressUpdated" style="font-size:11px;color:var(--muted);"></span>
+              </div>
+              <div id="dashProgressList"></div>
+            </div>
+
+            <div class="card" style="margin-bottom:16px;">
+
+              <div class="card-hd">
+                <div class="card-title"><span class="material-icons-round" style="color:var(--blue);">trending_up</span> แนวโน้มเปรียบเทียบปีต่อปี (Year-on-Year)</div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <select id="yoyMetric" onchange="renderYoYChart()" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);">
+                    <option value="students">ผู้เรียนทั้งหมด</option>
+                    <option value="schools">สถานศึกษา</option>
+                    <option value="teachers">ครูและบุคลากร</option>
+                  </select>
+                  <button class="btn-icon btn-ghost btn-sm" onclick="toggleCardFullscreen(this)" title="ขยายเต็มจอ"><span class="material-icons-round">fullscreen</span></button>
+                </div>
+              </div>
+              <div id="chartYoY" class="chart-box" style="height:200px;"></div>
+              <div id="yoy-empty" style="text-align:center;padding:32px;color:var(--muted);font-size:13px;display:none;">
+                <span class="material-icons-round" style="font-size:32px;display:block;margin-bottom:8px;opacity:.3;">bar_chart</span>
+                ยังไม่มีข้อมูลหลายปีสำหรับเปรียบเทียบ — ส่งข้อมูลในปีถัดไปจะเห็นแนวโน้ม
+              </div>
+            </div>
+
+            <div id="custom-dash-cards" style="display:none; margin-bottom:16px;">
+              <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;letter-spacing:.5px;">ข้อมูลเพิ่มเติมที่กำหนดโดย Admin</div>
+              <div id="custom-dash-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;"></div>
+            </div>
+
+            <div class="card" style="padding:0; overflow:hidden; border:1px solid var(--border-l);">
+              <div class="card-hd" style="padding: 16px 24px; margin:0; border-bottom:1px solid var(--border-l); background:var(--s1); display:flex; justify-content:space-between; align-items:center;">
+                <div class="card-title"><span class="material-icons-round text-success">radar</span> แผนที่เรดาร์พิกัดหน่วยงาน (Live Radar)</div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <select id="mapLayerSelect" onchange="window.changeMapLayer(this.value)" style="padding:6px 12px; border:1.5px solid var(--border-l); border-radius:8px; background:var(--surface); font-size:12.5px; color:var(--text); outline:none; font-weight:600; cursor:pointer; height:34px;">
+                    <option value="pins">📍 พิกัดสำนักงานสังกัด</option>
+                    <option value="students">🟣 ความหนาแน่นผู้เรียน (Bubble Map)</option>
+                    <option value="teachers">🚨 สัดส่วนนักเรียนต่อครู (Shortage Overlay)</option>
+                  </select>
+                  <button class="btn-icon btn-ghost btn-sm" onclick="toggleCardFullscreen(this)" title="ขยายเต็มจอ"><span class="material-icons-round">fullscreen</span></button>
+                </div>
+              </div>
+              <div class="map-grid-container">
+                <div class="map-wrapper">
+                  <div id="map" style="height: 100%; width: 100%; z-index: 1;"></div>
+                  <div id="mapLegendPanel" class="map-legend-panel" style="display: none;"></div>
+                </div>
+                <div id="leaderboard-panel">
+                  <div style="display:flex; align-items:center; gap:8px; justify-content:space-between;">
+                    <div style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:700; color:var(--text);">
+                      <span class="material-icons-round text-warning" style="font-size:18px;">emoji_events</span>
+                      อันดับการส่งข้อมูล
+                    </div>
+                    <button id="btn-reset-map-filter" class="btn btn-ghost btn-sm" onclick="window.filterDashboardFromMap('all')" style="height:24px; padding:0 8px; font-size:10px; display:none; border-radius:4px; gap:4px;">
+                      <span class="material-icons-round" style="font-size:12px;">refresh</span> ทั้งหมด
+                    </button>
+                  </div>
+                  <div id="leaderboard-list">
+                    <div style="text-align:center; padding:32px; color:var(--muted); font-size:12px;">กำลังประมวลผลข้อมูล...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ga">
+              <div class="card">
+                <div class="card-hd">
+                  <div class="card-title"><span class="material-icons-round">pie_chart</span> สัดส่วนสถานศึกษาตามสังกัด</div>
+                  <button class="btn-icon btn-ghost btn-sm" onclick="toggleCardFullscreen(this)" title="ขยายเต็มจอ"><span class="material-icons-round">fullscreen</span></button>
+                </div>
+                <div id="chartAgency" class="chart-box"></div>
+              </div>
+              <div class="card">
+                <div class="card-hd">
+                  <div class="card-title"><span class="material-icons-round">leaderboard</span> สถิติผู้เรียนจำแนกตามระดับชั้น</div>
+                  <button class="btn-icon btn-ghost btn-sm" onclick="toggleCardFullscreen(this)" title="ขยายเต็มจอ"><span class="material-icons-round">fullscreen</span></button>
+                </div>
+                <div id="chartStudent" class="chart-box"></div>
+              </div>
+            </div>
+
+            <div class="g2">
+              <div class="card">
+                <div class="card-hd">
+                  <div class="card-title"><span class="material-icons-round">align_horizontal_left</span> บุคลากรทางการศึกษาตามสังกัด</div>
+                  <button class="btn-icon btn-ghost btn-sm" onclick="toggleCardFullscreen(this)" title="ขยายเต็มจอ"><span class="material-icons-round">fullscreen</span></button>
+                </div>
+                <div id="chartTeacher" class="chart-box"></div>
+              </div>
+              <div class="card">
+                <div class="card-hd">
+                  <div class="card-title"><span class="material-icons-round">data_usage</span> การศึกษาพิเศษ (ประเภท)</div>
+                  <button class="btn-icon btn-ghost btn-sm" onclick="toggleCardFullscreen(this)" title="ขยายเต็มจอ"><span class="material-icons-round">fullscreen</span></button>
+                </div>
+                <div id="chartSpecial" class="chart-box"></div>
+              </div>
+            </div>
+            
+            </div> <!-- End of executive-dashboard-layout -->
+
+            <!-- Agency Specific Layout -->
+            <div id="agency-dashboard-layout" style="display:none;">
+              <!-- Compliance Stats Cards -->
+              <div class="stats" style="margin-bottom:16px;">
+                <div class="sc c-blue" style="border-left:none;">
+                  <div class="sc-icon si-blue"><span class="material-icons-round">assignment</span></div>
+                  <div class="sc-lbl">แบบฟอร์มที่ต้องรายงานทั้งหมด</div>
+                  <div class="sc-val" id="agDashTotalRequired">0</div>
+                </div>
+                <div class="sc c-green" style="border-left:none;">
+                  <div class="sc-icon si-green"><span class="material-icons-round">check_circle</span></div>
+                  <div class="sc-lbl">รายงานสำเร็จและอนุมัติแล้ว</div>
+                  <div class="sc-val" id="agDashApproved">0</div>
+                </div>
+                <div class="sc c-yellow" style="border-left:none;">
+                  <div class="sc-icon si-yellow"><span class="material-icons-round">hourglass_bottom</span></div>
+                  <div class="sc-lbl">รอการตรวจสอบ/อนุมัติ</div>
+                  <div class="sc-val" id="agDashPending">0</div>
+                </div>
+                <div class="sc c-red" style="border-left:none;">
+                  <div class="sc-icon si-red"><span class="material-icons-round">error</span></div>
+                  <div class="sc-lbl">ต้องแก้ไข/ส่งกลับ</div>
+                  <div class="sc-val" id="agDashRejected" style="color:var(--red-d);">0</div>
+                </div>
+              </div>
+
+              <!-- Main Split Layout: Left side has assigned forms, Right side has ECharts & Recent submissions -->
+              <div class="ga" style="margin-bottom:16px; align-items:start;">
+                
+                <!-- Left side: Form submission tracking -->
+                <div class="card" style="padding:20px 24px; margin:0;">
+                  <div class="card-hd" style="margin-bottom:16px;">
+                    <div class="card-title">
+                      <span class="material-icons-round" style="color:var(--blue);">assignment_turned_in</span>
+                      สถานะการนำส่งแบบฟอร์มรายงานของปีปัจจุบัน
+                    </div>
+                  </div>
+                  <div id="agDashFormList" style="display:flex; flex-direction:column; gap:12px;">
+                    <!-- Dynamically populated lists of forms and their status -->
+                  </div>
+                </div>
+
+                <!-- Right side: Recent submissions -->
+                <div class="card" style="padding:20px 24px; margin:0;">
+                  <div class="card-hd" style="margin-bottom:16px;">
+                    <div class="card-title">
+                      <span class="material-icons-round" style="color:var(--blue);">history</span>
+                      ประวัติการส่งรายงานล่าสุด 5 รายการ
+                    </div>
+                  </div>
+                  <div id="agDashRecentSubmissions" style="display:flex; flex-direction:column; gap:10px;">
+                    <!-- Dynamically populated recent submissions -->
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- ECharts for Agency -->
+              <div class="g2" style="margin-bottom:16px;">
+                <div class="card" style="margin:0;">
+                  <div class="card-hd">
+                    <div class="card-title"><span class="material-icons-round" style="color:var(--blue);">pie_chart</span> สัดส่วนสถิติผู้เรียนตามระดับชั้น</div>
+                  </div>
+                  <div id="agChartStudent" class="chart-box" style="height:250px;"></div>
+                </div>
+                <div class="card" style="margin:0;">
+                  <div class="card-hd">
+                    <div class="card-title"><span class="material-icons-round" style="color:var(--blue);">bar_chart</span> แนวโน้มผู้เรียนเปรียบเทียบกับปีก่อน</div>
+                  </div>
+                  <div id="agChartYoY" class="chart-box" style="height:250px;"></div>
+                </div>
+              </div>
+
+            </div> <!-- End of agency-dashboard-layout -->
+          </div> <!-- End of pdf-export-area -->
+        </div>
+
+        <div class="page" id="view-entry">
+          <div class="ph">
+            <div class="ph-left">
+              <div class="ph-title"><span class="material-icons-round">note_add</span> รายงานข้อมูลสถิติ</div>
+              <div class="ph-sub">ฟอร์มสำหรับเจ้าหน้าที่รายงานข้อมูลสถิติ (มีระบบ Auto-Save บันทึกร่างอัตโนมัติ)</div>
+            </div>
+            <div class="ph-actions">
+              <label class="btn btn-outlined" style="cursor:pointer;" title="นำเข้าข้อมูลจากไฟล์ Excel หรือ CSV">
+                <span class="material-icons-round">upload_file</span> Import Excel/CSV
+                <input type="file" id="importFileInput" accept=".csv,.xlsx,.xls" style="display:none;" onchange="importDataFile(event)" />
+              </label>
+            </div>
+          </div>
+          
+          <div class="card" style="max-width: 800px; margin: 0 auto;">
+
+            <div class="fi" id="agencySelectContainer">
+              <label>1. เลือกหน่วยงาน/สังกัดเพื่อรายงานข้อมูล</label>
+              <select id="entryAgencySelect" onchange="loadEntryFormsList()">
+                <option value="">-- กรุณาเลือกสังกัด --</option>
+                <option value="OBEC_1">สพป.สกลนคร เขต 1</option>
+                <option value="OBEC_2">สพป.สกลนคร เขต 2</option>
+                <option value="OBEC_3">สพป.สกลนคร เขต 3</option>
+                <option value="OBEC_M">สพม.สกลนคร</option>
+                <option value="VEC">อาชีวศึกษา</option>
+                <option value="OPEC">สช. (เอกชน)</option>
+                <option value="DLA">อปท. (ท้องถิ่น)</option>
+                <option value="DOLE">สกร. (ส่งเสริมการเรียนรู้)</option>
+                <option value="BUDDHIST">พระปริยัติธรรม</option>
+                <option value="BPP">ตชด.</option>
+                <option value="SPECIAL">การศึกษาพิเศษ</option>
+                <option value="HIGHER">อุดมศึกษา</option>
+                <option value="NURSERY">สถานรับเลี้ยงเด็ก/ศพด.</option>
+              </select>
+            </div>
+            
+            <div class="fi" id="agencyFixedContainer" style="display:none; background: var(--blue-ll); padding: 16px; border-radius: 8px; border: 1px solid var(--blue-l);">
+              <label style="color: var(--blue-dd); margin-bottom: 4px;">คุณกำลังรายงานข้อมูลในนามสังกัด:</label>
+              <div id="fixedAgencyName" style="font-size: 16px; font-weight: 700; color: var(--blue-d);"></div>
+            </div>
+
+            <div class="fi" id="formSelectContainer" style="display:none;">
+              <label>2. เลือกแบบฟอร์มที่ต้องการรายงาน</label>
+              <select id="entryFormSelect" onchange="renderSelectedForm()">
+                <option value="">-- กรุณาเลือกแบบฟอร์ม --</option>
+              </select>
+            </div>
+            
+            <form id="dynamicEntryForm" style="display:none;" onsubmit="handleEntrySubmit(event)" oninput="saveDraftToLocal()">
+              <div style="height:1px; background:var(--border-l); margin:24px 0;"></div>
+              <div id="entryFormContainer" class="g2"></div>
+              
+              <div style="margin-top:32px; display:flex; gap:12px; justify-content:flex-end;">
+                
+                <button type="button" class="btn btn-outlined" id="btnDownloadTemplate" onclick="downloadImportTemplate()" style="display:none;" title="ดาวน์โหลดไฟล์แม่แบบ CSV ตามฟิลด์ของแบบฟอร์มนี้">
+                  <span class="material-icons-round">download</span> เทมเพลต CSV
+                </button>
+                <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleCSVUpload(event)" />
+                <button type="button" class="btn btn-outlined" onclick="document.getElementById('csvFileInput').click()" style="margin-right: auto;" title="รองรับไฟล์ .csv ที่มีหัวข้อคอลัมน์ตรงกับตัวแปรในฟอร์ม">
+                  <span class="material-icons-round">upload_file</span> นำเข้าข้อมูลด้วย CSV
+                </button>
+
+                <button type="button" class="btn btn-outlined" onclick="clearDraft()">ล้างข้อมูล/ล้างแบบร่าง</button>
+                <button type="submit" id="btnSubmitData" class="btn btn-filled"><span class="material-icons-round">cloud_upload</span> บันทึกและส่งข้อมูล</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="page" id="view-list">
+          <div class="ph">
+            <div class="ph-left">
+              <div class="ph-title"><span class="material-icons-round">table_chart</span> ประวัติการรายงานและอนุมัติข้อมูล</div>
+              <div class="ph-sub">คลิกขวาที่แถวข้อมูลในตาราง เพื่อใช้เมนูลัด (Context Menu) ในการดูข้อมูลหรือพิมพ์ใบเสร็จ</div>
+            </div>
+            <div class="ph-actions">
+              
+              <div class="search-wrap" style="width: 250px; background: var(--surface); box-shadow: var(--e1);">
+                <span class="material-icons-round" style="color: var(--muted);">search</span>
+                <input type="text" id="tableSearchInput" onkeyup="filterTableData()" placeholder="ค้นหาชื่อรายงาน, สังกัด..." />
+              </div>
+              <button class="btn btn-outlined" onclick="loadDataList()"><span class="material-icons-round">refresh</span> รีเฟรช</button>
+              <button class="btn btn-filled" onclick="exportToCSV()"><span class="material-icons-round">download</span> Export CSV</button>
+            </div>
+          </div>
+
+          <div id="agencyStatsArea" style="display: none;" class="stats">
+             <div class="sc" style="padding: 16px;">
+                <div class="sc-lbl">รายงานทั้งหมดที่ส่ง (ฉบับ)</div>
+                <div class="sc-val" id="agStatTotal" style="color: var(--blue);">0</div>
+             </div>
+             <div class="sc" style="padding: 16px;">
+                <div class="sc-lbl">อนุมัติแล้ว (ฉบับ)</div>
+                <div class="sc-val" id="agStatApproved" style="color: var(--green);">0</div>
+             </div>
+             <div class="sc" style="padding: 16px;">
+                <div class="sc-lbl text-danger">ส่งกลับให้แก้ไข (ฉบับ)</div>
+                <div class="sc-val" id="agStatRejected" style="color: var(--red);">0</div>
+             </div>
+          </div>
+
+          <div class="card" style="padding: 0; overflow: hidden;">
+            <div style="overflow-x: auto; max-height: 600px;">
+              <table class="tbl" id="dataTable">
+                <thead style="position: sticky; top: 0; z-index: 2;">
+                  <tr>
+                    <th width="15%"><span class="material-icons-round" style="font-size:14px; vertical-align:middle; margin-right:4px;">schedule</span> เวลาที่บันทึก</th>
+                    <th width="20%"><span class="material-icons-round" style="font-size:14px; vertical-align:middle; margin-right:4px;">corporate_fare</span> หน่วยงาน/สังกัด</th>
+                    <th width="30%"><span class="material-icons-round" style="font-size:14px; vertical-align:middle; margin-right:4px;">description</span> หัวข้อรายงาน (ชื่อแบบฟอร์ม)</th>
+                    <th width="15%"><span class="material-icons-round" style="font-size:14px; vertical-align:middle; margin-right:4px;">rule</span> สถานะ</th>
+                    <th width="10%" style="text-align: center;"><span class="material-icons-round" style="font-size:14px; vertical-align:middle; margin-right:4px;">read_more</span> รายละเอียด</th>
+                    <th width="10%"><span class="material-icons-round" style="font-size:14px; vertical-align:middle; margin-right:4px;">settings</span> การจัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="dataTableBody">
+                  
+                </tbody>
+              </table>
+              <div id="noDataAlert" style="display: none; padding: 40px; text-align: center; color: var(--muted);">ไม่มีข้อมูลการรายงาน</div>
+            </div>
+          </div>
+
+          <div id="printReceiptArea" style="display: none; padding: 40px; background: white; color: black; font-family: 'Sarabun', sans-serif;">
+            <div style="text-align: center; margin-bottom: 30px;">
+               <h2 style="margin: 0; font-size: 24px;">ใบรับรองการนำส่งข้อมูลสารสนเทศ</h2>
+               <p style="margin: 5px 0 0 0; font-size: 16px;">ระบบ EduData Sakon - Enterprise Edition</p>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+               <tr><td style="padding: 8px; border-bottom: 1px solid #ddd; width: 30%; font-weight: bold;">ชื่อสังกัด/หน่วยงาน:</td><td style="padding: 8px; border-bottom: 1px solid #ddd;" id="prAgency"></td></tr>
+               <tr><td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold;">หัวข้อการรายงาน:</td><td style="padding: 8px; border-bottom: 1px solid #ddd;" id="prTitle"></td></tr>
+               <tr><td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold;">วัน-เวลาที่ส่งข้อมูล:</td><td style="padding: 8px; border-bottom: 1px solid #ddd;" id="prTime"></td></tr>
+               <tr><td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: bold;">สถานะข้อมูลปัจจุบัน:</td><td style="padding: 8px; border-bottom: 1px solid #ddd;" id="prStatus"></td></tr>
+            </table>
+            <h3 style="font-size: 16px; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px;">รายละเอียดข้อมูลที่นำส่ง</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px;" id="prDetailsTable">
+               
+            </table>
+            <div style="text-align: right; margin-top: 50px;">
+               <p>ลงชื่อ..............................................................ผู้รายงาน</p>
+               <p style="margin-top: 5px;">(..............................................................)</p>
+               <p style="margin-top: 5px;">ตำแหน่ง..............................................................</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="page" id="view-settings">
+
+          <div id="fb-list-view">
+
+            <div class="ph">
+              <div class="ph-left">
+                <div class="ph-title"><span class="material-icons-round" style="color:var(--blue);">description</span> สร้างและจัดการแบบฟอร์ม</div>
+                <div class="ph-sub">ออกแบบฟอร์มจัดเก็บข้อมูล กำหนดสิทธิ์หน่วยงาน และติดตามความคืบหน้ากำหนดส่งรายงาน</div>
+              </div>
+              <div class="ph-actions">
+                <button class="btn btn-outlined" onclick="fbShowTemplates()">
+                  <span class="material-icons-round" style="color:var(--blue);">auto_awesome</span> เทมเพลตสำเร็จรูป
+                </button>
+                <button class="btn btn-filled" onclick="fbShowCreate()">
+                  <span class="material-icons-round">add_circle</span> สร้างแบบฟอร์มใหม่
+                </button>
+              </div>
+            </div>
+
+            <div class="fb-stats-grid">
+              <div class="fb-stat-card blue">
+                <div class="fb-stat-card-body">
+                  <div class="fb-stat-card-icon">
+                    <span class="material-icons-round" style="font-size:24px;">description</span>
+                  </div>
+                  <div class="fb-stat-card-info">
+                    <span class="fb-stat-card-label">แบบฟอร์มทั้งหมด</span>
+                    <h3 class="fb-stat-card-value" id="fbStatTotal">0</h3>
+                  </div>
+                </div>
+                <div class="fb-stat-card-footer">
+                  <span class="material-icons-round">info</span>
+                  <span>ฟอร์มรายงานที่เปิดใช้งานอยู่ในระบบ</span>
+                </div>
+              </div>
+
+              <div class="fb-stat-card green">
+                <div class="fb-stat-card-body">
+                  <div class="fb-stat-card-icon">
+                    <span class="material-icons-round" style="font-size:24px;">groups</span>
+                  </div>
+                  <div class="fb-stat-card-info">
+                    <span class="fb-stat-card-label">ฟอร์มทุกสังกัด</span>
+                    <h3 class="fb-stat-card-value" id="fbStatAll">0</h3>
+                  </div>
+                </div>
+                <div class="fb-stat-card-footer">
+                  <span class="material-icons-round">check_circle</span>
+                  <span>ฟอร์มที่แอดมินทุกหน่วยงานเข้าถึงได้</span>
+                </div>
+              </div>
+
+              <div class="fb-stat-card yellow">
+                <div class="fb-stat-card-body">
+                  <div class="fb-stat-card-icon">
+                    <span class="material-icons-round" style="font-size:24px;">schedule</span>
+                  </div>
+                  <div class="fb-stat-card-info">
+                    <span class="fb-stat-card-label">มี Deadline</span>
+                    <h3 class="fb-stat-card-value" id="fbStatDeadline">0</h3>
+                  </div>
+                </div>
+                <div class="fb-stat-card-footer">
+                  <span class="material-icons-round">alarm</span>
+                  <span>ฟอร์มที่มีกำหนดส่งในการรายงานข้อมูล</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="fb-toolbar">
+              <div class="fb-search">
+                <span class="material-icons-round fb-search-icon">search</span>
+                <input type="text" id="fbSearchInput" placeholder="ค้นหาชื่อฟอร์ม..." oninput="fbFilterForms()" />
+              </div>
+              <select id="fbFilterAgency" onchange="fbFilterForms()" style="padding:7px 12px;border:1.5px solid var(--border-l);border-radius:8px;background:var(--surface);font-size:13px;color:var(--text);outline:none;">
+                <option value="all">ทุกสังกัด</option>
+              </select>
+              <div style="flex:1;"></div>
+              <div style="display:flex;gap:4px;background:var(--s1);padding:3px;border-radius:9px;border:1px solid var(--border-l);">
+                <button class="fb-view-btn active" id="fbViewCard" onclick="fbSetView('card')" title="Card View">
+                  <span class="material-icons-round" style="font-size:18px;">grid_view</span>
+                </button>
+                <button class="fb-view-btn" id="fbViewList" onclick="fbSetView('list')" title="List View">
+                  <span class="material-icons-round" style="font-size:18px;">view_list</span>
+                </button>
+                <button class="fb-view-btn" id="fbViewDetail" onclick="fbSetView('detail')" title="Detail View">
+                  <span class="material-icons-round" style="font-size:18px;">view_agenda</span>
+                </button>
+              </div>
+            </div>
+
+            <div id="fb-template-picker" style="display:none;margin-bottom:20px;background:var(--s1);border:1.5px solid var(--border-l);border-radius:14px;padding:16px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <div style="font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;">
+                  <span class="material-icons-round" style="color:var(--blue);font-size:20px;">auto_awesome</span>
+                  Template สำเร็จรูป
+                  <span id="fbTplCount" style="font-size:11px;padding:2px 8px;border-radius:10px;background:var(--blue-ll);color:var(--blue);font-weight:600;"></span>
+                </div>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn btn-outlined btn-sm" id="btnAddTpl" style="display:none;" onclick="fbOpenAddTemplate()">
+                    <span class="material-icons-round" style="font-size:15px;">add</span> เพิ่ม Template
+                  </button>
+                  <button class="btn btn-ghost btn-sm" onclick="fbHideTemplates()">
+                    <span class="material-icons-round" style="font-size:16px;">close</span>
+                  </button>
+                </div>
+              </div>
+              <div id="fb-template-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;"></div>
+            </div>
+
+            <div id="fb-cards-area">
+              <div style="text-align:center;padding:48px;color:var(--muted);">
+                <div class="skel" style="height:120px;border-radius:12px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="fb-wizard-view" style="display:none; max-width:780px; margin:0 auto;">
+
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;">
+              <button class="btn btn-ghost btn-icon" onclick="fbShowList()" title="กลับ">
+                <span class="material-icons-round">arrow_back</span>
+              </button>
+              <div>
+                <div class="ph-title" id="fb-wizard-title" style="margin:0;"><span class="material-icons-round">add_circle</span> สร้างแบบฟอร์มใหม่</div>
+                <div style="font-size:13px; color:var(--muted); margin-top:2px;">กรอก 3 ขั้นตอน แล้วกดบันทึก</div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-bottom:16px; border-left:4px solid var(--blue);">
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+                <div style="width:28px; height:28px; border-radius:50%; background:var(--blue); color:white; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0;">1</div>
+                <div style="font-size:15px; font-weight:600; color:var(--text);">ตั้งชื่อแบบฟอร์ม และกำหนดว่าใครส่งได้</div>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; grid-template-rows:auto auto;">
+                <div class="fi" style="margin:0;">
+                  <label>ชื่อแบบฟอร์ม <span style="color:var(--red)">*</span></label>
+                  <input type="text" id="builderFormName" placeholder="เช่น รายงานสถิติประจำปีการศึกษา 2568" />
+                  <input type="hidden" id="builderFormId" />
+                </div>
+                <div class="fi" style="margin:0;">
+                  <label>วันหมดเขตส่ง (Deadline) <span style="font-size:11px;font-weight:400;color:var(--muted);">— ระบบจะแจ้งเตือนอัตโนมัติ</span></label>
+                  <input type="date" id="builderDeadline" />
+                </div>
+                <div class="fi" style="margin:0; grid-column:span 2;">
+                  <label>ใครส่งได้บ้าง <span style="color:var(--red)">*</span></label>
+
+                  <div id="agencyPickerWrap" style="border:1.5px solid var(--border);border-radius:10px;overflow:hidden;">
+
+                    <div id="agencyPickerAllRow"
+                      style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s1);border-bottom:1px solid var(--border-l);cursor:pointer;"
+                      onclick="fbToggleAllAgencies()">
+                      <div id="agencyAllCheck"
+                        style="width:18px;height:18px;border-radius:4px;border:2px solid var(--blue);background:var(--blue);flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                        <span style="color:white;font-size:13px;font-weight:700;line-height:1;">✓</span>
+                      </div>
+                      <span style="font-size:13px;font-weight:700;color:var(--blue);">👥 ทุกสังกัด (เลือกทั้งหมด)</span>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;max-height:220px;overflow-y:auto;">
+                      <div class="ag-pick-item" data-ag="OBEC_1" onclick="fbToggleAgency(this)">
+                        <div class="ag-pick-box"></div><span>สพป.สกลนคร เขต 1</span></div>
+                      <div class="ag-pick-item" data-ag="OBEC_2" onclick="fbToggleAgency(this)">
+                        <div class="ag-pick-box"></div><span>สพป.สกลนคร เขต 2</span></div>
+                      <div class="ag-pick-item" data-ag="OBEC_3" onclick="fbToggleAgency(this)">
+                        <div class="ag-pick-box"></div><span>สพป.สกลนคร เขต 3</span></div>
+                      <div class="ag-pick-item" data-ag="OBEC_M" onclick="fbToggleAgency(this)">
+                        <div class="ag-pick-box"></div><span>สพม.สกลนคร</span></div>
+                      <div class="ag-pick-item" data-ag="VEC" onclick="fbToggleAgency(this)">
+                        <div class="ag-pick-box"></div><span>อาชีวศึกษา</span></div>
+                      <div class="ag-pick-item" data-ag="OPEC" onclick="fbToggleAgency(this)">
+                        <div class="ag-pick-box"></div><span>สช. (เอกชน)</span></div>
+                      <div class="ag-pick-item" data-ag="DLA" onclick="fbToggleAgency(this)">
+                        <div class="ag-pick-box"></div><span>อปท. (ท้องถิ่น)</span></div>
+                      <div class="ag-pick-item" data-ag="DOLE" onclick="fbToggleAgency(this)">
+                        <div class="ag-pick-box"></div><span>สกร. (ส่งเสริมการเรียนรู้)</span></div>
+                      <div class="ag-pick-item" data-ag="BUDDHIST" onclick="fbToggleAgency(this)">
+                        <div class="ag-pick-box"></div><span>พระปริยัติธรรม</span></div>
+                      <div class="ag-pick-item" data-ag="BPP" onclick="fbToggleAgency(this)">
+                        <div class="ag-pick-box"></div><span>ตชด.</span></div>
+                      <div class="ag-pick-item" data-ag="SPECIAL" onclick="fbToggleAgency(this)">
+                        <div class="ag-pick-box"></div><span>การศึกษาพิเศษ</span></div>
+                      <div class="ag-pick-item" data-ag="HIGHER" onclick="fbToggleAgency(this)">
+                        <div class="ag-pick-box"></div><span>อุดมศึกษา</span></div>
+                      <div class="ag-pick-item" data-ag="NURSERY" onclick="fbToggleAgency(this)" style="grid-column:span 2;">
+                        <div class="ag-pick-box"></div><span>สถานรับเลี้ยงเด็ก/ศพด.</span></div>
+                    </div>
+
+                    <div style="padding:8px 14px;background:var(--s1);border-top:1px solid var(--border-l);font-size:12px;color:var(--muted);">
+                      เลือกแล้ว: <span id="agencyPickerCount" style="font-weight:600;color:var(--blue);">ทุกสังกัด (13)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-bottom:16px; border-left:4px solid var(--blue);">
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+                <div style="width:28px; height:28px; border-radius:50%; background:var(--blue); color:white; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0;">2</div>
+                <div style="font-size:15px; font-weight:600; color:var(--text);">เลือกข้อมูลที่ต้องการเก็บ <span style="font-size:12px; font-weight:400; color:var(--muted);">(คลิกช่องที่ต้องการ)</span></div>
+              </div>
+
+              <div style="display:flex; gap:8px; margin-bottom:16px; border-bottom:1px solid var(--border-l); padding-bottom:12px; flex-wrap:wrap;">
+                <button class="fb-cat-btn active" data-cat="main" onclick="fbSwitchCat(this,'main')">
+                  <span class="material-icons-round" style="font-size:15px;">bar_chart</span> ข้อมูลหลัก
+                </button>
+                <button class="fb-cat-btn" data-cat="building" onclick="fbSwitchCat(this,'building')">
+                  <span class="material-icons-round" style="font-size:15px;">apartment</span> อาคาร
+                </button>
+                <button class="fb-cat-btn" data-cat="budget" onclick="fbSwitchCat(this,'budget')">
+                  <span class="material-icons-round" style="font-size:15px;">payments</span> งบประมาณ
+                </button>
+                <button class="fb-cat-btn" data-cat="misc" onclick="fbSwitchCat(this,'misc')">
+                  <span class="material-icons-round" style="font-size:15px;">notes</span> ข้อมูลอื่นๆ
+                </button>
+              </div>
+
+              <div id="fb-checkbox-area" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:8px;">
+                
+              </div>
+            </div>
+
+            <div class="card" style="margin-bottom:20px; border-left:4px solid var(--green);">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <div style="width:28px; height:28px; border-radius:50%; background:var(--green); color:white; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0;">3</div>
+                  <div style="font-size:15px; font-weight:600; color:var(--text);">ข้อมูลที่จะเก็บในฟอร์มนี้</div>
+                </div>
+                <span id="fb-selected-count" style="font-size:12px; color:var(--muted);">ยังไม่ได้เลือก</span>
+              </div>
+
+              <div id="fb-preview-area" style="min-height:44px; display:flex; flex-wrap:wrap; gap:6px; padding:10px; background:var(--s1); border-radius:8px; border:1px solid var(--border-l);">
+                <span style="color:var(--muted); font-size:13px; align-self:center;">คลิกช่องข้อมูลด้านบนเพื่อเพิ่ม...</span>
+              </div>
+
+              <div id="fb-save-errors" style="display:none; margin-top:10px; padding:10px 14px; background:var(--red-ll); border:1px solid var(--red-l); border-radius:8px; font-size:12px; color:var(--red-d);"></div>
+            </div>
+
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+              <button class="btn btn-ghost" onclick="fbShowList()">ยกเลิก</button>
+              <button class="btn btn-outlined" onclick="fbResetWizard()">
+                <span class="material-icons-round">refresh</span> ล้างทั้งหมด
+              </button>
+              <button class="btn btn-outlined" onclick="fbShowPreview()" style="color:var(--blue);">
+                <span class="material-icons-round">preview</span> ดูตัวอย่าง
+              </button>
+              <button class="btn btn-filled" id="btnSaveForm" onclick="saveFormBuilder()" style="min-width:140px;">
+                <span class="material-icons-round">save</span> บันทึกแบบฟอร์ม
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="page" id="view-system">
+          <div class="ph">
+            <div class="ph-left">
+              <div class="ph-title text-danger"><span class="material-icons-round" style="color:var(--text)">admin_panel_settings</span> ศูนย์ควบคุมระบบ (Admin Console)</div>
+              <div class="ph-sub">การตั้งค่าและการจัดการระดับสูงสุด สำหรับศึกษาธิการจังหวัด (Super Admin Only)</div>
+            </div>
+          </div>
+          
+          <div style="background: var(--green-ll); border: 1px solid var(--green-l); padding: 16px 24px; border-radius: 12px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div class="badge-pulse active" style="position: relative; width: 14px; height: 14px; background: var(--green); top: 0; right: 0;"></div>
+              <div>
+                <div style="font-weight: 700; color: var(--green); font-size: 15px;">สถานะระบบ: ทำงานปกติ (All Systems Operational)</div>
+                <div style="font-size: 12px; color: var(--green); margin-top: 2px;">เซิร์ฟเวอร์ Google Apps Script ตอบสนองใน 120ms • ฐานข้อมูลเชื่อมต่อแล้ว</div>
+              </div>
+            </div>
+            <button class="btn btn-outlined" style="color: var(--green); border-color: var(--green);" onclick="showToast('ระบบทำงานได้อย่างสมบูรณ์แบบ', 'success')"><span class="material-icons-round">check_circle</span> ตรวจสอบระบบ</button>
+          </div>
+
+          <div class="admin-console-grid">
+            <div class="admin-card blue-theme" onclick="openUsersModal()">
+              <div class="admin-card-header">
+                <div class="admin-card-icon blue"><span class="material-icons-round" style="font-size:22px;">manage_accounts</span></div>
+                <h4 class="admin-card-title">จัดการผู้ใช้งาน</h4>
+                <span class="material-icons-round admin-card-arrow">arrow_forward</span>
+              </div>
+              <p class="admin-card-desc">เพิ่ม ลบ แก้ไขสิทธิ์ Agency Admin และรีเซ็ตรหัสผ่านของเจ้าหน้าที่สังกัด</p>
+              <div class="admin-card-footer">
+                <span class="material-icons-round">people</span>
+                <span>จัดการสิทธิ์ & บัญชีแอดมิน</span>
+              </div>
+            </div>
+            
+            <div class="admin-card green-theme" onclick="openMasterDataModal()">
+              <div class="admin-card-header">
+                <div class="admin-card-icon green"><span class="material-icons-round" style="font-size:22px;">domain_add</span></div>
+                <h4 class="admin-card-title">ฐานข้อมูล Master Data</h4>
+                <span class="material-icons-round admin-card-arrow">arrow_forward</span>
+              </div>
+              <p class="admin-card-desc">จัดการรายชื่อโรงเรียนอ้างอิง และพิกัด GIS ของสำนักงานหรือโรงเรียนตัวอย่าง</p>
+              <div class="admin-card-footer">
+                <span class="material-icons-round">map</span>
+                <span>พิกัด GIS & รายชื่อสถานศึกษา</span>
+              </div>
+            </div>
+
+            <div class="admin-card yellow-theme" onclick="openSystemAuditLogModal()">
+              <div class="admin-card-header">
+                <div class="admin-card-icon yellow"><span class="material-icons-round" style="font-size:22px;">history</span></div>
+                <h4 class="admin-card-title">ประวัติการใช้งาน (Audit Log)</h4>
+                <span class="material-icons-round admin-card-arrow">arrow_forward</span>
+              </div>
+              <p class="admin-card-desc">ตรวจสอบบันทึกการเข้าสู่ระบบและการรายงานข้อมูลสถิติย้อนหลังในระบบ</p>
+              <div class="admin-card-footer">
+                <span class="material-icons-round">security</span>
+                <span>บันทึกความปลอดภัย & กิจกรรม</span>
+              </div>
+            </div>
+
+            <div class="admin-card blue-theme" onclick="openSessionLogModal()">
+              <div class="admin-card-header">
+                <div class="admin-card-icon blue"><span class="material-icons-round" style="font-size:22px;">login</span></div>
+                <h4 class="admin-card-title">Session Log (เข้า-ออกระบบ)</h4>
+                <span class="material-icons-round admin-card-arrow">arrow_forward</span>
+              </div>
+              <p class="admin-card-desc">บันทึกวันเวลาเข้า-ออกระบบ บทบาทผู้ใช้ และสังกัดของแต่ละ session</p>
+              <div class="admin-card-footer">
+                <span class="material-icons-round">devices</span>
+                <span>การเชื่อมต่อระบบเรียลไทม์</span>
+              </div>
+            </div>
+            
+            <div class="admin-card red-theme" onclick="openResetModal()">
+              <div class="admin-card-header">
+                <div class="admin-card-icon red"><span class="material-icons-round" style="font-size:22px;">delete_sweep</span></div>
+                <h4 class="admin-card-title">จัดการรอบปีการศึกษา</h4>
+                <span class="material-icons-round admin-card-arrow">arrow_forward</span>
+              </div>
+              <p class="admin-card-desc">เปิด-ปิดระบบรับรายงาน และคัดลอกข้อมูลสถิติเพื่อเริ่มปีการศึกษาใหม่</p>
+              <div class="admin-card-footer">
+                <span class="material-icons-round">settings_backup_restore</span>
+                <span>เปิด/ปิดระบบ & เคลียร์ข้อมูลปี</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="page" id="view-bi">
+          <div class="ph">
+            <div class="ph-left">
+              <div class="ph-title"><span class="material-icons-round" style="color:var(--blue);">insert_chart</span> BI Dashboard Builder</div>
+              <div class="ph-sub">ออกแบบ Dashboard ได้อิสระ — ลาก วาง จัด layout ได้ทันที ไม่ต้องเขียนโค้ด</div>
+            </div>
+            <div class="ph-actions">
+              <button class="btn btn-outlined btn-sm" onclick="biTogglePreview()" id="biPreviewBtn" style="font-size:11px;padding:4px 10px;">
+                <span class="material-icons-round" style="font-size:13px;">preview</span> Preview
+              </button>
+                <button class="btn btn-outlined btn-sm" onclick="biOpenTemplateGallery()" id="biTemplateBtn" style="font-size:11px;padding:4px 10px;background:linear-gradient(135deg,var(--blue-ll),var(--green-ll));border-color:var(--blue-l);">
+                  <span class="material-icons-round" style="font-size:13px;color:var(--blue);">auto_awesome</span>
+                  <span style="font-weight:700;color:var(--blue);">Template</span>
+                </button>
+                <button class="btn btn-outlined btn-sm" onclick="biOpenAISummary()" id="biAIBtn" style="font-size:11px;padding:4px 10px;background:linear-gradient(135deg,#f3e5f5,#e8f0fe);border-color:#ce93d8;position:relative;">
+                  <span class="material-icons-round" style="font-size:13px;color:#7b1fa2;">psychology</span>
+                  <span style="font-weight:700;color:#7b1fa2;">AI สรุป</span>
+                  <span id="biAIBadge" style="display:none;position:absolute;top:-4px;right:-4px;width:8px;height:8px;background:#ea4335;border-radius:50%;animation:ping 1s infinite;"></span>
+                </button>
+              <button class="btn btn-outlined btn-sm" onclick="biExportPDF()" style="font-size:11px;padding:4px 10px;">
+                <span class="material-icons-round" style="font-size:13px;">picture_as_pdf</span> PDF
+              </button>
+              <button class="btn btn-outlined btn-sm" onclick="biSaveDashboard()" style="font-size:11px;padding:4px 10px;">
+                <span class="material-icons-round" style="font-size:13px;">save</span> บันทึก
+              </button>
+              <button class="btn btn-filled btn-sm" onclick="biOpenWidgetPanel()">
+                <span class="material-icons-round" style="font-size:16px;">add</span> เพิ่ม Widget
+              </button>
+            </div>
+          </div>
+
+          <div id="bi-workspace" style="display:flex;gap:0;height:calc(100vh - 140px);overflow:hidden;">
+
+            <div id="bi-widget-panel" style="width:260px;flex-shrink:0;background:var(--surface);border:1.5px solid var(--border-l);border-radius:14px;overflow-y:auto;padding:16px;margin-right:16px;display:none;">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+                <span class="material-icons-round" style="font-size:18px;color:var(--blue);">widgets</span> Widget Library
+              </div>
+              <div id="bi-widget-library"></div>
+            </div>
+
+            <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+              
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:10px 16px;background:var(--surface);border:1.5px solid var(--border-l);border-radius:10px;">
+                <span class="material-icons-round" style="color:var(--muted);font-size:18px;">dashboard</span>
+                <input id="biDashTitle" type="text" value="Dashboard ของฉัน" placeholder="ชื่อ Dashboard..."
+                  style="flex:1;border:none;background:transparent;font-size:15px;font-weight:700;color:var(--text);outline:none;" />
+                <span style="font-size:11px;color:var(--muted);" id="biWidgetCount">0 widgets</span>
+                <button class="btn btn-ghost btn-sm" onclick="biClearCanvas()" style="color:var(--red);">
+                  <span class="material-icons-round" style="font-size:15px;">delete_sweep</span> ล้าง
+                </button>
+              </div>
+
+              <!-- ── AI Conversational BI Assistant Bar ── -->
+              <div id="bi-ai-assistant-bar" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:8px 16px;background:linear-gradient(135deg, var(--blue-ll), #f3e5f5);border:1.5px solid var(--blue-l);border-radius:10px;">
+                <span class="material-icons-round" style="color:#7b1fa2;font-size:20px;">auto_awesome</span>
+                <span style="font-size:12px;font-weight:700;color:#7b1fa2;white-space:nowrap;">AI สั่งสร้างการ์ด/กราฟ:</span>
+                <input id="biAiPromptInput" type="text" placeholder="พิมพ์คำสั่งภาษาไทย เช่น 'ขอดูกราฟแท่งนักเรียนความต้องการพิเศษแยกโรค' หรือ 'ตัวเลขครูรวมทั้งจังหวัด'..."
+                  style="flex:1;border:none;background:transparent;font-size:12px;color:var(--text);outline:none;font-weight:500;"
+                  onkeydown="if(event.key === 'Enter') biGenerateAiWidget();" />
+                <button id="btnBiAiGenerate" class="btn btn-filled btn-sm" onclick="biGenerateAiWidget()" style="background:#7b1fa2;color:white;height:28px;font-size:11px;padding:0 12px;border-radius:6px;gap:4px;">
+                  <span class="material-icons-round" style="font-size:14px;">bolt</span> สั่งงาน
+                </button>
+              </div>
+              <!-- ── Date Range Filter Bar ─────────────────────────────── -->
+              <div id="bi-daterange-bar" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px 16px;background:var(--s1);border:1.5px solid var(--border-l);border-radius:10px;flex-wrap:wrap;">
+                <span class="material-icons-round" style="color:var(--blue);font-size:18px;">date_range</span>
+                <span style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;">กรองช่วงเวลา</span>
+
+                <!-- Academic Year -->
+                <select id="bi-filter-year" onchange="biApplyDateFilter()" style="padding:5px 10px;border:1.5px solid var(--border-l);border-radius:8px;font-size:12px;font-family:'Google Sans','Sarabun',sans-serif;background:var(--surface);color:var(--text);cursor:pointer;">
+                  <option value="all">ทุกปีการศึกษา</option>
+                  <option value="2567" selected>ปีการศึกษา 2567</option>
+                  <option value="2566">ปีการศึกษา 2566</option>
+                  <option value="2565">ปีการศึกษา 2565</option>
+                  <option value="2564">ปีการศึกษา 2564</option>
+                </select>
+
+                <!-- Semester -->
+                <select id="bi-filter-semester" onchange="biApplyDateFilter()" style="padding:5px 10px;border:1.5px solid var(--border-l);border-radius:8px;font-size:12px;font-family:'Google Sans','Sarabun',sans-serif;background:var(--surface);color:var(--text);cursor:pointer;">
+                  <option value="all">ทุกภาคเรียน</option>
+                  <option value="1" selected>ภาคเรียนที่ 1</option>
+                  <option value="2">ภาคเรียนที่ 2</option>
+                </select>
+
+                <!-- Date from -->
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span style="font-size:11px;color:var(--muted);">ตั้งแต่</span>
+                  <input type="date" id="bi-filter-from" onchange="biApplyDateFilter()"
+                    style="padding:5px 8px;border:1.5px solid var(--border-l);border-radius:8px;font-size:12px;font-family:'Google Sans','Sarabun',sans-serif;background:var(--surface);color:var(--text);cursor:pointer;" />
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span style="font-size:11px;color:var(--muted);">ถึง</span>
+                  <input type="date" id="bi-filter-to" onchange="biApplyDateFilter()"
+                    style="padding:5px 8px;border:1.5px solid var(--border-l);border-radius:8px;font-size:12px;font-family:'Google Sans','Sarabun',sans-serif;background:var(--surface);color:var(--text);cursor:pointer;" />
+                </div>
+
+                <!-- Agency filter -->
+                <select id="bi-filter-agency" onchange="biApplyDateFilter()" style="padding:5px 10px;border:1.5px solid var(--border-l);border-radius:8px;font-size:12px;font-family:'Google Sans','Sarabun',sans-serif;background:var(--surface);color:var(--text);cursor:pointer;">
+                  <option value="all">ทุกสังกัด</option>
+                  <option value="OBEC_1">สพป.สน.1</option>
+                  <option value="OBEC_2">สพป.สน.2</option>
+                  <option value="OBEC_3">สพป.สน.3</option>
+                  <option value="OBEC_M">สพม.สน.</option>
+                  <option value="VEC">อาชีวศึกษา</option>
+                  <option value="OPEC">กศน./สกร.</option>
+                  <option value="DLA">อปท.</option>
+                  <option value="DOLE">กรมแรงงาน</option>
+                  <option value="BUDDHIST">พุทธศาสนา</option>
+                  <option value="BPP">ตชด.</option>
+                  <option value="SPECIAL">การศึกษาพิเศษ</option>
+                  <option value="HIGHER">อุดมศึกษา</option>
+                  <option value="NURSERY">อนุบาล/เอกชน</option>
+                </select>
+
+                <!-- Active filter badge -->
+                <div id="bi-filter-badge" style="display:none;align-items:center;gap:4px;padding:3px 10px;background:var(--blue);border-radius:20px;">
+                  <span style="font-size:11px;font-weight:700;color:#fff;" id="bi-filter-badge-text">กำลังกรอง</span>
+                  <span class="material-icons-round" style="font-size:14px;color:#fff;cursor:pointer;" onclick="biResetDateFilter()">close</span>
+                </div>
+
+                <div style="margin-left:auto;display:flex;gap:6px;">
+                  <button onclick="biResetDateFilter()" class="btn btn-ghost btn-sm" style="font-size:11px;">
+                    <span class="material-icons-round" style="font-size:14px;">refresh</span> รีเซ็ต
+                  </button>
+                  <button onclick="biApplyDateFilter()" class="btn btn-filled btn-sm" style="font-size:11px;">
+                    <span class="material-icons-round" style="font-size:14px;">filter_alt</span> กรองข้อมูล
+                  </button>
+                </div>
+              </div>
+              <!-- ── END Date Range Filter Bar ──────────────────────────── -->
+
+
+              <div id="bi-canvas" style="flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 0;">
+                <div id="bi-grid" style="display:grid;grid-template-columns:repeat(12,1fr);gap:12px;align-items:start;min-height:400px;"></div>
+                <div id="bi-empty-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;color:var(--muted);">
+                  <span class="material-icons-round" style="font-size:56px;margin-bottom:16px;opacity:.3;">insert_chart</span>
+                  <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Dashboard ว่างเปล่า</div>
+                  <div style="font-size:13px;margin-bottom:20px;">กดปุ่ม "เพิ่ม Widget" เพื่อเริ่มสร้าง Dashboard</div>
+                  <button class="btn btn-filled" onclick="biOpenWidgetPanel()">
+                    <span class="material-icons-round">add</span> เพิ่ม Widget แรก
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div id="bi-prop-panel" style="width:240px;flex-shrink:0;background:var(--surface);border:1.5px solid var(--border-l);border-radius:14px;overflow-y:auto;padding:16px;margin-left:16px;display:none;">
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+                <span class="material-icons-round" style="font-size:18px;color:var(--blue);">tune</span> ตั้งค่า Widget
+              </div>
+              <div id="bi-prop-content">
+                <div style="text-align:center;padding:32px;color:var(--muted);font-size:12px;">คลิก Widget เพื่อแก้ไข</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page" id="view-monitor">
+          <div class="ph">
+            <div class="ph-left">
+              <div class="ph-title"><span class="material-icons-round" style="color:var(--blue)">track_changes</span> กำกับติดตามการรายงานข้อมูล</div>
+              <div class="ph-sub">ติดตามสถานะการส่งรายงานของทุกสังกัด แบบ Real-time — คลิกที่แถวสังกัดเพื่อดูรายละเอียดฟอร์มรายงาน</div>
+            </div>
+            <div class="ph-actions">
+              <div class="search-wrap" style="background:var(--surface); box-shadow:var(--e1); width:220px;">
+                <span class="material-icons-round" style="color:var(--muted);">search</span>
+                <input type="text" id="monitorSearchInput" onkeyup="filterMonitorTable()" placeholder="ค้นหาสังกัด..." />
+              </div>
+              <div class="search-wrap" style="background:var(--surface); box-shadow:var(--e1);">
+                <span class="material-icons-round" style="color:var(--muted); font-size:18px;">filter_list</span>
+                <select id="monitorStatusFilter" onchange="filterMonitorTable()" style="padding-right:0;">
+                  <option value="all">ทุกสถานะ</option>
+                  <option value="complete">✅ ครบถ้วนแล้ว</option>
+                  <option value="partial">🟡 ส่งบางส่วน</option>
+                  <option value="none">🔴 ยังไม่ส่ง</option>
+                  <option value="rejected">⚠️ มีส่งกลับแก้ไข</option>
+                </select>
+              </div>
+              <button class="btn btn-outlined" onclick="loadMonitoringData()"><span class="material-icons-round">refresh</span> รีเฟรช</button>
+              <button class="btn btn-outlined" onclick="exportMonitorCSV()"><span class="material-icons-round">download</span> Export</button>
+              <button class="btn btn-filled" id="btnSendReminder" onclick="openReminderModal()" style="display:none;" title="ส่งอีเมลแจ้งเตือนหน่วยงาน/สังกัดที่ยังส่งรายงานข้อมูลไม่ครบถ้วนแบบอัตโนมัติ">
+                <span class="material-icons-round">notifications_active</span> เตือนค้างส่ง
+              </button>
+            </div>
+          </div>
+
+          <div class="stats" id="monitorKpiArea" style="grid-template-columns: repeat(5,1fr); margin-bottom:20px;">
+            <div class="sc c-blue">
+              <div class="sc-icon si-blue"><span class="material-icons-round">domain</span></div>
+              <div class="sc-lbl">จำนวนสังกัดทั้งหมด</div>
+              <div class="sc-val" id="mkpi-total">13</div>
+            </div>
+            <div class="sc c-green">
+              <div class="sc-icon si-green"><span class="material-icons-round">check_circle</span></div>
+              <div class="sc-lbl">ส่งครบและอนุมัติแล้ว</div>
+              <div class="sc-val" id="mkpi-complete">0</div>
+            </div>
+            <div class="sc c-yellow">
+              <div class="sc-icon si-yellow"><span class="material-icons-round">pending</span></div>
+              <div class="sc-lbl">รออนุมัติ (ฉบับ)</div>
+              <div class="sc-val" id="mkpi-pending">0</div>
+            </div>
+            <div class="sc c-red">
+              <div class="sc-icon si-red"><span class="material-icons-round">cancel</span></div>
+              <div class="sc-lbl">ส่งกลับแก้ไข (ฉบับ)</div>
+              <div class="sc-val" id="mkpi-rejected">0</div>
+            </div>
+            <div class="sc" style="border-top:3px solid var(--muted);">
+              <div class="sc-icon" style="background:var(--s2); color:var(--muted);"><span class="material-icons-round">hourglass_empty</span></div>
+              <div class="sc-lbl">ยังไม่ส่ง (ฉบับ)</div>
+              <div class="sc-val" id="mkpi-notsent" style="color:var(--muted);">0</div>
+            </div>
+          </div>
+
+          <div class="card" style="padding:20px 24px; margin-bottom:20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+              <div style="font-weight:700; color:var(--text); font-size:15px; display:flex; align-items:center; gap:8px;">
+                <span class="material-icons-round" style="color:var(--blue);">bar_chart</span>
+                ความคืบหน้าภาพรวมการส่งรายงาน (จังหวัดสกลนคร)
+              </div>
+              <div style="font-size:24px; font-weight:800; color:var(--blue);" id="mkpi-pct">0%</div>
+            </div>
+            <div style="background:var(--s2); border-radius:100px; height:14px; overflow:hidden;">
+              <div id="overallProgressBar" style="height:100%; background:linear-gradient(90deg,var(--blue),#4285f4); border-radius:100px; transition:width 1s cubic-bezier(.4,0,.2,1); width:0%;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:11px; color:var(--muted);">
+              <span id="monitorLastUpdate">อัปเดตล่าสุด: —</span>
+              <span id="monitorSummaryText">—</span>
+            </div>
+          </div>
+
+          <div class="card" style="padding:0; overflow:hidden;">
+            <div class="card-hd" style="padding:16px 24px; margin:0; border-bottom:1px solid var(--border-l); background:var(--s1);">
+              <div class="card-title"><span class="material-icons-round" style="color:var(--blue)">grid_view</span> ตาราง Matrix — สถานะรายงานตามสังกัด × ฟอร์ม</div>
+              <div style="font-size:12px; color:var(--muted);">คลิกที่ 🔽 เพื่อดูรายละเอียดฟอร์มรายงานของแต่ละสังกัด</div>
+            </div>
+            <div style="overflow-x:auto; max-height:520px;">
+              <table class="tbl" id="monitorTable">
+                <thead style="position:sticky; top:0; z-index:3;">
+                  <tr id="monitorTableHead">
+                    <th width="22%" style="position:sticky; left:0; z-index:4; background:var(--s1);">สังกัด (Agency)</th>
+                    <th width="10%">ความครบถ้วน</th>
+                    <th width="8%">ส่งแล้ว</th>
+                    <th width="8%">อนุมัติ</th>
+                    <th width="8%">รออนุมัติ</th>
+                    <th width="8%">ส่งกลับ</th>
+                    <th width="8%">ยังไม่ส่ง</th>
+                    <th width="18%">ส่งล่าสุด</th>
+                    <th width="10%">จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="monitorTableBody">
+                  <tr><td colspan="9" style="text-align:center; padding:40px; color:var(--muted);">
+                    <div class="skel" style="height:200px;"></div>
+                  </td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:20px;">
+            <div class="card-hd">
+              <div class="card-title"><span class="material-icons-round" style="color:var(--blue)">timeline</span> กิจกรรมล่าสุด (Activity Feed)</div>
+            </div>
+            <div id="monitorTimeline" style="max-height:320px; overflow-y:auto;">
+              <div style="text-align:center; padding:32px; color:var(--muted);">กำลังโหลด...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Helpdesk Admin Page -->
+        <div class="page" id="view-helpdesk" style="display:none;">
+          <div class="ph">
+            <div class="ph-left">
+              <div class="ph-title"><span class="material-icons-round" style="color:var(--blue)">support_agent</span> ศูนย์ช่วยเหลือและตอบกลับปัญหา (Helpdesk)</div>
+              <div class="ph-sub">จัดการปัญหาการใช้งานระบบที่ส่งเข้ามา คอยตอบกลับการแจ้งปัญหา และบันทึกประวัติการแก้ไขตั๋วขัดข้อง</div>
+            </div>
+            <div class="ph-actions">
+              <!-- Search bar -->
+              <div class="search-wrap" style="background:var(--surface); box-shadow:var(--e1); width:240px;">
+                <span class="material-icons-round" style="color:var(--muted);">search</span>
+                <input type="text" id="helpdeskSearchInput" onkeyup="filterHelpdeskTickets()" placeholder="ค้นหาตามชื่อ/สังกัด/เบอร์ติดต่อ..." />
+              </div>
+              <!-- Filter dropdown -->
+              <div class="search-wrap" style="background:var(--surface); box-shadow:var(--e1); width:160px; padding: 0 8px;">
+                <span class="material-icons-round" style="color:var(--muted); margin-left: 8px;">filter_list</span>
+                <select id="helpdeskStatusFilter" onchange="filterHelpdeskTickets()" style="flex:1; border:none; background:transparent; font-size:12.5px; height:36px; color:var(--text); outline:none; cursor:pointer;">
+                  <option value="ALL">ทุกสถานะ</option>
+                  <option value="รอดำเนินการ">รอดำเนินการ</option>
+                  <option value="กำลังแก้ไข">กำลังแก้ไข</option>
+                  <option value="แก้ไขแล้ว">แก้ไขแล้ว</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cards Summary Statistics -->
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:20px;">
+            <div class="card" style="padding:16px; display:flex; align-items:center; gap:16px; margin: 0;">
+               <span class="material-icons-round" style="font-size:36px; color:var(--muted); background:var(--s1); padding:8px; border-radius:12px;">all_inbox</span>
+              <div>
+                <div style="font-size:12px; color:var(--muted);">ตั๋วทั้งหมด</div>
+                <div style="font-size:22px; font-weight:700; color:var(--text);" id="hd-stat-all">0</div>
+              </div>
+            </div>
+            <div class="card" style="padding:16px; display:flex; align-items:center; gap:16px; margin: 0;">
+               <span class="material-icons-round" style="font-size:36px; color:var(--red); background:var(--red-ll); padding:8px; border-radius:12px;">pending_actions</span>
+              <div>
+                <div style="font-size:12px; color:var(--muted);">รอดำเนินการ</div>
+                <div style="font-size:22px; font-weight:700; color:var(--red-d);" id="hd-stat-pending">0</div>
+              </div>
+            </div>
+            <div class="card" style="padding:16px; display:flex; align-items:center; gap:16px; margin: 0;">
+               <span class="material-icons-round" style="font-size:36px; color:var(--blue); background:var(--blue-ll); padding:8px; border-radius:12px;">hourglass_empty</span>
+              <div>
+                <div style="font-size:12px; color:var(--muted);">กำลังแก้ไข</div>
+                <div style="font-size:22px; font-weight:700; color:var(--blue);" id="hd-stat-progress">0</div>
+              </div>
+            </div>
+            <div class="card" style="padding:16px; display:flex; align-items:center; gap:16px; margin: 0;">
+               <span class="material-icons-round" style="font-size:36px; color:var(--green); background:var(--green-ll); padding:8px; border-radius:12px;">task_alt</span>
+              <div>
+                <div style="font-size:12px; color:var(--muted);">แก้ไขแล้ว</div>
+                <div style="font-size:22px; font-weight:700; color:var(--green);" id="hd-stat-solved">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Tickets Table -->
+          <div class="card" style="padding:0; overflow:hidden;">
+            <div class="card-hd" style="padding:16px 24px; margin:0; border-bottom:1px solid var(--border-l); background:var(--s1);">
+              <div class="card-title"><span class="material-icons-round" style="color:var(--blue)">list_alt</span> รายชื่อและประวัติใบแจ้งปัญหาทั้งหมด</div>
+              <div style="font-size:12px; color:var(--muted);">กดปุ่ม "จัดการปัญหา" เพื่อเปลี่ยนสถานะตั๋วและพิมพ์ข้อความคำชี้แจงแก้ไขปัญหา</div>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="tbl" id="helpdeskTable">
+                <thead>
+                  <tr>
+                    <th width="15%">วันเวลาที่แจ้ง</th>
+                    <th width="15%">ผู้แจ้ง / สังกัด</th>
+                    <th width="12%">เบอร์ติดต่อ</th>
+                    <th width="28%">รายละเอียดปัญหา</th>
+                    <th width="10%">สถานะ</th>
+                    <th width="12%">หมายเหตุ / ตอบกลับ</th>
+                    <th width="8%">จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="helpdeskTableBody">
+                  <tr>
+                    <td colspan="7" style="text-align:center; padding:40px; color:var(--muted);">
+                      <div style="width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px auto;"></div>
+                      กำลังโหลดตั๋วปัญหาทั้งหมด...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <div id="reminderModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); z-index:9100; align-items:center; justify-content:center; padding:24px;">
+    <div style="background:var(--surface); border-radius:16px; box-shadow:0 24px 48px rgba(0,0,0,.2); width:100%; max-width:600px; max-height:90vh; display:flex; flex-direction:column; border:1px solid var(--border-l); overflow:hidden;">
+      <div class="m-hd">
+        <div class="m-title"><span class="material-icons-round" style="color:var(--yellow)">notifications_active</span> ส่งการแจ้งเตือนสังกัดค้างรายงาน</div>
+        <button class="btn-icon btn-ghost" onclick="closeReminderModal()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="m-body" style="padding:20px 24px;">
+        <div style="background:var(--yellow-ll); border:1px solid var(--yellow-l); border-radius:10px; padding:14px 16px; margin-bottom:18px; font-size:13px; color:var(--text);">
+          <span class="material-icons-round" style="font-size:16px; vertical-align:middle; color:var(--yellow);">info</span>
+          ระบบจะบันทึก Log การแจ้งเตือนในระบบ Audit Log เพื่อเป็นหลักฐานการดำเนินการ
+        </div>
+        <div class="fi">
+          <label>แบบฟอร์มที่ต้องการติดตาม</label>
+          <select id="reminderFormSelect">
+            <option value="">-- ทุกแบบฟอร์ม --</option>
+          </select>
+        </div>
+        <div class="fi">
+          <label>กำหนดส่งข้อมูล (Deadline) — แสดงในข้อความแจ้งเตือน</label>
+          <input type="date" id="reminderDeadline" />
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:12px; font-weight:600; color:var(--text-2); margin-bottom:8px;">สังกัดที่ยังไม่ส่งรายงาน (เลือกเพื่อแจ้งเตือน)</div>
+          <div id="reminderAgencyList" style="display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto; border:1px solid var(--border-l); border-radius:8px; padding:12px; background:var(--s1);">
+            <div style="color:var(--muted); font-size:13px;">กำลังโหลด...</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="btn btn-ghost btn-sm" onclick="selectAllReminder(true)">เลือกทั้งหมด</button>
+          <button class="btn btn-ghost btn-sm" onclick="selectAllReminder(false)">ยกเลิกทั้งหมด</button>
+          <span style="flex:1;"></span>
+          <span style="font-size:12px; color:var(--muted);" id="reminderSelectedCount">เลือก 0 สังกัด</span>
+        </div>
+      </div>
+      <div class="m-ft">
+        <button class="btn btn-ghost" onclick="closeReminderModal()">ยกเลิก</button>
+        <button class="btn btn-filled" onclick="sendReminders()" id="btnDoSendReminder">
+          <span class="material-icons-round">send</span> บันทึกการแจ้งเตือน
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ Agency-specific Audit Log Modal ══ -->
+  <div id="agencyAuditLogModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); z-index:9100; align-items:center; justify-content:center; padding:24px;">
+    <div style="background:var(--surface); border-radius:16px; box-shadow:0 24px 56px rgba(0,0,0,.22); width:100%; max-width:800px; height: 85vh; display:flex; flex-direction:column; border:1px solid var(--border-l); overflow:hidden;">
+      <div class="m-hd" style="background:linear-gradient(135deg,var(--blue-ll),#e8eaf6); border-bottom:1.5px solid var(--blue-l);">
+        <div class="m-title" style="color:var(--blue-d,#1a237e); font-weight:700; display:flex; align-items:center; gap:8px;">
+          <span class="material-icons-round" style="color:var(--blue);font-size:22px;">history</span>
+          ประวัติกิจกรรม — <span id="agencyAuditLogTitleName" style="color:var(--blue);"></span>
+        </div>
+        <button class="btn-icon btn-ghost" onclick="closeAgencyAuditLogModal()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="m-body" style="padding:0; display:flex; flex-direction:column; overflow:hidden; flex:1;">
+        <!-- Modern Search & Filter Bar -->
+        <div style="padding: 12px 20px; border-bottom: 1px solid var(--border-l); display: flex; justify-content: space-between; align-items: center; background: var(--s1); gap: 12px; flex-shrink: 0;">
+          <div class="search-wrap" style="background: var(--white); box-shadow: var(--e1); width: 100%; max-width: 320px; height: 38px;">
+            <span class="material-icons-round" style="color: var(--muted); font-size: 16px;">search</span>
+            <input type="text" id="agencyAuditSearchInput" onkeyup="filterAgencyAuditLogs()" placeholder="ค้นหากิจกรรม, บทบาท หรือ รายละเอียด..." style="font-size: 12.5px;" />
+          </div>
+          <div style="font-size: 11.5px; color: var(--muted); font-weight: 600;" id="agencyAuditCountDisplay">กำลังโหลด...</div>
+        </div>
+
+        <div style="flex:1; overflow-y:auto; position:relative; min-height:150px;">
+          <div id="agencyAuditLogLoading" style="padding:48px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:14px;">
+            <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;"></div>
+            <div style="color:var(--muted); font-size:13px;">กำลังโหลดประวัติกิจกรรม...</div>
+          </div>
+          <div id="agencyAuditLogEmpty" style="display:none; padding:48px; text-align:center; color:var(--muted); font-size:13px;">
+            <span class="material-icons-round" style="font-size:48px; opacity:.3; display:block; margin-bottom:12px;">inbox</span>
+            ไม่พบประวัติกิจกรรมของสังกัดนี้
+          </div>
+          <table id="agencyAuditLogTable" style="display:none; width:100%; border-collapse:separate; border-spacing:0; font-size:12.5px;">
+            <thead style="position:sticky; top:0; background:var(--s2); z-index:5;">
+              <tr>
+                <th style="padding:12px 16px; text-align:left; font-weight:700; color:var(--subtle); border-bottom:1.5px solid var(--border); white-space:nowrap; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">วันเวลา</th>
+                <th style="padding:12px 12px; text-align:left; font-weight:700; color:var(--subtle); border-bottom:1.5px solid var(--border); white-space:nowrap; font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">Role</th>
+                <th style="padding:12px 12px; text-align:left; font-weight:700; color:var(--subtle); border-bottom:1.5px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">Action</th>
+                <th style="padding:12px 12px; text-align:left; font-weight:700; color:var(--subtle); border-bottom:1.5px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.5px;">รายละเอียด</th>
+              </tr>
+            </thead>
+            <tbody id="agencyAuditLogBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="m-ft" style="background:var(--s1); border-top:1px solid var(--border-l);">
+        <button class="btn btn-outlined" onclick="closeAgencyAuditLogModal()">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Bulk Approve/Reject Modal ══ -->
+  <div id="bulkActionModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); z-index:9100; align-items:center; justify-content:center; padding:24px;">
+    <div style="background:var(--surface); border-radius:16px; box-shadow:0 24px 56px rgba(0,0,0,.22); width:100%; max-width:520px; display:flex; flex-direction:column; border:1px solid var(--border-l); overflow:hidden;">
+      <div class="m-hd" style="background:linear-gradient(135deg,var(--blue-ll),#e8f5e9); border-bottom:1.5px solid var(--border);">
+        <div class="m-title" style="font-weight:700; display:flex; align-items:center; gap:8px;">
+          <span class="material-icons-round" style="color:var(--blue);font-size:22px;">done_all</span>
+          อนุมัติ/ส่งกลับ ทุกฟอร์ม — <span id="bulkActionAgencyName" style="color:var(--blue);"></span>
+        </div>
+        <button class="btn-icon btn-ghost" onclick="closeBulkActionModal()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="m-body" style="padding:20px 24px; display:flex; flex-direction:column; gap:16px;">
+        <div style="background:var(--s2); border:1.5px solid var(--border); border-radius:10px; padding:14px 16px; display:flex; align-items:flex-start; gap:10px;">
+          <span class="material-icons-round" style="color:var(--yellow,#f59e0b); font-size:20px; margin-top:1px;">warning_amber</span>
+          <div style="font-size:13px; color:var(--text-2); line-height:1.6;">
+            การดำเนินการนี้จะ <strong>เปลี่ยนสถานะฟอร์มทุกรายการที่มีสถานะ "รออนุมัติ"</strong> ของสังกัดนี้พร้อมกัน ไม่สามารถยกเลิกได้
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <label style="font-weight:700; font-size:13px; color:var(--text-2);">เลือกการดำเนินการ</label>
+          <div style="display:flex; gap:10px;">
+            <label id="bulkBtnApprove" style="flex:1; display:flex; align-items:center; gap:8px; border:2px solid var(--green,#22c55e); border-radius:10px; padding:12px 14px; cursor:pointer; background:var(--s1); transition:all .15s;" onclick="selectBulkAction('อนุมัติแล้ว')">
+              <input type="radio" name="bulkAction" value="อนุมัติแล้ว" id="ba_approve" style="accent-color:var(--green);" />
+              <span class="material-icons-round" style="color:var(--green); font-size:20px;">check_circle</span>
+              <span style="font-weight:600; font-size:13px; color:var(--green);">อนุมัติทั้งหมด</span>
+            </label>
+            <label id="bulkBtnReject" style="flex:1; display:flex; align-items:center; gap:8px; border:2px solid var(--border); border-radius:10px; padding:12px 14px; cursor:pointer; background:var(--s1); transition:all .15s;" onclick="selectBulkAction('ส่งกลับแก้ไข')">
+              <input type="radio" name="bulkAction" value="ส่งกลับแก้ไข" id="ba_reject" style="accent-color:var(--red);" />
+              <span class="material-icons-round" style="color:var(--red,#ef4444); font-size:20px;">undo</span>
+              <span style="font-weight:600; font-size:13px; color:var(--red,#ef4444);">ส่งกลับแก้ไขทั้งหมด</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="bulkCommentSection" style="display:none; flex-direction:column; gap:6px;">
+          <label style="font-weight:700; font-size:13px; color:var(--text-2);">เหตุผลส่งกลับ <span style="color:var(--red);">*</span></label>
+          <textarea id="bulkComment" placeholder="ระบุเหตุผลหรือคำแนะนำในการส่งกลับแก้ไข..." style="min-height:90px; font-family:'Sarabun',sans-serif; font-size:13px; line-height:1.6; padding:10px 14px; border:1.5px solid var(--border); border-radius:10px; background:var(--s1); color:var(--text); outline:none; resize:vertical;"></textarea>
+        </div>
+      </div>
+      <div class="m-ft">
+        <button class="btn btn-ghost" onclick="closeBulkActionModal()">ยกเลิก</button>
+        <button class="btn btn-filled" id="btnDoBulkAction" onclick="executeBulkAction()" style="border-radius:100px;" disabled>
+          <span class="material-icons-round" style="font-size:16px;">done_all</span> ยืนยันดำเนินการ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Reminder Email Modal ══ -->
+  <div id="reminderEmailModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(3px); z-index:9100; align-items:center; justify-content:center; padding:24px;">
+    <div style="background:var(--surface); border-radius:16px; box-shadow:0 24px 56px rgba(0,0,0,.22); width:100%; max-width:480px; display:flex; flex-direction:column; border:1px solid var(--border-l); overflow:hidden;">
+      <div class="m-hd" style="background:linear-gradient(135deg,var(--blue-ll),#e3f2fd); border-bottom:1.5px solid var(--blue-l);">
+        <div class="m-title" style="font-weight:700; display:flex; align-items:center; gap:8px;">
+          <span class="material-icons-round" style="color:var(--blue);font-size:22px;">mail</span>
+          ส่งอีเมลแจ้งเตือน — <span id="reminderAgencyName" style="color:var(--blue);"></span>
+        </div>
+        <button class="btn-icon btn-ghost" onclick="closeReminderEmailModal()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="m-body" style="padding:20px 24px; display:flex; flex-direction:column; gap:14px;">
+        <div style="font-size:13px; color:var(--text-2); background:var(--s2); border-radius:10px; padding:12px 14px; line-height:1.6;">
+          ระบบจะส่งอีเมลแจ้งเตือนเทมเพลตสำเร็จรูปไปยัง<strong>ผู้ใช้งานที่ Active</strong>ในสังกัดนี้ทันที
+        </div>
+        <div class="fi">
+          <label style="font-weight:700; font-size:13px; color:var(--text-2);">หมายเหตุเพิ่มเติม (ถ้ามี)</label>
+          <textarea id="reminderCustomNote" placeholder="เช่น กรุณาส่งข้อมูลภายในวันที่ 15 มิถุนายน 2568..." style="min-height:80px; font-family:'Sarabun',sans-serif; font-size:13px; line-height:1.6; padding:10px 14px; border:1.5px solid var(--border); border-radius:10px; background:var(--s1); color:var(--text); outline:none; resize:vertical;"></textarea>
+        </div>
+        <div style="font-size:11.5px; color:var(--muted); display:flex; align-items:center; gap:6px;">
+          <span class="material-icons-round" style="font-size:14px;">info</span>
+          อีเมลจะถูกส่งจากบัญชี Google ของ Script ไปยังผู้ใช้ Active ในสังกัดที่มีอีเมลบันทึกไว้ในระบบ
+        </div>
+      </div>
+      <div class="m-ft">
+        <button class="btn btn-ghost" onclick="closeReminderEmailModal()">ยกเลิก</button>
+        <button class="btn btn-filled" id="btnDoSendReminder" onclick="sendReminderEmail()" style="border-radius:100px;">
+          <span class="material-icons-round" style="font-size:16px;">send</span> ส่งอีเมลแจ้งเตือน
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalBackdrop" class="modal-bg" onclick="if(event.target===this) closeModals()">
+
+      <!-- AI Executive Summary Modal -->
+    <div id="aiSummaryModal" class="modal-card" style="display:none; max-width:760px; width:95vw;">
+      <div class="m-hd">
+        <div class="m-title"><span class="material-icons-round" style="color:var(--purple,#7c4dff)">auto_awesome</span> AI สรุปเชิงนโยบาย — Executive Summary</div>
+        <button class="btn-icon btn-ghost" onclick="closeModals()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="m-body" style="padding:0;">
+        <!-- loading state -->
+        <div id="aiSummaryLoading" style="padding:48px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:16px;">
+          <div style="width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;"></div>
+          <div style="color:var(--muted); font-size:14px;">AI กำลังวิเคราะห์ข้อมูล กรุณารอสักครู่...</div>
+        </div>
+        <!-- content -->
+        <div id="aiSummaryContent" style="display:none; padding:24px 28px; line-height:1.85; font-size:14px; font-family:'Sarabun',sans-serif; color:var(--text); max-height:65vh; overflow-y:auto;">
+          <div id="aiSummaryMeta" style="display:flex; gap:12px; align-items:center; margin-bottom:20px; padding-bottom:14px; border-bottom:1.5px solid var(--border-l); flex-wrap:wrap;">
+            <span id="aiSummaryYear" style="background:var(--blue-ll); color:var(--blue); padding:3px 10px; border-radius:12px; font-size:12px; font-weight:700;"></span>
+            <span id="aiSummaryDate" style="color:var(--muted); font-size:12px;"></span>
+            <span id="aiSummaryModel" style="color:var(--muted); font-size:11px; margin-left:auto;">ประมวลผลโดย Gemini AI | EduData Sakon</span>
+          </div>
+          <div id="aiSummaryText" style="white-space:pre-wrap;"></div>
+        </div>
+        <!-- error state -->
+        <div id="aiSummaryError" style="display:none; padding:32px; text-align:center; color:var(--red);">
+          <span class="material-icons-round" style="font-size:36px; margin-bottom:8px; display:block;">error_outline</span>
+          <div id="aiSummaryErrorMsg" style="font-size:14px;"></div>
+        </div>
+      </div>
+      <div class="m-ft" style="justify-content:space-between;">
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-outlined btn-sm" id="btnAiCopy" onclick="copyAISummary()" style="display:none; gap:5px;"><span class="material-icons-round" style="font-size:15px;">content_copy</span> คัดลอก</button>
+          <button class="btn btn-outlined btn-sm" id="btnAiPrint" onclick="printAISummary()" style="display:none; gap:5px;"><span class="material-icons-round" style="font-size:15px;">print</span> พิมพ์ข้อความ</button>
+          <button class="btn btn-outlined btn-sm" id="btnAiBriefingPack" onclick="openExecutiveBriefingPack()" style="display:none; gap:5px; background:linear-gradient(135deg, var(--blue-ll), #f3e5f5); border-color:#ce93d8; color:#7b1fa2; font-weight:700;"><span class="material-icons-round" style="font-size:15px; color:#7b1fa2;">auto_stories</span> เล่มรายงานสรุปผู้บริหาร</button>
+        </div>
+        <button class="btn btn-outlined" onclick="closeModals()">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+
+  <div id="systemAuditLogModal" class="modal-card" style="display:none; max-width: 800px; height: 85vh;">
+      <div class="m-hd">
+        <div class="m-title"><span class="material-icons-round" style="color:var(--yellow)">history</span> ประวัติการใช้งานระบบ (Audit Logs)</div>
+        <button class="btn-icon btn-ghost" onclick="closeModals()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="m-body" style="padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+        <!-- Modern Search & Filter Bar -->
+        <div style="padding: 12px 20px; border-bottom: 1px solid var(--border-l); display: flex; justify-content: space-between; align-items: center; background: var(--s1); gap: 12px; flex-shrink: 0;">
+          <div class="search-wrap" style="background: var(--white); box-shadow: var(--e1); width: 100%; max-width: 320px; height: 38px;">
+            <span class="material-icons-round" style="color: var(--muted); font-size: 16px;">search</span>
+            <input type="text" id="systemAuditSearchInput" onkeyup="filterSystemAuditLogs()" placeholder="ค้นหากิจกรรม, บทบาท หรือ รายละเอียด..." style="font-size: 12.5px;" />
+          </div>
+          <div style="font-size: 11.5px; color: var(--muted); font-weight: 600;" id="systemAuditCountDisplay">กำลังโหลด...</div>
+        </div>
+
+        <div style="flex: 1; overflow-y: auto; position: relative; min-height: 150px; background: var(--surface);">
+          <div id="auditLoader" class="loader" style="padding:40px; text-align:center;"><div class="skel" style="height:200px; width:100%;"></div></div>
+          <table class="tbl" id="auditTable" style="display:none; margin: 0; border-collapse: separate; border-spacing: 0;">
+            <thead style="position: sticky; top: 0; z-index: 5; background: var(--s1);">
+              <tr>
+                <th width="20%" style="border-bottom: 1.5px solid var(--border); padding: 12px 16px; font-weight: 700; color: var(--subtle); font-size: 11px; letter-spacing: 0.5px;">เวลา (Timestamp)</th>
+                <th width="18%" style="border-bottom: 1.5px solid var(--border); padding: 12px 16px; font-weight: 700; color: var(--subtle); font-size: 11px; letter-spacing: 0.5px;">บทบาท (Role)</th>
+                <th width="22%" style="border-bottom: 1.5px solid var(--border); padding: 12px 16px; font-weight: 700; color: var(--subtle); font-size: 11px; letter-spacing: 0.5px;">การกระทำ (Action)</th>
+                <th width="40%" style="border-bottom: 1.5px solid var(--border); padding: 12px 16px; font-weight: 700; color: var(--subtle); font-size: 11px; letter-spacing: 0.5px;">รายละเอียด (Details)</th>
+              </tr>
+            </thead>
+            <tbody id="auditTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="m-ft" style="background: var(--s1); border-top: 1px solid var(--border-l);">
+        <button class="btn btn-outlined" onclick="closeModals()">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+
+    <div id="sessionLogModal" class="modal-card" style="display:none; max-width:960px; height: 85vh;">
+      <div class="m-hd">
+        <div class="m-title"><span class="material-icons-round" style="color:var(--blue)">login</span> ประวัติการเข้าระบบ (Session Log)</div>
+        <button class="btn-icon btn-ghost" onclick="closeModals()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="m-body" style="padding:0; display: flex; flex-direction: column; overflow: hidden;">
+        <!-- Modern Search & Filter Bar -->
+        <div style="padding: 12px 20px; border-bottom: 1px solid var(--border-l); display: flex; justify-content: space-between; align-items: center; background: var(--s1); gap: 12px; flex-shrink: 0;">
+          <div class="search-wrap" style="background: var(--white); box-shadow: var(--e1); width: 100%; max-width: 320px; height: 38px;">
+            <span class="material-icons-round" style="color: var(--muted); font-size: 16px;">search</span>
+            <input type="text" id="sessionLogSearchInput" onkeyup="filterSessionLogs()" placeholder="ค้นหาผู้ใช้, สังกัด, กิจกรรม..." style="font-size: 12.5px;" />
+          </div>
+          <div style="font-size: 11.5px; color: var(--muted); font-weight: 600;" id="sessionLogCountDisplay">กำลังโหลด...</div>
+        </div>
+
+        <div style="flex: 1; overflow-y: auto; background: var(--surface);">
+          <div id="sessionLogLoader" style="padding:40px;text-align:center;"><div class="skel" style="height:200px;width:100%;"></div></div>
+          <table class="tbl" id="sessionLogTable" style="display:none; margin: 0; border-collapse: separate; border-spacing: 0;">
+            <thead style="position:sticky; top:0; z-index:5; background:var(--s1);">
+              <tr>
+                <th width="16%" style="border-bottom: 1.5px solid var(--border); padding: 12px 16px; font-weight: 700; color: var(--subtle); font-size: 11px; letter-spacing: 0.5px;">วันที่/เวลา</th>
+                <th width="12%" style="border-bottom: 1.5px solid var(--border); padding: 12px 16px; font-weight: 700; color: var(--subtle); font-size: 11px; letter-spacing: 0.5px;">ผู้ใช้</th>
+                <th width="12%" style="border-bottom: 1.5px solid var(--border); padding: 12px 16px; font-weight: 700; color: var(--subtle); font-size: 11px; letter-spacing: 0.5px;">Role</th>
+                <th width="18%" style="border-bottom: 1.5px solid var(--border); padding: 12px 16px; font-weight: 700; color: var(--subtle); font-size: 11px; letter-spacing: 0.5px;">สังกัด</th>
+                <th width="16%" style="border-bottom: 1.5px solid var(--border); padding: 12px 16px; font-weight: 700; color: var(--subtle); font-size: 11px; letter-spacing: 0.5px;">กิจกรรม</th>
+                <th width="12%" style="border-bottom: 1.5px solid var(--border); padding: 12px 16px; font-weight: 700; color: var(--subtle); font-size: 11px; letter-spacing: 0.5px;">ระยะเวลา</th>
+                <th width="14%" style="border-bottom: 1.5px solid var(--border); padding: 12px 16px; font-weight: 700; color: var(--subtle); font-size: 11px; letter-spacing: 0.5px;">รายละเอียด</th>
+              </tr>
+            </thead>
+            <tbody id="sessionLogBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="m-ft" style="background: var(--s1); border-top: 1px solid var(--border-l);">
+        <button class="btn btn-outlined" onclick="closeModals()">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+
+    <div id="resetModal" class="modal-card" style="display:none; max-width: 480px;">
+      <div class="m-hd" style="border-bottom-color: var(--red-l);">
+        <div class="m-title" style="color: var(--red);"><span class="material-icons-round">warning</span> ยืนยันการล้างข้อมูลประจำปี</div>
+        <button class="btn-icon btn-ghost" onclick="closeModals()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="m-body">
+        <div style="background: var(--red-ll); color: var(--red-d); padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; border: 1px solid var(--red-l);">
+          <strong>คำเตือน:</strong> การกระทำนี้ไม่สามารถย้อนกลับได้ ระบบจะทำการ<strong>สำรองข้อมูลปัจจุบัน (Archive)</strong> ไปยังแผ่นงานใหม่ และทำการ<strong>ล้างข้อมูลในฐานข้อมูลหลัก</strong> เพื่อเตรียมพร้อมรับการรายงานในปีการศึกษาใหม่
+        </div>
+        <div class="fi" style="margin-bottom: 0;">
+          <label style="color: var(--text);">กรุณากรอกรหัสผ่าน Super Admin เพื่อยืนยัน</label>
+          <input type="password" id="resetPasswordInput" placeholder="รหัสผ่านยืนยัน" required style="border-color: var(--red-l);" />
+        </div>
+      </div>
+      <div class="m-ft">
+        <button class="btn btn-ghost" onclick="closeModals()">ยกเลิก</button>
+        <button class="btn btn-danger" onclick="confirmClearData()" id="btnConfirmReset"><span class="material-icons-round">delete_sweep</span> ยืนยันการล้างข้อมูล</button>
+      </div>
+    </div>
+
+    <div id="detailsModal" class="modal-card" style="display:none; max-width: 600px;">
+      <div class="m-hd">
+        <div class="m-title"><span class="material-icons-round" style="color:var(--blue)">visibility</span> รายละเอียดข้อมูลรายงาน</div>
+        <button class="btn-icon btn-ghost" onclick="closeModals()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="m-body" style="padding: 0;">
+        <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-l);">
+          <h4 id="detailsModalTitle" style="font-size: 16px; margin: 0; color: var(--text);"></h4>
+        </div>
+        <div id="detailsModalContent" style="padding: 12px 24px;"></div>
+      </div>
+      <div class="m-ft">
+        <button class="btn btn-outlined" id="btnCopyJson" onclick="copyJsonToClipboard()"><span class="material-icons-round">content_copy</span> คัดลอกข้อมูล (JSON)</button>
+        <button class="btn btn-filled" onclick="closeModals()">ตกลง (OK)</button>
+      </div>
+    </div>
+
+    <div id="usersModal" class="modal-card" style="display:none; max-width: 860px;">
+      <div class="m-hd">
+        <div class="m-title"><span class="material-icons-round" style="color:var(--blue)">manage_accounts</span> จัดการบัญชีผู้ใช้งานระบบ (User Management)</div>
+        <button class="btn-icon btn-ghost" onclick="closeModals()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="m-body" style="padding: 0;">
+        <div style="padding: 16px 24px; border-bottom: 1px solid var(--border-l); display: flex; justify-content: space-between; align-items: center; background: var(--s1); gap:12px; flex-wrap:wrap;">
+          <div class="search-wrap" style="background: var(--white); box-shadow: var(--e1); width: 250px;">
+            <span class="material-icons-round" style="color: var(--muted);">search</span>
+            <input type="text" id="userSearchInput" onkeyup="filterUserTable()" placeholder="ค้นหาชื่อ, บทบาท หรือ สังกัด..." />
+          </div>
+          <button class="btn btn-filled" onclick="openAddUserForm()"><span class="material-icons-round">person_add</span> เพิ่มบัญชีใหม่</button>
+        </div>
+
+        <div id="userFormPanel" style="display:none; padding:20px 24px; background:var(--blue-ll); border-bottom:1px solid var(--blue-l);">
+          <div style="font-weight:700; color:var(--blue-d); margin-bottom:16px; font-size:14px;" id="userFormTitle">➕ เพิ่มบัญชีใหม่</div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px;">
+            <div class="fi" style="margin:0;">
+              <label>ชื่อผู้ใช้ (Username) *</label>
+              <input type="text" id="uf_username" placeholder="ตัวพิมพ์เล็ก a-z, 0-9" autocomplete="off" />
+            </div>
+            <div class="fi" style="margin:0;">
+              <label>ชื่อ-นามสกุล / ตำแหน่ง *</label>
+              <input type="text" id="uf_name" placeholder="เช่น นายสมชาย ใจดี" />
+            </div>
+            <div class="fi" style="margin:0;">
+              <label>รหัสผ่าน <span id="uf_pass_hint" style="color:var(--muted); font-weight:normal;">(ว่างไว้=ไม่เปลี่ยน)</span></label>
+              <input type="password" id="uf_password" placeholder="รหัสผ่านใหม่" autocomplete="new-password" />
+            </div>
+            <div class="fi" style="margin:0;">
+              <label>บทบาท (Role) *</label>
+              <select id="uf_role">
+                <option value="agency">Agency (เจ้าหน้าที่สังกัด)</option>
+                <option value="admin">Admin (ผู้ดูแลระบบ)</option>
+                <option value="super_admin">Super Admin (ผู้บริหาร)</option>
+              </select>
+            </div>
+            <div class="fi" style="margin:0;">
+              <label>สังกัด (AgencyID) *</label>
+              <select id="uf_agencyId">
+                <option value="ALL">ALL (ส่วนกลาง - Admin/Super)</option>
+                <option value="OBEC_1">OBEC_1 - สพป.สกลนคร เขต 1</option>
+                <option value="OBEC_2">OBEC_2 - สพป.สกลนคร เขต 2</option>
+                <option value="OBEC_3">OBEC_3 - สพป.สกลนคร เขต 3</option>
+                <option value="OBEC_M">OBEC_M - สพม.สกลนคร</option>
+                <option value="VEC">VEC - อาชีวศึกษา</option>
+                <option value="OPEC">OPEC - สช. (เอกชน)</option>
+                <option value="DLA">DLA - อปท. (ท้องถิ่น)</option>
+                <option value="DOLE">DOLE - สกร.</option>
+                <option value="BUDDHIST">BUDDHIST - พระปริยัติธรรม</option>
+                <option value="BPP">BPP - ตชด.</option>
+                <option value="SPECIAL">SPECIAL - การศึกษาพิเศษ</option>
+                <option value="HIGHER">HIGHER - อุดมศึกษา</option>
+                <option value="NURSERY">NURSERY - สถานรับเลี้ยงเด็ก/ศพด.</option>
+              </select>
+            </div>
+            <div class="fi" style="margin:0;">
+              <label>สถานะ</label>
+              <select id="uf_status">
+                <option value="Active">✅ Active (ใช้งานได้)</option>
+                <option value="Inactive">⛔ Inactive (ระงับ)</option>
+              </select>
+            </div>
+          </div>
+          <input type="hidden" id="uf_isEdit" value="false" />
+          <div style="display:flex; gap:8px; margin-top:16px; justify-content:flex-end;">
+            <button class="btn btn-ghost" onclick="closeUserForm()">ยกเลิก</button>
+            <button class="btn btn-filled" onclick="submitUserForm()"><span class="material-icons-round">save</span> บันทึกข้อมูล</button>
+          </div>
+        </div>
+
+        <div style="max-height: 380px; overflow-y: auto;">
+          <table class="tbl" style="margin: 0;">
+            <thead style="position: sticky; top: 0; z-index: 1;">
+              <tr>
+                <th width="14%">Username</th>
+                <th width="28%">ชื่อ / สังกัด</th>
+                <th width="12%">บทบาท</th>
+                <th width="12%">สถานะ</th>
+                <th width="34%">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr><td colspan="5" style="text-align:center; padding:40px; color:var(--muted);">กำลังโหลด...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="m-ft">
+        <button class="btn btn-outlined" onclick="closeModals()">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+
+    <div id="masterDataModal" class="modal-card" style="display:none; max-width: 900px; height: 85vh;">
+      <div class="m-hd">
+        <div class="m-title"><span class="material-icons-round" style="color:var(--green)">domain_add</span> ฐานข้อมูลสังกัดและพิกัด (Master Data)</div>
+        <button class="btn-icon btn-ghost" onclick="closeModals()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="m-body" style="padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+        <!-- Modern Search & Filter Bar -->
+        <div style="padding: 14px 20px; border-bottom: 1px solid var(--border-l); display: flex; justify-content: space-between; align-items: center; background: var(--s1); gap: 12px; flex-shrink: 0;">
+          <div class="search-wrap" style="background: var(--white); box-shadow: var(--e1); width: 100%; max-width: 320px;">
+            <span class="material-icons-round" style="color: var(--muted); font-size: 18px;">search</span>
+            <input type="text" id="masterSearchInput" onkeyup="filterMasterTable()" placeholder="ค้นหารหัส หรือ ชื่อสังกัด..." style="font-size: 13px;" />
+          </div>
+          <div style="font-size: 12px; color: var(--muted); font-weight: 600;" id="masterCountDisplay">กำลังโหลด...</div>
+        </div>
+        
+        <!-- Table container to allow scroll inside table area only -->
+        <div style="flex: 1; overflow-y: auto; background: var(--surface);">
+          <table class="tbl" style="margin: 0; border-collapse: separate; border-spacing: 0;">
+            <thead style="position: sticky; top: 0; z-index: 5; background: var(--s1);">
+              <tr>
+                <th width="15%" style="border-bottom: 1.5px solid var(--border); padding: 12px 16px;">รหัส (Code)</th>
+                <th width="35%" style="border-bottom: 1.5px solid var(--border); padding: 12px 16px;">ชื่อสังกัด (Agency Name)</th>
+                <th width="32%" style="border-bottom: 1.5px solid var(--border); padding: 12px 16px;">พิกัดที่ตั้ง (Lat, Lng)</th>
+                <th width="18%" style="border-bottom: 1.5px solid var(--border); padding: 12px 16px; text-align: center;">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="masterTableBody">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="m-ft" style="background: var(--s1); border-top: 1px solid var(--border-l);">
+        <button class="btn btn-outlined" onclick="closeModals()">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+
+    <!-- GIS Interactive Pin & Geocoding Modal -->
+    <div id="gisPinMapModal" class="modal-card" style="display:none; max-width: 700px; width: 95vw; z-index: 2000;">
+      <div class="m-hd">
+        <div class="m-title"><span class="material-icons-round" style="color:var(--blue)">edit_location_alt</span> ค้นหาและปักหมุดพิกัดสังกัดบนแผนที่</div>
+        <button class="btn-icon btn-ghost" onclick="closeGisPinMapModal()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="m-body" style="padding: 16px 20px;">
+        <div style="display:flex; gap:10px; margin-bottom:12px; align-items:center;">
+          <input type="text" id="gisSearchQuery" placeholder="พิมพ์ชื่อสถานที่เพื่อค้นหาพิกัด เช่น 'ศาลากลางจังหวัดสกลนคร'" style="flex:1; padding:10px 14px; border:1.5px solid var(--border-l); border-radius:8px; font-size:13.5px; outline:none; height: 42px; background: var(--s1); color: var(--text);" />
+          <button class="btn btn-filled" onclick="gisSearchMapLocation()" style="height:42px; background: var(--blue); color: white;">
+            <span class="material-icons-round">search</span> ค้นหาพิกัด
+          </button>
+        </div>
+        <div id="gisMiniMap" style="height: 380px; width: 100%; border-radius: 12px; border: 1.5px solid var(--border-l); z-index:10; background: var(--s1);"></div>
+        <div style="margin-top: 12px; font-size: 12px; color: var(--muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <span>💡 ดับเบิลคลิกหรือคลิกจุดใดก็ได้บนแผนที่เพื่อปักหมุดสีแดงไปยังตำแหน่งที่ต้องการ</span>
+          <span style="font-weight: 700; color: var(--blue); background: var(--blue-ll); padding: 4px 10px; border-radius: 6px;" id="gisPinCoordsDisplay">พิกัดที่เลือก: ไม่ระบุ</span>
+        </div>
+      </div>
+      <div class="m-ft" style="display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn btn-ghost" onclick="closeGisPinMapModal()">ยกเลิก</button>
+        <button class="btn btn-filled" id="btnConfirmGisPin" onclick="confirmGisPin()" style="background:var(--blue); color: white;">
+          <span class="material-icons-round">check_circle</span> ยืนยันพิกัดนี้
+        </button>
+      </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="modal-card" style="display:none; max-width: 420px; width: 95vw;">
+      <div class="m-hd">
+        <div class="m-title"><span class="material-icons-round" style="color:var(--blue)">vpn_key</span> เปลี่ยนรหัสผ่านใหม่</div>
+        <button class="btn-icon btn-ghost" onclick="closeModals()"><span class="material-icons-round">close</span></button>
+      </div>
+      <form onsubmit="submitChangePassword(event)">
+        <div class="m-body" style="padding: 20px 24px;">
+          <div class="fi" style="margin-bottom: 14px;">
+            <label>รหัสผ่านปัจจุบัน</label>
+            <div style="position:relative; display:flex; align-items:center;">
+              <input type="password" id="cpCurrentPassword" required placeholder="ระบุรหัสผ่านปัจจุบัน" style="padding-right:44px; width:100%;" />
+              <button type="button" id="toggleCurrentPasswordBtn" onclick="togglePasswordVisibilityField('cpCurrentPassword', 'toggleCurrentPasswordIcon', 'toggleCurrentPasswordBtn')"
+                style="position:absolute; right:10px; background:none; border:none; cursor:pointer; padding:4px; color:var(--muted); display:flex; align-items:center; transition:color .2s;"
+                title="แสดง/ซ่อนรหัสผ่าน">
+                <span class="material-icons-round" id="toggleCurrentPasswordIcon" style="font-size:20px;">visibility</span>
+              </button>
+            </div>
+          </div>
+          <div class="fi" style="margin-bottom: 14px;">
+            <label>รหัสผ่านใหม่</label>
+            <div style="position:relative; display:flex; align-items:center;">
+              <input type="password" id="cpNewPassword" required placeholder="รหัสผ่านใหม่ (อย่างน้อย 8 ตัวอักษร)" style="padding-right:44px; width:100%;" />
+              <button type="button" id="toggleNewPasswordBtn" onclick="togglePasswordVisibilityField('cpNewPassword', 'toggleNewPasswordIcon', 'toggleNewPasswordBtn')"
+                style="position:absolute; right:10px; background:none; border:none; cursor:pointer; padding:4px; color:var(--muted); display:flex; align-items:center; transition:color .2s;"
+                title="แสดง/ซ่อนรหัสผ่าน">
+                <span class="material-icons-round" id="toggleNewPasswordIcon" style="font-size:20px;">visibility</span>
+              </button>
+            </div>
+          </div>
+          <div class="fi" style="margin-bottom: 4px;">
+            <label>ยืนยันรหัสผ่านใหม่</label>
+            <div style="position:relative; display:flex; align-items:center;">
+              <input type="password" id="cpConfirmNewPassword" required placeholder="ระบุรหัสผ่านใหม่อีกครั้ง" style="padding-right:44px; width:100%;" />
+              <button type="button" id="toggleConfirmNewPasswordBtn" onclick="togglePasswordVisibilityField('cpConfirmNewPassword', 'toggleConfirmNewPasswordIcon', 'toggleConfirmNewPasswordBtn')"
+                style="position:absolute; right:10px; background:none; border:none; cursor:pointer; padding:4px; color:var(--muted); display:flex; align-items:center; transition:color .2s;"
+                title="แสดง/ซ่อนรหัสผ่าน">
+                <span class="material-icons-round" id="toggleConfirmNewPasswordIcon" style="font-size:20px;">visibility</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="m-ft">
+          <button type="button" class="btn btn-ghost" onclick="closeModals()">ยกเลิก</button>
+          <button type="submit" class="btn btn-filled" style="background:var(--blue); color: white;">
+            <span class="material-icons-round">save</span> บันทึกรหัสผ่านใหม่
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Report System Issue Modal -->
+    <div id="reportIssueModal" class="modal-card" style="display:none; max-width: 460px; width: 95vw;">
+      <div class="m-hd">
+        <div class="m-title"><span class="material-icons-round" style="color:var(--red)">report_problem</span> แจ้งปัญหาการใช้งานระบบ</div>
+        <button class="btn-icon btn-ghost" onclick="closeModals()"><span class="material-icons-round">close</span></button>
+      </div>
+      <form onsubmit="submitSystemIssue(event)">
+        <div class="m-body" style="padding: 20px 24px;">
+          <div class="fi" style="margin-bottom: 14px;">
+            <label>ชื่อผู้แจ้งปัญหา</label>
+            <input type="text" id="riReporterName" required placeholder="ระบุชื่อ-นามสกุลของคุณ" />
+          </div>
+          <div class="fi" style="margin-bottom: 14px;">
+            <label>หน่วยงาน / สังกัด</label>
+            <input type="text" id="riReporterAgency" required placeholder="ระบุสังกัด เช่น สพป.สกลนคร เขต 1" />
+          </div>
+          <div class="fi" style="margin-bottom: 14px;">
+            <label>เบอร์โทรศัพท์ / ช่องทางติดต่อ</label>
+            <input type="text" id="riReporterContact" required placeholder="ระบุเบอร์โทรศัพท์ หรือ Line ID" />
+          </div>
+          <div class="fi" style="margin-bottom: 4px;">
+            <label>รายละเอียดปัญหาที่พบ</label>
+            <textarea id="riIssueDetail" required placeholder="กรุณาอธิบายปัญหาหรือข้อขัดข้องที่เกิดขึ้น..." rows="4"></textarea>
+          </div>
+        </div>
+        <div class="m-ft">
+          <button type="button" class="btn btn-ghost" onclick="closeModals()">ยกเลิก</button>
+          <button type="submit" class="btn btn-filled" style="background:var(--red); color: white;">
+            <span class="material-icons-round">send</span> ส่งข้อมูลแจ้งปัญหา
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Check Issue Status Modal -->
+    <div id="checkIssueStatusModal" class="modal-card" style="display:none; max-width: 520px; width: 95vw;">
+      <div class="m-hd">
+        <div class="m-title"><span class="material-icons-round" style="color:var(--blue)">find_in_page</span> ตรวจสอบสถานะการแจ้งปัญหา</div>
+        <button class="btn-icon btn-ghost" onclick="closeModals()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="m-body" style="padding: 20px 24px; display:flex; flex-direction:column; gap:16px;">
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input type="text" id="cisSearchQuery" placeholder="ป้อนชื่อผู้แจ้ง หรือเบอร์โทรศัพท์/ช่องทางติดต่อ" style="flex:1; padding:10px 14px; border:1.5px solid var(--border-l); border-radius:8px; font-size:13.5px; outline:none; height: 42px; background: var(--s1); color: var(--text);" onkeydown="if(event.key==='Enter') searchSystemIssues()" />
+          <button class="btn btn-filled" onclick="searchSystemIssues()" style="height:42px; background: var(--blue); color: white;">
+            <span class="material-icons-round">search</span> ค้นหา
+          </button>
+        </div>
+        
+        <div id="cisResultsArea" style="max-height: 400px; overflow-y: auto; display:flex; flex-direction:column; gap:12px; margin-top:4px;">
+          <div style="text-align:center; padding:32px; color:var(--muted); font-size:13px;">
+            <span class="material-icons-round" style="font-size:36px; color:var(--border); display:block; margin-bottom:8px;">search</span>
+            กรอกข้อมูลผู้แจ้งหรือช่องทางติดต่อเพื่อค้นหาประวัติการแจ้งปัญหา
+          </div>
+        </div>
+      </div>
+      <div class="m-ft">
+        <button type="button" class="btn btn-ghost" onclick="closeModals()" style="width:100%;">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+
+    <!-- Admin Manage Issue (Helpdesk Ticket Management) Modal -->
+    <div id="adminManageIssueModal" class="modal-card" style="display:none; max-width: 480px; width: 95vw;">
+      <div class="m-hd">
+        <div class="m-title"><span class="material-icons-round" style="color:var(--blue)">support_agent</span> ดำเนินการและตอบกลับตั๋วปัญหา</div>
+        <button class="btn-icon btn-ghost" onclick="closeModals()"><span class="material-icons-round">close</span></button>
+      </div>
+      <form onsubmit="submitUpdateTicketStatus(event)">
+        <!-- Hidden inputs to identify the row -->
+        <input type="hidden" id="amiTicketTimestamp" />
+        <input type="hidden" id="amiTicketReporter" />
+        
+        <div class="m-body" style="padding: 20px 24px;">
+          <!-- Ticket details display -->
+          <div style="background:var(--s1); border-radius:10px; padding:12px 14px; margin-bottom:16px; font-size:12.5px; line-height:1.6; border:1px solid var(--border-l);">
+            <div style="margin-bottom: 4px;"><strong>📅 เวลาแจ้ง:</strong> <span id="amiDisplayTimestamp">—</span></div>
+            <div style="margin-bottom: 4px;"><strong>👤 ผู้แจ้ง:</strong> <span id="amiDisplayReporter">—</span></div>
+            <div style="margin-bottom: 4px;"><strong>🏢 สังกัด:</strong> <span id="amiDisplayAgency">—</span></div>
+            <div style="margin-bottom: 4px;"><strong>📞 ช่องทางติดต่อ:</strong> <span id="amiDisplayContact">—</span></div>
+            <div style="border-top:1px dashed var(--border-l); margin-top:8px; padding-top:8px;">
+              <strong>📝 รายละเอียดปัญหา:</strong><br/>
+              <span id="amiDisplayDetail" style="color:var(--text-2); font-weight:500;">—</span>
+            </div>
+          </div>
+          
+          <!-- Edit fields -->
+          <div class="fi" style="margin-bottom: 14px;">
+            <label>สถานะการดำเนินการ (Ticket Status)</label>
+            <select id="amiTicketStatus" required>
+              <option value="รอดำเนินการ">รอดำเนินการ</option>
+              <option value="กำลังแก้ไข">กำลังแก้ไข</option>
+              <option value="แก้ไขแล้ว">แก้ไขแล้ว</option>
+            </select>
+          </div>
+          <div class="fi" style="margin-bottom: 4px;">
+            <label>ข้อความตอบกลับ / บันทึกแอดมิน (Resolve Comment)</label>
+            <textarea id="amiResolveComment" placeholder="ป้อนหมายเหตุการอัปเดต หรือรหัสผ่านใหม่เพื่อชี้แจงผู้แจ้ง..." rows="4"></textarea>
+          </div>
+        </div>
+        <div class="m-ft">
+          <button type="button" class="btn btn-ghost" onclick="closeModals()">ยกเลิก</button>
+          <button type="submit" class="btn btn-filled" style="background:var(--blue); color: white;">
+            <span class="material-icons-round">save</span> บันทึกคำตอบกลับ
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+  <?!= include('JS_App'); ?>
+  
+  <div id="toasts"></div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- AI CHATBOT FLOAT                              -->
+  <!-- ══════════════════════════════════════════════ -->
+
+  <!-- FAB Button -->
+  <button id="cb-fab" onclick="cbToggle()" title="AI ผู้ช่วยสารสนเทศการศึกษา" aria-label="เปิด AI แชทบอท">
+    <span class="material-icons-round" style="color:#fff;font-size:26px;">smart_toy</span>
+    <span id="cb-fab-badge"></span>
+  </button>
+
+  <!-- Chat Drawer -->
+  <div id="cb-drawer" role="dialog" aria-label="AI แชทบอท">
+
+    <!-- PIN SCREEN -->
+    <div id="cb-pin-screen" style="flex:1;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:16px;">
+      <div style="background:var(--surface);border-radius:20px;padding:28px 22px;box-shadow:var(--e3);width:100%;max-width:280px;text-align:center;position:relative;">
+        <button onclick="cbClose()" style="position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;border-radius:6px;" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background='none'" title="ปิด">
+          <span class="material-icons-round" style="font-size:18px;">close</span>
+        </button>
+        <div style="width:48px;height:48px;border-radius:50%;background:var(--blue-ll);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+          <span class="material-icons-round" style="color:var(--blue);font-size:24px;">lock</span>
+        </div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">AI ผู้ช่วยสารสนเทศ</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:18px;">กรุณากรอก PIN เพื่อเข้าใช้งาน</div>
+        <div id="cb-pin-dots" style="display:flex;justify-content:center;gap:10px;margin-bottom:14px;">
+          <div class="pin-dot"></div><div class="pin-dot"></div>
+          <div class="pin-dot"></div><div class="pin-dot"></div>
+        </div>
+        <div id="cb-pin-error" style="color:var(--red);font-size:11px;min-height:15px;margin-bottom:10px;"></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:200px;margin:0 auto;">
+          <button class="pin-key" onclick="cbPinKey('1')">1</button>
+          <button class="pin-key" onclick="cbPinKey('2')">2</button>
+          <button class="pin-key" onclick="cbPinKey('3')">3</button>
+          <button class="pin-key" onclick="cbPinKey('4')">4</button>
+          <button class="pin-key" onclick="cbPinKey('5')">5</button>
+          <button class="pin-key" onclick="cbPinKey('6')">6</button>
+          <button class="pin-key" onclick="cbPinKey('7')">7</button>
+          <button class="pin-key" onclick="cbPinKey('8')">8</button>
+          <button class="pin-key" onclick="cbPinKey('9')">9</button>
+          <button class="pin-key pin-key-del" onclick="cbPinClear()" style="font-size:11px;color:var(--muted);">ล้าง</button>
+          <button class="pin-key" onclick="cbPinKey('0')">0</button>
+          <button class="pin-key pin-key-ok" onclick="cbPinSubmit()"><span class="material-icons-round" style="font-size:18px;">check</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT SCREEN -->
+    <div id="cb-chat-screen" style="flex:1;display:none;flex-direction:column;height:100%;overflow:hidden;">
+      <!-- header -->
+      <div style="padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border-l);display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--blue-ll);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <span class="material-icons-round" style="color:var(--blue);font-size:18px;">smart_toy</span>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">AI ผู้ช่วยสารสนเทศการศึกษา</div>
+          <div style="font-size:10px;color:var(--green);display:flex;align-items:center;gap:3px;"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;"></span> ออนไลน์</div>
+        </div>
+        <button class="btn btn-ghost btn-icon" onclick="cbClearChat()" title="ล้างประวัติ" style="width:28px;height:28px;flex-shrink:0;"><span class="material-icons-round" style="font-size:15px;">delete_sweep</span></button>
+        <button class="btn btn-ghost btn-icon" onclick="cbLock()" title="ล็อก" style="width:28px;height:28px;flex-shrink:0;"><span class="material-icons-round" style="font-size:15px;">lock</span></button>
+        <button class="btn btn-ghost btn-icon" onclick="cbClose()" title="ปิด" style="width:28px;height:28px;flex-shrink:0;"><span class="material-icons-round" style="font-size:15px;">close</span></button>
+      </div>
+      <!-- messages area -->
+      <div id="cb-messages" style="flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;"></div>
+      <!-- suggestions -->
+      <div id="cb-suggestions" style="padding:0 12px 6px;display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;">
+        <button class="cb-suggest" onclick="cbSendSuggestion(this)">📊 ภาพรวมการศึกษาจ.สกลนคร</button>
+        <button class="cb-suggest" onclick="cbSendSuggestion(this)">🏫 สังกัดไหนยังไม่ส่งข้อมูล</button>
+        <button class="cb-suggest" onclick="cbSendSuggestion(this)">👩‍🎓 นักเรียนแยกตามระดับ</button>
+        <button class="cb-suggest" onclick="cbSendSuggestion(this)">♿ นักเรียนความต้องการพิเศษ</button>
+      </div>
+      <!-- input -->
+      <div style="padding:8px 12px;background:var(--surface);border-top:1px solid var(--border-l);display:flex;gap:6px;align-items:flex-end;flex-shrink:0;">
+        <textarea id="cb-input" rows="1" placeholder="พิมพ์คำถาม... (Enter ส่ง)"
+          style="flex:1;resize:none;border:1.5px solid var(--border-l);border-radius:10px;padding:8px 12px;font-size:12px;font-family:'Google Sans','Sarabun',sans-serif;outline:none;background:var(--s1);color:var(--text);max-height:100px;line-height:1.5;transition:border-color var(--t);"
+          onkeydown="cbInputKeydown(event)" oninput="cbInputAutoResize(this)" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border-l)'"></textarea>
+        <button id="cb-send-btn" onclick="cbSend()" style="width:36px;height:36px;border-radius:50%;background:var(--blue);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:var(--t);" onmouseover="this.style.background='var(--blue-d)'" onmouseout="this.style.background='var(--blue)'">
+          <span class="material-icons-round" style="color:#fff;font-size:17px;">send</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+  <!-- END AI CHATBOT FLOAT -->
+
+  <!-- Form Preview Modal -->
+  <div id="fb-preview-modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+    <div style="background:var(--surface);border-radius:16px;max-width:680px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+      <div style="display:flex;align-items:center;gap:12px;padding:18px 20px 14px;border-bottom:1.5px solid var(--border-l);">
+        <div style="width:38px;height:38px;border-radius:10px;background:var(--blue-ll);display:flex;align-items:center;justify-content:center;"><span class="material-icons-round" style="font-size:20px;color:var(--blue);">preview</span></div>
+        <div style="flex:1;">
+          <div style="font-size:16px;font-weight:700;color:var(--text);">ตัวอย่างแบบฟอร์ม</div>
+          <div style="font-size:12px;color:var(--muted);">แสดงตามที่ผู้รายงานจะเห็นจริง (ยังไม่ได้บันทึก)</div>
+        </div>
+        <button onclick="document.getElementById('fb-preview-modal-overlay').classList.remove('open')" style="background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;border-radius:6px;" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background='none'"><span class="material-icons-round" style="font-size:20px;">close</span></button>
+      </div>
+      <div id="fb-preview-modal-body" style="overflow-y:auto;padding:20px;"></div>
+      <div style="padding:14px 20px;border-top:1.5px solid var(--border-l);display:flex;justify-content:flex-end;">
+        <button class="btn btn-ghost" onclick="document.getElementById('fb-preview-modal-overlay').classList.remove('open')">ปิด</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="fb-add-modal-overlay" onclick="if(event.target===this)fbCloseAddModal()">
+    <div id="fb-add-modal" role="dialog" aria-modal="true">
+
+      <div class="modal-header">
+        <div class="modal-icon">
+          <span class="material-icons-round" style="font-size:22px;">add_circle</span>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px;" id="fb-modal-title">เพิ่มรายการใหม่</div>
+          <div style="font-size:12px;color:var(--muted);" id="fb-modal-sub">กำหนดข้อมูลที่ต้องการเก็บเพิ่มเติม</div>
+        </div>
+        <button onclick="fbCloseAddModal()" style="background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;border-radius:6px;line-height:1;" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background='none'">
+          <span class="material-icons-round" style="font-size:20px;">close</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="fm-row">
+          <label class="fm-label" for="ca-label">
+            ชื่อที่แสดง <span style="color:var(--red);">*</span>
+          </label>
+          <input id="ca-label" class="fm-input" type="text"
+            placeholder="เช่น จำนวนห้องสมุด, จำนวนคอมพิวเตอร์"
+            oninput="fbClearModalError()" autocomplete="off" />
+        </div>
+
+        <div class="fm-row">
+          <label class="fm-label" for="ca-hint">
+            หน่วยวัด
+            <span style="font-weight:400;color:var(--muted);">(ไม่บังคับ)</span>
+          </label>
+          <input id="ca-hint" class="fm-input" type="text"
+            placeholder="เช่น ห้อง  แห่ง  คน  บาท  เครื่อง"
+            autocomplete="off" />
+        </div>
+
+        <div class="fm-row">
+          <label class="fm-label">ประเภทข้อมูล</label>
+          <div class="type-grid">
+            <div class="type-card selected" data-type="number" onclick="fbSelectType(this,'number')">
+              <div class="type-radio"></div>
+              <div>
+                <div class="type-label">🔢 ตัวเลข</div>
+                <div class="type-desc">นับจำนวน ผลรวม</div>
+              </div>
+            </div>
+            <div class="type-card" data-type="text" onclick="fbSelectType(this,'text')">
+              <div class="type-radio"></div>
+              <div>
+                <div class="type-label">📝 ข้อความ</div>
+                <div class="type-desc">ชื่อ รหัส คำสั้นๆ</div>
+              </div>
+            </div>
+            <div class="type-card" data-type="date" onclick="fbSelectType(this,'date')">
+              <div class="type-radio"></div>
+              <div>
+                <div class="type-label">📅 วันที่</div>
+                <div class="type-desc">เลือกจากปฏิทิน</div>
+              </div>
+            </div>
+            <div class="type-card" data-type="textarea" onclick="fbSelectType(this,'textarea')">
+              <div class="type-radio"></div>
+              <div>
+                <div class="type-label">📄 ข้อความยาว</div>
+                <div class="type-desc">รายละเอียด หมายเหตุ</div>
+              </div>
+            </div>
+            <div class="type-card" data-type="select" onclick="fbSelectType(this,'select')" style="grid-column:span 2;">
+              <div class="type-radio"></div>
+              <div>
+                <div class="type-label">🔽 ตัวเลือก (dropdown)</div>
+                <div class="type-desc">เลือกจากรายการที่กำหนด</div>
+              </div>
+            </div>
+            <div class="type-card" data-type="checkbox" onclick="fbSelectType(this,'checkbox')">
+              <div class="type-radio"></div>
+              <div>
+                <div class="type-label">☑ ช่องกาเครื่องหมาย</div>
+                <div class="type-desc">ใช่ / ไม่ใช่</div>
+              </div>
+            </div>
+            <div class="type-card" data-type="radio" onclick="fbSelectType(this,'radio')">
+              <div class="type-radio"></div>
+              <div>
+                <div class="type-label">🔘 ตัวเลือกวงกลม</div>
+                <div class="type-desc">เลือกได้ 1 รายการ</div>
+              </div>
+            </div>
+            <div class="type-card" data-type="section" onclick="fbSelectType(this,'section')" style="grid-column:span 2;">
+              <div class="type-radio"></div>
+              <div>
+                <div class="type-label">📌 หัวข้อ / ตัวคั่น</div>
+                <div class="type-desc">แบ่งกลุ่มฟิลด์ด้วยหัวข้อ (ไม่มีข้อมูล)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fm-row" id="ca-opts-wrap" style="display:none;">
+          <label class="fm-label" for="ca-opts">
+            รายการตัวเลือก
+            <span style="font-weight:400;color:var(--muted);">(คั่นด้วย | )</span>
+          </label>
+          <input id="ca-opts" class="fm-input" type="text"
+            placeholder="เช่น  ดีมาก | ดี | พอใช้ | ต้องปรับปรุง" />
+        </div>
+
+        <div class="fm-row" id="ca-dash-row" style="display:none;">
+          <div style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:.15s;"
+               id="ca-dash-card" onclick="fbToggleDash()">
+            <div style="padding-top:2px;">
+              <div id="ca-dash-toggle"
+                style="width:40px;height:22px;border-radius:11px;background:var(--border);position:relative;transition:.3s;flex-shrink:0;">
+                <div id="ca-dash-knob"
+                  style="width:16px;height:16px;border-radius:50%;background:white;position:absolute;top:3px;left:3px;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2);"></div>
+              </div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;color:var(--text);">
+                <span id="ca-dash-icon" class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px;color:var(--muted);">bar_chart</span>
+                แสดงในหน้า Dashboard
+              </div>
+              <div style="font-size:11px;color:var(--muted);margin-top:3px;">
+                ข้อมูลนี้จะถูกนำไปรวมคำนวณและแสดงกราฟในหน้า Dashboard ผู้บริหาร (เฉพาะประเภท "ตัวเลข" เท่านั้น)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fm-row" id="ca-minmax-row" style="display:none;">
+          <label class="fm-label">ช่วงค่าที่อนุญาต <span style="font-weight:400;color:var(--muted);">(ไม่บังคับ)</span></label>
+          <div style="display:flex;gap:10px;">
+            <input id="ca-min" class="fm-input" type="number" placeholder="ค่าต่ำสุด (min)" step="any" style="flex:1;" />
+            <input id="ca-max" class="fm-input" type="number" placeholder="ค่าสูงสุด (max)" step="any" style="flex:1;" />
+          </div>
+        </div>
+
+        <div id="ca-error" class="fm-error"></div>
+
+        <div class="fm-hint-box">
+          <span class="material-icons-round" style="font-size:16px;flex-shrink:0;margin-top:1px;">info</span>
+          <div>ระบบจะสร้างรหัสตัวแปรให้อัตโนมัติ — ไม่ต้องกรอกเอง รายการนี้จะแสดงในหมวดที่เลือกไว้</div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="fbCloseAddModal()">ยกเลิก</button>
+        <button class="btn btn-filled" onclick="fbConfirmAddCustom()">
+          <span class="material-icons-round">add</span> เพิ่มรายการนี้
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="reject-modal-overlay" onclick="if(event.target===this)closeRejectModal()">
+    <div id="reject-modal" role="dialog">
+      <div class="rm-header">
+        <div class="rm-icon-wrap">
+          <span class="material-icons-round" style="font-size:26px;color:var(--red);">undo</span>
+        </div>
+        <div class="rm-title">ส่งกลับให้แก้ไข</div>
+        <div class="rm-sub">ระบุเหตุผลเพื่อให้ต้นสังกัดทราบและดำเนินการแก้ไขได้ถูกต้อง</div>
+      </div>
+
+      <div class="rm-body">
+        <label class="rm-label">เหตุผลที่ส่งกลับ</label>
+
+        <div class="rm-quick">
+          <div class="rm-chip" onclick="rmSelectChip(this,'ข้อมูลไม่ครบถ้วน')">ข้อมูลไม่ครบถ้วน</div>
+          <div class="rm-chip" onclick="rmSelectChip(this,'ตัวเลขไม่ถูกต้อง')">ตัวเลขไม่ถูกต้อง</div>
+          <div class="rm-chip" onclick="rmSelectChip(this,'ส่งผิดแบบฟอร์ม')">ส่งผิดแบบฟอร์ม</div>
+          <div class="rm-chip" onclick="rmSelectChip(this,'ข้อมูลซ้ำกับที่เคยส่ง')">ข้อมูลซ้ำกับที่เคยส่ง</div>
+        </div>
+
+        <textarea id="rm-reason" class="rm-textarea"
+          placeholder="หรือพิมพ์เหตุผลเพิ่มเติมที่นี่..."
+          oninput="rmClearChips()"></textarea>
+
+        <div id="rm-error" style="display:none;margin-top:8px;font-size:12px;color:var(--red-d);"></div>
+      </div>
+
+      <div class="rm-footer">
+        <button class="btn btn-ghost" onclick="closeRejectModal()" style="min-width:80px;">ยกเลิก</button>
+        <button class="btn btn-filled" onclick="confirmReject()"
+          style="background:var(--red);border-color:var(--red);min-width:120px;">
+          <span class="material-icons-round" style="font-size:16px;">undo</span>
+          ยืนยันส่งกลับ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pdf-print-area">
+    <div class="pdf-header">
+      <h1 id="pdf-title">รายงานสรุปสถิติการศึกษา จังหวัดสกลนคร</h1>
+      <p id="pdf-subtitle">สำนักงานศึกษาธิการจังหวัดสกลนคร | ข้อมูล ณ วันที่ <span id="pdf-date"></span></p>
+    </div>
+    <div class="pdf-kpi-grid">
+      <div class="pdf-kpi-card"><div class="pdf-kpi-val" id="pdf-schools">-</div><div class="pdf-kpi-lbl">สถานศึกษา (แห่ง)</div></div>
+      <div class="pdf-kpi-card"><div class="pdf-kpi-val" id="pdf-students">-</div><div class="pdf-kpi-lbl">ผู้เรียนทั้งหมด (คน)</div></div>
+      <div class="pdf-kpi-card"><div class="pdf-kpi-val" id="pdf-teachers">-</div><div class="pdf-kpi-lbl">ครูและบุคลากร (คน)</div></div>
+      <div class="pdf-kpi-card"><div class="pdf-kpi-val" id="pdf-special">-</div><div class="pdf-kpi-lbl">ผู้เรียนพิเศษ (คน)</div></div>
+    </div>
+    <table class="pdf-table" id="pdf-agency-table">
+      <thead><tr><th>สังกัด</th><th>สถานศึกษา</th><th>ผู้เรียน</th><th>ครู</th></tr></thead>
+      <tbody id="pdf-agency-body"></tbody>
+    </table>
+    <div class="pdf-footer">ระบบ EduData Sakon Enterprise — สร้างโดย Google Apps Script | พิมพ์วันที่ <span id="pdf-print-date"></span></div>
+  </div>
+
+  <div id="tplEditorOverlay" onclick="if(event.target===this)closeTplEditor()">
+    <div id="tplEditorModal">
+
+      <div class="tpl-ed-header">
+        <div class="tpl-ed-preview" id="tplPrev" style="background:#1a73e822;">
+          <span class="material-icons-round" id="tplPrevIcon" style="font-size:24px;color:#1a73e8;">description</span>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:17px;font-weight:700;color:var(--text);" id="tplEdTitle">เพิ่ม Template ใหม่</div>
+          <div style="font-size:12px;color:var(--muted);">กำหนดชื่อ icon สี สังกัด และฟิลด์ข้อมูล</div>
+        </div>
+        <button class="btn btn-ghost btn-icon" onclick="closeTplEditor()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <div class="tpl-ed-body">
+
+        <div class="tpl-ed-left">
+          
+          <div style="margin-bottom:14px;">
+            <label style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.3px;display:block;margin-bottom:6px;">ชื่อ Template *</label>
+            <input id="tplEdName" type="text" placeholder="เช่น สถิติพื้นฐานประจำปี"
+              style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;background:var(--surface);font-size:13px;color:var(--text);outline:none;box-sizing:border-box;"
+              oninput="tplEdUpdatePreview()" />
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <label style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.3px;display:block;margin-bottom:6px;">คำอธิบาย</label>
+            <input id="tplEdDesc" type="text" placeholder="อธิบายการใช้งานฟอร์มนี้..."
+              style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;background:var(--surface);font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" />
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <label style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.3px;display:block;margin-bottom:6px;">Icon</label>
+            <div class="icon-picker-grid" id="tplIconGrid"></div>
+            <input id="tplEdIcon" type="text" placeholder="หรือพิมพ์ชื่อ icon..."
+              style="margin-top:6px;width:100%;padding:7px 12px;border:1.5px solid var(--border-l);border-radius:8px;background:var(--surface);font-size:12px;color:var(--text);outline:none;box-sizing:border-box;"
+              oninput="tplEdUpdatePreview()" />
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <label style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.3px;display:block;margin-bottom:6px;">สี</label>
+            <div class="color-swatches" id="tplColorSwatches"></div>
+            <input id="tplEdColor" type="color" value="#1a73e8"
+              style="margin-top:8px;width:100%;height:34px;border:1.5px solid var(--border-l);border-radius:8px;cursor:pointer;padding:2px;"
+              oninput="tplEdUpdatePreview()" />
+          </div>
+
+          <div>
+            <label style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.3px;display:block;margin-bottom:6px;">สังกัดที่ใช้ฟอร์มนี้</label>
+            <div id="tplAgencyPicker" style="border:1.5px solid var(--border);border-radius:10px;overflow:hidden;">
+              <div id="tplAgAllRow" style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--s1);border-bottom:1px solid var(--border-l);cursor:pointer;"
+                onclick="tplToggleAllAgencies()">
+                <div id="tplAgAllCheck" style="width:16px;height:16px;border-radius:4px;border:2px solid var(--blue);background:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <span style="color:white;font-size:11px;font-weight:700;">✓</span>
+                </div>
+                <span style="font-size:12px;font-weight:700;color:var(--blue);">👥 ทุกสังกัด</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;max-height:160px;overflow-y:auto;" id="tplAgGrid"></div>
+              <div style="padding:6px 12px;background:var(--s1);border-top:1px solid var(--border-l);font-size:11px;color:var(--muted);">
+                เลือกแล้ว: <span id="tplAgCount" style="font-weight:600;color:var(--blue);">ทุกสังกัด (13)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tpl-ed-right">
+          <div>
+            <label style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.3px;display:block;margin-bottom:8px;">ฟิลด์ข้อมูลที่ต้องการ</label>
+            <div class="tpl-field-cat-tabs" id="tplCatTabs">
+              <button class="tpl-cat-tab active" onclick="tplSwitchCat('main',this)">📊 ข้อมูลหลัก</button>
+              <button class="tpl-cat-tab" onclick="tplSwitchCat('building',this)">🏫 อาคาร</button>
+              <button class="tpl-cat-tab" onclick="tplSwitchCat('budget',this)">💰 งบประมาณ</button>
+              <button class="tpl-cat-tab" onclick="tplSwitchCat('misc',this)">📝 ทั่วไป</button>
+            </div>
+            <div class="tpl-field-grid" id="tplFieldGrid"></div>
+          </div>
+
+          <div style="border-top:1px solid var(--border-l);padding-top:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <label style="font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.3px;">
+                ฟิลด์ที่เลือก (<span id="tplSelCount">0</span>)
+              </label>
+              <button class="btn btn-ghost btn-sm" onclick="tplClearFields()" style="font-size:11px;color:var(--red);">ล้างทั้งหมด</button>
+            </div>
+            <div class="tpl-selected-chips" id="tplSelChips">
+              <span style="font-size:12px;color:var(--muted);">ยังไม่ได้เลือกฟิลด์</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tpl-ed-footer">
+        <button class="btn btn-ghost" onclick="closeTplEditor()">ยกเลิก</button>
+        <button class="btn btn-filled" id="tplEdSaveBtn" onclick="saveTplEditor()">
+          <span class="material-icons-round" style="font-size:17px;">save</span>
+          บันทึก Template
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <?!= include('JS_BI'); ?>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- AI SUMMARY MODAL                                                   -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div id="biAIOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--surface);border-radius:20px;border:1px solid var(--border-l);width:100%;max-width:780px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 32px 64px rgba(0,0,0,.22);animation:modalIn .25s ease;">
+
+    <!-- Header -->
+    <div style="padding:22px 26px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#7b1fa2,#4a148c);display:flex;align-items:center;justify-content:center;">
+          <span class="material-icons-round" style="color:#fff;font-size:22px;">psychology</span>
+        </div>
+        <div>
+          <div style="font-size:18px;font-weight:700;color:var(--text);">AI วิเคราะห์สรุปรายงาน</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:1px;">Claude AI วิเคราะห์ข้อมูล Dashboard แล้วสรุปภาษาไทยสำหรับผู้บริหาร</div>
+        </div>
+      </div>
+      <button onclick="biCloseAISummary()" style="background:transparent;border:none;cursor:pointer;padding:8px;border-radius:50%;" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background='transparent'">
+        <span class="material-icons-round" style="font-size:20px;color:var(--muted);">close</span>
+      </button>
+    </div>
+
+    <!-- Options bar -->
+    <div style="padding:14px 26px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
+      <span style="font-size:12px;color:var(--muted);font-weight:500;">รูปแบบ:</span>
+      <button class="ai-style-btn active" data-style="executive" onclick="biSetAIStyle(this,'executive')">
+        <span class="material-icons-round" style="font-size:13px;">business_center</span> สรุปผู้บริหาร
+      </button>
+      <button class="ai-style-btn" data-style="detail" onclick="biSetAIStyle(this,'detail')">
+        <span class="material-icons-round" style="font-size:13px;">analytics</span> วิเคราะห์เชิงลึก
+      </button>
+      <button class="ai-style-btn" data-style="policy" onclick="biSetAIStyle(this,'policy')">
+        <span class="material-icons-round" style="font-size:13px;">policy</span> ข้อเสนอนโยบาย
+      </button>
+      <button class="ai-style-btn" data-style="brief" onclick="biSetAIStyle(this,'brief')">
+        <span class="material-icons-round" style="font-size:13px;">short_text</span> สรุปสั้น
+      </button>
+      <button onclick="biGenerateAISummary()" id="biAIGenBtn"
+        style="margin-left:auto;padding:7px 16px;background:linear-gradient(135deg,#7b1fa2,#4a148c);color:#fff;border:none;border-radius:100px;cursor:pointer;font-size:12px;font-weight:700;font-family:'Google Sans','Sarabun',sans-serif;display:flex;align-items:center;gap:6px;transition:.15s;">
+        <span class="material-icons-round" style="font-size:15px;">auto_awesome</span>
+        สร้างสรุป
+      </button>
+    </div>
+
+    <!-- Content area -->
+    <div style="flex:1;overflow-y:auto;padding:16px 26px 8px;">
+
+      <!-- Idle state -->
+      <div id="biAIIdle" style="text-align:center;padding:50px 20px;">
+        <div style="width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,#f3e5f5,#e8f0fe);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <span class="material-icons-round" style="font-size:36px;color:#7b1fa2;">psychology</span>
+        </div>
+        <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:8px;">พร้อมวิเคราะห์ข้อมูล</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.7;max-width:420px;margin:0 auto;">
+          เลือกรูปแบบสรุปที่ต้องการ แล้วกด "สร้างสรุป"<br>
+          AI จะวิเคราะห์ข้อมูลใน Dashboard และเขียนสรุปภาษาไทยให้ทันที
+        </div>
+      </div>
+
+      <!-- Loading state -->
+      <div id="biAILoading" style="display:none;text-align:center;padding:60px 20px;">
+        <div style="width:48px;height:48px;border:3px solid #e8eaed;border-top-color:#7b1fa2;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;"></div>
+        <div style="font-size:14px;color:var(--muted);" id="biAILoadingMsg">Claude AI กำลังวิเคราะห์ข้อมูล...</div>
+        <div style="font-size:12px;color:var(--hint);margin-top:6px;">ใช้เวลาประมาณ 5–15 วินาที</div>
+      </div>
+
+      <!-- Result area -->
+      <div id="biAIResult" style="display:none;">
+
+        <!-- Meta bar -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding:10px 14px;background:var(--s1);border-radius:10px;border:1px solid var(--border-l);">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="material-icons-round" style="font-size:16px;color:#7b1fa2;">check_circle</span>
+            <span style="font-size:12px;font-weight:600;color:var(--text);" id="biAIResultLabel">สรุปผู้บริหาร</span>
+            <span style="font-size:11px;color:var(--muted);" id="biAIResultTime"></span>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="biCopyAISummary()" style="padding:5px 12px;border:1px solid var(--border-l);border-radius:8px;background:var(--surface);cursor:pointer;font-size:11px;font-family:'Google Sans','Sarabun',sans-serif;color:var(--text);display:flex;align-items:center;gap:4px;">
+              <span class="material-icons-round" style="font-size:13px;">content_copy</span> คัดลอก
+            </button>
+            <button onclick="biGenerateAISummary()" style="padding:5px 12px;border:1px solid var(--border-l);border-radius:8px;background:var(--surface);cursor:pointer;font-size:11px;font-family:'Google Sans','Sarabun',sans-serif;color:var(--text);display:flex;align-items:center;gap:4px;">
+              <span class="material-icons-round" style="font-size:13px;">refresh</span> สร้างใหม่
+            </button>
+          </div>
+        </div>
+
+        <!-- Summary text box -->
+        <div id="biAITextBox" style="background:var(--surface);border:1px solid var(--border-l);border-radius:12px;padding:20px 22px;font-size:14px;line-height:1.9;color:var(--text);white-space:pre-wrap;font-family:'Google Sans','Sarabun',sans-serif;min-height:200px;"></div>
+
+        <!-- Key points -->
+        <div id="biAIPoints" style="margin-top:14px;display:none;">
+          <div style="font-size:12px;font-weight:700;color:#7b1fa2;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            <span class="material-icons-round" style="font-size:14px;">lightbulb</span>
+            ประเด็นสำคัญที่ต้องดำเนินการ
+          </div>
+          <div id="biAIPointsList" style="display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+
+      </div>
+
+      <!-- Error state -->
+      <div id="biAIError" style="display:none;text-align:center;padding:40px 20px;">
+        <span class="material-icons-round" style="font-size:48px;color:#ea4335;display:block;margin-bottom:12px;">error_outline</span>
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;">ไม่สามารถเชื่อมต่อ AI ได้</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;" id="biAIErrorMsg">กรุณาลองใหม่อีกครั้ง</div>
+        <button onclick="biGenerateAISummary()" style="margin-top:16px;padding:8px 20px;background:#7b1fa2;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:'Google Sans','Sarabun',sans-serif;">
+          ลองใหม่
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div style="padding:12px 26px;border-top:1px solid var(--border-l);display:flex;align-items:center;justify-content:space-between;background:var(--s1);flex-shrink:0;border-radius:0 0 20px 20px;">
+      <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;">
+        <span class="material-icons-round" style="font-size:13px;">info</span>
+        ขับเคลื่อนโดย Claude AI | ข้อมูลจาก Dashboard ปัจจุบัน
+      </div>
+      <button onclick="biCloseAISummary()" class="btn btn-outlined btn-sm">ปิด</button>
+    </div>
+  </div>
+</div>
+
+
+
+<div id="biTplGalleryOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--surface);border-radius:20px;border:1px solid var(--border-l);width:100%;max-width:960px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;animation:modalIn .25s ease;box-shadow:0 32px 64px rgba(0,0,0,.22);">
+    <div style="padding:24px 28px 0;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--blue-d));display:flex;align-items:center;justify-content:center;">
+          <span class="material-icons-round" style="color:#fff;font-size:22px;">auto_awesome</span>
+        </div>
+        <div>
+          <div style="font-size:20px;font-weight:700;color:var(--text);">Report Template สำเร็จรูป</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">เลือก template — ระบบสร้าง Dashboard ให้อัตโนมัติ แก้ไขได้ทันที</div>
+        </div>
+      </div>
+      <button onclick="biCloseTemplateGallery()" style="background:transparent;border:none;cursor:pointer;padding:8px;border-radius:50%;" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background='transparent'">
+        <span class="material-icons-round" style="font-size:20px;color:var(--muted);">close</span>
+      </button>
+    </div>
+    <div style="padding:16px 28px 0;display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;">
+      <button class="bi-tpl-tab active" onclick="biFilterTpl('all')" data-cat="all"><span class="material-icons-round" style="font-size:14px;">grid_view</span> ทั้งหมด</button>
+      <button class="bi-tpl-tab" onclick="biFilterTpl('executive')" data-cat="executive"><span class="material-icons-round" style="font-size:14px;">business_center</span> ผู้บริหาร</button>
+      <button class="bi-tpl-tab" onclick="biFilterTpl('student')" data-cat="student"><span class="material-icons-round" style="font-size:14px;">school</span> ผู้เรียน</button>
+      <button class="bi-tpl-tab" onclick="biFilterTpl('teacher')" data-cat="teacher"><span class="material-icons-round" style="font-size:14px;">person</span> บุคลากร</button>
+      <button class="bi-tpl-tab" onclick="biFilterTpl('monitor')" data-cat="monitor"><span class="material-icons-round" style="font-size:14px;">track_changes</span> กำกับติดตาม</button>
+      <button class="bi-tpl-tab" onclick="biFilterTpl('agency')" data-cat="agency"><span class="material-icons-round" style="font-size:14px;">account_balance</span> แยกสังกัด</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:16px 28px 24px;">
+      <div id="biTplGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;"></div>
+    </div>
+    <div style="padding:16px 28px;border-top:1px solid var(--border-l);display:flex;align-items:center;justify-content:space-between;background:var(--s1);flex-shrink:0;border-radius:0 0 20px 20px;">
+      <div style="font-size:12px;color:var(--muted);"><span class="material-icons-round" style="font-size:14px;vertical-align:middle;">info</span> Template จะแทนที่ widget ปัจจุบัน — บันทึก Dashboard ก่อนถ้าต้องการเก็บไว้</div>
+      <button onclick="biCloseTemplateGallery()" class="btn btn-outlined btn-sm">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<div id="sessionWarningOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border-radius:20px;border:1px solid var(--border-l);width:100%;max-width:420px;overflow:hidden;box-shadow:0 32px 64px rgba(0,0,0,.3);animation:modalIn .25s ease;margin:20px;">
+    <div style="padding:24px 24px 0;text-align:center;">
+      <div style="width:60px;height:60px;border-radius:16px;background:#fff3e0;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+        <span class="material-icons-round" style="font-size:32px;color:#e65100;">timer_off</span>
+      </div>
+      <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px;">เซสชันใกล้หมดอายุ</div>
+      <div style="font-size:13px;color:var(--muted);">ระบบจะออกจากระบบอัตโนมัติใน</div>
+    </div>
+    <div style="text-align:center;padding:18px;">
+      <div style="font-size:52px;font-weight:700;color:#e65100;line-height:1;font-family:'Google Sans','Sarabun',sans-serif;" id="sessionCountdown">60</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">วินาที</div>
+      <div style="margin:14px auto 0;width:180px;height:5px;background:var(--s2);border-radius:3px;overflow:hidden;">
+        <div id="sessionProgressBar" style="height:100%;background:#e65100;border-radius:3px;width:100%;transition:width 1s linear;"></div>
+      </div>
+    </div>
+    <div style="padding:0 24px 22px;display:flex;gap:10px;">
+      <button onclick="sessionLogoutNow()" style="flex:1;padding:10px;border:1.5px solid var(--border-l);border-radius:10px;background:var(--surface);cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);font-family:'Google Sans','Sarabun',sans-serif;">
+        <span class="material-icons-round" style="font-size:14px;vertical-align:middle;">logout</span> ออกจากระบบ
+      </button>
+      <button onclick="sessionExtend()" style="flex:2;padding:10px;border:none;border-radius:10px;background:#1a73e8;cursor:pointer;font-size:13px;font-weight:700;color:#fff;font-family:'Google Sans','Sarabun',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;">
+        <span class="material-icons-round" style="font-size:14px;">refresh</span> ใช้งานต่อ
+      </button>
+    </div>
+  </div>
+</div>
+
+
+</body>
+</html>

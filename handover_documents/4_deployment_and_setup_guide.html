@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>คู่มือการติดตั้งดีพลอยและการตั้งค่าระบบ — EduData Sakon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Fira+Code:wght@400;500&family=Material+Icons+Round&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #525659;
+      --paper: #ffffff;
+      --text: #222222;
+      --border: #dddddd;
+      --primary: #283593;
+      --secondary: #1565c0;
+      --code-bg: #f4f5f7;
+      --code-color: #c62828;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Sarabun', sans-serif;
+      color: var(--text);
+      line-height: 1.6;
+      padding: 40px 0;
+      font-size: 15px;
+    }
+
+    .a4-page {
+      background: var(--paper);
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto 30px;
+      padding: 25mm 20mm 20mm 25mm;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      position: relative;
+      border: 1px solid #cccccc;
+      page-break-after: always;
+    }
+
+    /* Header for inside pages */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+
+    .page-header-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .page-header-num {
+      font-size: 12px;
+      color: #777777;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 15px;
+      border-left: 5px solid var(--primary);
+      padding-left: 10px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--secondary);
+      margin: 20px 0 10px;
+    }
+
+    p {
+      margin-bottom: 12px;
+      text-align: justify;
+    }
+
+    ol, ul {
+      margin-left: 24px;
+      margin-bottom: 16px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    /* Code Block Styles */
+    code {
+      font-family: 'Fira Code', monospace;
+      background: var(--code-bg);
+      color: var(--code-color);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13.5px;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid #e1e4e8;
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+    }
+
+    pre code {
+      background: transparent;
+      color: #24292e;
+      padding: 0;
+      font-size: 13px;
+    }
+
+    /* Info Note Alert Box */
+    .alert-box {
+      background: #eef2fa;
+      border-left: 4px solid var(--primary);
+      padding: 12px 16px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+
+    .alert-title {
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    /* Top control panel */
+    .control-panel {
+      max-width: 210mm;
+      margin: 0 auto 20px;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid #cccccc;
+      background: #ffffff;
+      color: #333333;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #f5f5f5;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: #0d1b60;
+    }
+
+    @media print {
+      body {
+        background: transparent;
+        padding: 0;
+        font-size: 12pt;
+      }
+      .control-panel {
+        display: none !important;
+      }
+      .a4-page {
+        box-shadow: none;
+        border: none;
+        margin: 0;
+        width: 100%;
+        padding: 15mm 15mm 15mm 20mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top control panel -->
+  <div class="control-panel">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span class="material-icons-round" style="color:var(--primary);">settings_applications</span>
+      <span style="font-weight:700;">เอกสารหมายเลข 4: คู่มือการติดตั้ง ดีพลอย และตั้งค่าระบบ (IT Deployment Guide)</span>
+    </div>
+    <div>
+      <button class="btn btn-primary" onclick="window.print()">
+        <span class="material-icons-round">print</span> สั่งพิมพ์รายงาน (Print to PDF)
+      </button>
+    </div>
+  </div>
+
+  <!-- PAGE 1: PRE-REQUISITES & CLASP CONFIG -->
+  <div class="a4-page">
+    <div class="page-header">
+      <span class="page-header-title">คู่มือการติดตั้งดีพลอยและการตั้งค่าระบบ — EduData Sakon</span>
+      <span class="page-header-num">หน้า 1</span>
+    </div>
+
+    <div class="page-title">คู่มือการติดตั้ง ดีพลอย และตั้งค่าระบบ สำหรับฝ่ายเทคโนโลยีสารสนเทศ</div>
+    
+    <p>
+      เอกสารฉบับนี้จัดทำขึ้นเพื่อให้เจ้าหน้าที่ควบคุมระบบคอมพิวเตอร์และทีมงานพัฒนาระบบคอมพิวเตอร์ของผู้รับจ้าง สามารถดำเนินกระบวนการตั้งค่าระบบใหม่ทั้งหมดจากศูนย์ (Clean Install) ตลอดจนการทำซ้ำ (Re-deployment) ซิงโครไนซ์โค้ด และจัดทำระบบสำรองข้อมูล
+    </p>
+
+    <div class="section-title">1. อุปกรณ์และเครื่องมือที่จำเป็นต้องใช้ (Prerequisites)</div>
+    <p>ก่อนเริ่มต้นติดตั้ง โปรดตรวจสอบว่าระบบของท่านพร้อมใช้งานและติดตั้งเครื่องมือดังต่อไปนี้แล้ว:</p>
+    <ul>
+      <li><strong>Node.js</strong>: แนะนำรุ่น v18.0.0 LTS หรือสูงกว่าเพื่อใช้จัดการแพ็กเกจ</li>
+      <li><strong>Google Account</strong>: บัญชี Google Workspace หรือบัญชี Gmail ปกติที่ได้รับสิทธิ์เป็นเจ้าของชีตข้อมูลและโปรเจกต์สคริปต์</li>
+      <li><strong>Google Apps Script API</strong>: ตรวจสอบว่าเปิดใช้งานสิทธิ์ Google Apps Script API แล้ว โดยเข้าไปที่ <a href="https://script.google.com/home/usersettings" target="_blank">script.google.com/home/usersettings</a> และเลือกสถานะเป็น "On" (เปิดใช้งาน)</li>
+    </ul>
+
+    <div class="section-title">2. ขั้นตอนการตั้งค่า CLASP และการดึงโค้ดสู่ระบบคอมพิวเตอร์</div>
+    <p><code>clasp</code> (Command Line Apps Script Projects) คือเครื่องมือของ Google สำหรับการเขียนโค้ดบนเครื่องคอมพิวเตอร์ (Local Editor) แล้วอัปโหลดขึ้นสู่ Google Cloud Platform มีวิธีการตั้งค่าดังนี้:</p>
+
+    <p><strong>ขั้นตอนที่ 2.1: ติดตั้ง Clasp แบบ Global บนเครื่องคอมพิวเตอร์</strong></p>
+    <pre><code>npm install -g @google/clasp</code></pre>
+
+    <p><strong>ขั้นตอนที่ 2.2: ลงชื่อเข้าใช้ผ่านเว็บเบราว์เซอร์เพื่อเชื่อมบัญชี Google</strong></p>
+    <p>เปิด Command Prompt หรือ PowerShell แล้วรันคำสั่งด้านล่าง ระบบจะแสดงเว็บเบราว์เซอร์ให้ลงชื่อเข้าใช้ ให้เลือกบัญชี Google ที่ผูกกับระบบและยินยอมให้สิทธิ์</p>
+    <pre><code>clasp login</code></pre>
+
+    <p><strong>ขั้นตอนที่ 2.3: การตั้งค่าโฟลเดอร์โครงการและการระบุ Script ID</strong></p>
+    <p>ในโฟลเดอร์โปรเจกต์ ตรวจสอบว่ามีไฟล์ <code>.clasp.json</code> หรือไม่ หากยังไม่มีให้สร้างไฟล์ <code>.clasp.json</code> แล้วกำหนดค่าดังนี้:</p>
+    <pre><code>{
+  "scriptId": "AKfycbwXzHXU0JUbdMQlkCa7zkWrWN2hWbai6cCFaU8-JzygE3BYviI19-_NQPzG9396RDF-Ug",
+  "rootDir": "."
+}</code></pre>
+    <div class="alert-box">
+      <div class="alert-title">คำแนะนำการดึง Script ID:</div>
+      เข้าสู่หน้าสคริปต์ Google Apps Script เลือกเมนู <strong>Project Settings</strong> (ไอคอนรูปฟันเฟืองทางซ้าย) จากนั้นคัดลอกรหัสที่อยู่ในช่อง <strong>Script ID</strong> เพื่อนำมาใส่ในไฟล์ <code>.clasp.json</code>
+    </div>
+  </div>
+
+  <!-- PAGE 2: CODE PUSH, PROPERTIES & TRIGGERS -->
+  <div class="a4-page">
+    <div class="page-header">
+      <span class="page-header-title">คู่มือการติดตั้งดีพลอยและการตั้งค่าระบบ — EduData Sakon</span>
+      <span class="page-header-num">หน้า 2</span>
+    </div>
+
+    <div class="section-title">3. การอัปโหลดโค้ดและการสร้าง Web App URL (Build & Deployment)</div>
+    <p>หลังจากเตรียมเครื่องมือและซอร์สโค้ดสำเร็จ ให้ดำเนินตามขั้นตอนดังต่อไปนี้เพื่อเผยแพร่แอพพลิเคชันขึ้นคลาวด์:</p>
+
+    <p><strong>ขั้นตอนที่ 3.1: อัปโหลดโค้ดขึ้น Apps Script Server</strong></p>
+    <p>ใช้คำสั่ง <code>clasp push</code> เพื่อส่งไฟล์ทั้งหมด (รหัส.js, Index.html, JS_App.html, JS_BI.html, ReportBuilder.html, CSS.html, appsscript.json) ขึ้นคลาวด์</p>
+    <pre><code>clasp push</code></pre>
+
+    <p><strong>ขั้นตอนที่ 3.2: การ Deploy และรับ Web App URL</strong></p>
+    <p>หากเป็นการ Deploy ครั้งแรก แนะนำให้ทำผ่านบราวด์เซอร์ Apps Script Editor โดยทำดังนี้:</p>
+    <ol>
+      <li>ที่หัวข้อขวาบน กดปุ่ม <strong>Deploy</strong> (การพัฒนาใช้งาน) &gt; เลือก <strong>New deployment</strong></li>
+      <li>ตั้งค่า Select type เป็น <strong>Web app</strong> (แอปพลิเคชันเว็บ)</li>
+      <li>กำหนดคำตั้งค่าดังนี้:
+        <ul>
+          <li><strong>Execute as:</strong> เลือก <code>Me (อีเมลผู้ตั้งค่าระบบ)</code> — เพื่อให้โปรแกรมทำงานภายใต้สิทธิ์บัญชีสารสนเทศกลางและเขียนลง Google Sheets ได้</li>
+          <li><strong>Who has access:</strong> เลือก <code>Anyone (ทุกคน)</code> — เพื่อเปิดให้ผู้รายงานของทุกสังกัดและโรงเรียนเข้ากรอกข้อมูลได้โดยไม่ต้องเข้าระบบ Google</li>
+        </ul>
+      </li>
+      <li>คลิกปุ่ม <strong>Deploy</strong> จากนั้นคัดลอก <strong>Web App URL</strong> ไปใช้งาน</li>
+    </ol>
+
+    <div class="section-title">4. การตั้งค่า Properties และ API Key ของระบบ</div>
+    <p>ระบบใช้ความสามารถของ Gemini 1.5 Flash ในการประมวลผลข้อมูลและทวงงาน ซึ่งต้องใช้ API Key โดยตั้งค่าดังนี้:</p>
+    <ol>
+      <li>ไปที่หน้าโครงการ Apps Script Editor คลิกที่ไอคอน <strong>Project Settings</strong> (รูปฟันเฟือง)</li>
+      <li>เลื่อนลงมาด้านล่างสุดในหัวข้อ <strong>Script Properties</strong> (คุณสมบัติของสคริปต์)</li>
+      <li>คลิกปุ่ม <strong>Add script property</strong> แล้วเพิ่มค่าคู่ตัวแปรดังนี้:
+        <ul>
+          <li><strong>Property (คุณสมบัติ):</strong> <code>GEMINI_API_KEY</code></li>
+          <li><strong>Value (ค่า):</strong> <em>(ใส่ API Key ที่ได้รับจากเว็บ <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a>)</em></li>
+        </ul>
+      </li>
+      <li>กดปุ่ม <strong>Save script properties</strong> เพื่อบันทึกข้อมูล</li>
+    </ol>
+
+    <div class="section-title">5. การเปิดใช้งานตัวส่งเมลทวงถามประจำวัน (Daily Trigger Setup)</div>
+    <p>ฟีเจอร์ AI Auto-Dunning จะทำงานส่งอีเมลแจ้งเตือนการค้างส่งข้อมูลให้แต่ละโรงเรียนแบบอัตโนมัติทุกเช้า โดยต้องการทริกเกอร์ในการรันคำสั่ง วิธีตั้งค่าทำได้ 2 รูปแบบ:</p>
+    
+    <p><strong>วิธีที่ 1: ตั้งค่าผ่านสคริปต์คำสั่งกลาง (แนะนำ)</strong></p>
+    <p>ให้เข้าไปที่หน้า Apps Script Editor เลือกฟังก์ชัน <code>setupDailyTrigger</code> ในแถบตัวเลือกด้านบน จากนั้นคลิกปุ่ม <strong>Run</strong> ระบบจะทำการตรวจสอบและสร้าง Trigger ขึ้นมาให้โดยอัตโนมัติ (ตั้งให้รันฟังก์ชัน <code>sendDeadlineReminders</code> ทุกวัน เวลา 08:00 น.)</p>
+
+    <p><strong>วิธีที่ 2: ตั้งค่าด้วยตนเอง (Manual Trigger)</strong></p>
+    <p>ไปที่เมนู <strong>Triggers</strong> (รูปนาฬิกาซ้ายมือ) &gt; คลิกปุ่ม <strong>Add Trigger</strong> (ขวาล่าง) &gt; เลือกฟังก์ชัน <code>sendDeadlineReminders</code> &gt; เลือกประเภท Time-driven &gt; เลือก Day timer &gt; เลือกช่วงเวลา 8am to 9am &gt; กด Save</p>
+  </div>
+
+  <!-- PAGE 3: SHEET INITIALIZATION & TROUBLESHOOTING -->
+  <div class="a4-page">
+    <div class="page-header">
+      <span class="page-header-title">คู่มือการติดตั้งดีพลอยและการตั้งค่าระบบ — EduData Sakon</span>
+      <span class="page-header-num">หน้า 3</span>
+    </div>
+
+    <div class="section-title">6. การตรวจสอบโครงสร้างฐานข้อมูลเริ่มต้น (Database Schema Initialization)</div>
+    <p>เพื่อให้แอปพลิเคชันทำงานได้สมบูรณ์ ใน Google Sheets ที่ผูกกับสคริปต์ จำเป็นต้องมีแผ่นงาน (Sheets) ทั้งหมด 6 แผ่นงาน และต้องตั้งชื่อให้ตรงตัวพิมพ์พิมพ์เล็ก-ใหญ่ดังนี้:</p>
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th>ชื่อชีต (Sheet Name)</th>
+          <th>รายชื่อคอลัมน์แถวแรก (Headers) — ห้ามเว้นวรรคผิดเพี้ยน</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Users</strong></td>
+          <td><code>Username</code> | <code>PasswordHash</code> | <code>Role</code> | <code>AgencyId</code> | <code>Email</code> | <code>Name</code></td>
+        </tr>
+        <tr>
+          <td><strong>Settings</strong></td>
+          <td><code>SettingKey</code> | <code>SettingValue</code> | <code>Description</code> | <code>LastUpdated</code></td>
+        </tr>
+        <tr>
+          <td><strong>FormTemplates</strong></td>
+          <td><code>FormId</code> | <code>Title</code> | <code>FieldsJson</code> | <code>Status</code> | <code>CreatedBy</code> | <code>CreatedAt</code></td>
+        </tr>
+        <tr>
+          <td><strong>Data</strong></td>
+          <td><code>DataId</code> | <code>FormId</code> | <code>AgencyId</code> | <code>SubmissionDataJson</code> | <code>Status</code> | <code>SubmittedAt</code></td>
+        </tr>
+        <tr>
+          <td><strong>AuditLogs</strong></td>
+          <td><code>LogId</code> | <code>Timestamp</code> | <code>Username</code> | <code>ActionType</code> | <code>Detail</code> | <code>IpAddress</code></td>
+        </tr>
+        <tr>
+          <td><strong>GisCoords</strong></td>
+          <td><code>AgencyId</code> | <code>Lat</code> | <code>Lng</code> | <code>StudentCount</code> | <code>TeacherCount</code> | <code>NeedsTeacher</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="section-title">7. วิธีการแก้ไขปัญหาเบื้องต้นของระบบ (Troubleshooting)</div>
+    <p><strong>ปัญหาที่ 7.1: เข้าใช้งานหน้าเว็บแล้วขึ้นข้อความแจ้งเตือนสีแดง หรือโหลดชาร์ตกราฟไม่ผ่าน</strong></p>
+    <ul>
+      <li><strong>สาเหตุ:</strong> ไม่พบคุณสมบัติ <code>GEMINI_API_KEY</code> ในระบบ หรือใส่คีย์ของ Gemini ไม่ถูกต้อง</li>
+      <li><strong>การแก้ไข:</strong> เข้าไปเช็คใน Script Properties ว่าสะกดถูกหรือไม่ และลองคัดลอกคีย์ใหม่จาก AI Studio มาวางอีกครั้ง จากนั้นรันดีพลอยใหม่เพื่อรีเฟรชค่าแคช</li>
+    </ul>
+
+    <p><strong>ปัญหาที่ 7.2: นำเข้าไฟล์ CSV สังกัดแล้วภาษาไทยแสดงผลเป็นเครื่องหมายคำถามหรืออ่านไม่ออก (Garbled Characters)</strong></p>
+    <ul>
+      <li><strong>สาเหตุ:</strong> ไฟล์ CSV ไม่ได้บันทึกในรูปแบบ UTF-8 BOM ทำให้ระบบไม่ทราบรูปแบบการถอดรหัสของตัวอักษรไทย</li>
+      <li><strong>การแก้ไข:</strong> แนะนำให้เจ้าหน้าที่คลิกดาวน์โหลดที่ปุ่ม <strong>"เทมเพลต CSV"</strong> ภายในแอปพลิเคชันโดยตรง เนื่องจากระบบได้ฝังรหัส UTF-8 BOM ไว้ที่ส่วนหัวไฟล์แล้ว หากแก้ไขใน Excel ให้คลิก Save As &gt; เลือกประเภทเป็น CSV UTF-8 (Comma delimited) (*.csv)</li>
+    </ul>
+
+    <p><strong>ปัญหาที่ 7.3: ข้อมูลมีปัญหาเขียนทับกันเมื่อผู้ใช้รายงานเข้ามาพร้อมกันจำนวนมาก (Concurrency Conflict)</strong></p>
+    <ul>
+      <li><strong>สาเหตุ:</strong> เกิดจากปัญหาเขียนตารางทับกันในการดึงเลข ID ล่าสุด</li>
+      <li><strong>การแก้ไข:</strong> ในซอร์สโค้ดฟังก์ชัน <code>saveData</code> และ <code>registerUser</code> ได้ติดตั้ง <code>LockService.getScriptLock()</code> ไว้เพื่อบล็อคคิวการเขียนชีตเรียงแถวแล้ว ตรวจสอบว่าในไฟล์ <code>รหัส.js</code> ไม่ได้มีการไปลบคำสั่ง <code>lock.waitLock(10000)</code> ออก</li>
+    </ul>
+    
+    <div style="margin-top: 40px; text-align: center; font-size: 13px; color: #666;">
+      จัดทำโดย: บริษัท เทคโนโลยีการศึกษาไทย จำกัด — สำหรับฝ่ายเทคโนโลยีสารสนเทศ สพม.สกลนคร
+    </div>
+  </div>
+
+</body>
+</html>

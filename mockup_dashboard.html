@@ -1,0 +1,2810 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduData Sakon - Interactive Mockup Dashboard</title>
+
+  <!-- Google Fonts & Material Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+  <!-- ECharts & Leaflet with Multi-CDN Fallbacks -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script>
+    if (typeof echarts === 'undefined') {
+      console.warn("ECharts (jsDelivr) failed. Trying cdnjs...");
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"><\/script>');
+    }
+  </script>
+  <script>
+    if (typeof echarts === 'undefined') {
+      console.warn("ECharts (cdnjs) failed. Trying unpkg...");
+      document.write('<script src="https://unpkg.com/echarts@5.4.3/dist/echarts.min.js"><\/script>');
+    }
+  </script>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    if (typeof L === 'undefined') {
+      console.warn("Leaflet (unpkg) failed. Trying jsDelivr...");
+      document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>');
+      document.write('<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"><\/script>');
+    }
+  </script>
+
+  <style>
+    :root {
+      /* Primary Colors - Actual Blue & Sky Blue Theme */
+      --primary: #1a73e8;
+      --primary-dark: #1557b0;
+      --primary-light: #e8f0fe;
+      --secondary: #00bcd4;
+      --accent: #0288d1;
+      
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-glass: rgba(255, 255, 255, 0.8);
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      
+      --radius-lg: 16px;
+      --radius: 12px;
+      --radius-sm: 8px;
+      
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-theme="dark"] {
+      --bg: #090d16;
+      --surface: #131b2e;
+      --surface-glass: rgba(19, 27, 46, 0.8);
+      --border: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary-light: rgba(26, 115, 232, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Google Sans', 'Sarabun', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      transition: background var(--transition);
+    }
+
+    /* Sidebar Styling */
+    aside {
+      width: 260px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      flex-shrink: 0;
+      transition: background var(--transition), border-color var(--transition);
+      z-index: 100;
+    }
+
+    .brand {
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .brand-title {
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .menu-list {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    .menu-section {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin: 16px 8px 8px;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .menu-item:hover, .menu-item.active {
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .menu-item.active {
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .user-info {
+      flex-grow: 1;
+      overflow: hidden;
+    }
+
+    .user-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-role {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Main Content Styling */
+    main {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    header {
+      height: 70px;
+      background: var(--surface-glass);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      z-index: 10;
+    }
+
+    .header-title {
+      font-weight: 700;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .role-selector {
+      display: flex;
+      background: var(--bg);
+      padding: 4px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    .role-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .role-btn.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .theme-toggle, .btn-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .theme-toggle:hover, .btn-icon:hover {
+      background: var(--bg);
+    }
+
+    .content-area {
+      flex-grow: 1;
+      padding: 30px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* CSS Cards & Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--color, var(--primary));
+    }
+
+    .kpi-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .kpi-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .kpi-icon {
+      color: var(--color, var(--primary));
+      background: var(--primary-light);
+      padding: 6px;
+      border-radius: 8px;
+    }
+
+    .kpi-value {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .kpi-trend {
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 500;
+    }
+
+    .trend-up { color: var(--success); }
+    .trend-down { color: var(--danger); }
+
+    /* Layout Grids */
+    .row-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .row-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-weight: 700;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-body {
+      padding: 24px;
+      flex-grow: 1;
+      position: relative;
+    }
+
+    /* Simulation Control Style */
+    .simulator-card {
+      background: linear-gradient(135deg, rgba(26, 115, 232, 0.03), rgba(0, 188, 212, 0.03));
+      border: 1px dashed var(--primary);
+    }
+
+    .sim-sliders {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+      margin-top: 16px;
+    }
+
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .slider-val {
+      color: var(--primary);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Leaflet map height */
+    #map {
+      height: 400px;
+      width: 100%;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    /* Leaderboard list styles */
+    .leaderboard-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .leaderboard-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .leaderboard-item:hover {
+      border-color: var(--primary);
+      transform: translateX(4px);
+    }
+
+    .leaderboard-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .rank-num {
+      font-weight: 700;
+      color: var(--text-muted);
+      width: 24px;
+    }
+
+    .leaderboard-name {
+      font-weight: 600;
+      font-size: 13.5px;
+    }
+
+    .leaderboard-stat {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .leaderboard-right {
+      text-align: right;
+    }
+
+    .progress-bar-wrap {
+      width: 100px;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 3px;
+    }
+
+    /* Floating BI Assistant Panel */
+    .bi-chat-panel {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 360px;
+      height: 500px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1000;
+      transform: translateY(calc(100% + 40px));
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+    }
+
+    .bi-chat-panel.active {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .bi-header {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .bi-header-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .bi-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .bi-messages {
+      flex-grow: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .msg {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .msg.bot {
+      background: var(--bg);
+      align-self: flex-start;
+      border-bottom-left-radius: 2px;
+    }
+
+    .msg.user {
+      background: var(--primary);
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 2px;
+    }
+
+    .bi-suggestions {
+      padding: 8px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      border-top: 1px solid var(--border);
+    }
+
+    .suggest-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .suggest-btn:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .bi-input-area {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+
+    .bi-input {
+      flex-grow: 1;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 8px 16px;
+      outline: none;
+      font-size: 13px;
+    }
+
+    .bi-send-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* Floating Chat Bubble Toggle Button */
+    .bi-toggle-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      box-shadow: var(--shadow-lg);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 999;
+      transition: var(--transition);
+    }
+
+    .bi-toggle-btn:hover {
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    /* Modal Styling for Briefing Pack Report */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      width: 800px;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      transform: scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .modal-backdrop.active .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .btn-filled {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 13.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-filled:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-outlined {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 13.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-outlined:hover {
+      background: var(--bg);
+    }
+
+    /* Print Preview Paper Style */
+    .print-paper {
+      background: white;
+      color: black;
+      width: 100%;
+      min-height: 500px;
+      padding: 40px;
+      border: 1px solid #ccc;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      font-family: 'Sarabun', sans-serif;
+      text-align: justify;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .print-krut {
+      text-align: center;
+      font-size: 40px;
+      color: #555;
+    }
+
+    /* Agency view Form simulator styling */
+    .agency-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .form-group input, .form-group select {
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      outline: none;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* Dynamic pulse for mapping coordinates */
+    .map-pulse {
+      width: 12px;
+      height: 12px;
+      background: var(--color, var(--primary));
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .map-pulse::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 2px solid var(--color, var(--primary));
+      animation: pulseMap 1.5s infinite;
+    }
+
+    /* Utility badges */
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-weight: 700;
+      color: white;
+    }
+    
+    @keyframes pulseShadow {
+      0% { box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(26, 115, 232, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(26, 115, 232, 0); }
+    }
+    @keyframes pulseShadowDanger {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Left Sidebar -->
+  <aside>
+    <div class="brand">
+      <div class="brand-icon">
+        <span class="material-icons-round">analytics</span>
+      </div>
+      <div>
+        <div class="brand-title">EduData Sakon</div>
+        <div class="brand-subtitle">Enterprise Web Application</div>
+      </div>
+    </div>
+    
+    <div class="menu-list">
+      <div class="menu-section">หลัก</div>
+      <a class="menu-item active" id="menu-dashboard" onclick="switchTab('dashboard')">
+        <span class="material-icons-round">dashboard</span>
+        <span>แดชบอร์ดสรุปผล</span>
+      </a>
+      
+      <div class="menu-section" id="menu-group-report-label">การรายงานผล</div>
+      <a class="menu-item" id="menu-report" onclick="switchTab('report')">
+        <span class="material-icons-round">note_add</span>
+        <span id="txt-menu-report">รายงานข้อมูลสถิติ</span>
+      </a>
+      <a class="menu-item" id="menu-history" onclick="switchTab('history')">
+        <span class="material-icons-round">table_chart</span>
+        <span>ประวัติการส่งข้อมูล</span>
+      </a>
+      
+      <div class="menu-section" id="menu-group-admin" style="display: block;">การควบคุม (Admin)</div>
+      <a class="menu-item" id="menu-bi" onclick="switchTab('bi')" style="display: flex;">
+        <span class="material-icons-round">insert_chart</span>
+        <span>BI Dashboard Builder</span>
+      </a>
+      <a class="menu-item" id="menu-monitor" onclick="switchTab('monitor')" style="display: flex;">
+        <span class="material-icons-round">track_changes</span>
+        <span>กำกับติดตามรายงาน</span>
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-avatar" id="avatarInit">ผ</div>
+      <div class="user-info">
+        <div class="user-name" id="userNameText">ผู้บริหารเขตพื้นที่ (Super Admin)</div>
+        <div class="user-role" id="userRoleText">สำนักงานศึกษาธิการจังหวัด</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Container -->
+  <main>
+    <header>
+      <div class="header-title">
+        <span class="material-icons-round" style="color: var(--primary);">dashboard</span>
+        <span id="title-text">แดชบอร์ดสรุปวิเคราะห์ข้อมูลสำหรับผู้บริหาร</span>
+      </div>
+      
+      <div class="header-actions">
+        <!-- Role Switching Simulation Toggle (Crucial for Demo) -->
+        <div class="role-selector">
+          <button class="role-btn active" id="btn-role-executive" onclick="switchUserRole('executive')">มุมมองผู้บริหาร</button>
+          <button class="role-btn" id="btn-role-agency" onclick="switchUserRole('agency')">มุมมองโรงเรียน/สังกัด</button>
+        </div>
+
+        <button class="theme-toggle" onclick="toggleTheme()" title="สลับโหมดกลางวัน/กลางคืน">
+          <span class="material-icons-round" id="theme-icon">dark_mode</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- Executive Dashboard Content -->
+      <div id="view-executive-dashboard" style="display: flex; flex-direction: column; gap: 24px;">
+        
+        <!-- AI and Policy Simulator Card (WOW feature 1) -->
+        <div class="kpi-card simulator-card">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span class="material-icons-round" style="color: var(--primary); font-size: 28px;">psychology</span>
+              <div>
+                <h4 style="font-weight: 700; font-size: 15px;">🔮 ระบบทำนายแนวโน้ม AI & จำลองนโยบายการศึกษา (AI & Policy Simulator Mode)</h4>
+                <p style="font-size: 12px; color: var(--text-muted);">ปรับแถบจำลองด้านล่างเพื่อประเมินผลกระทบต่ออัตราส่วนครูต่อนักเรียนในสังกัดต่างๆ แบบ Real-time</p>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <button class="btn-filled" onclick="triggerPredictiveAI()" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); font-size: 12px; height: 36px; padding: 0 12px;">
+                <span class="material-icons-round" style="font-size: 16px;">query_stats</span> AI ทำนาย 3 ปี
+              </button>
+              <button class="btn-outlined" id="btn-open-briefing" onclick="openBriefingPack()" style="font-size: 12px; height: 36px; padding: 0 12px; border-color: var(--primary); color: var(--primary);">
+                <span class="material-icons-round" style="font-size: 16px;">auto_awesome</span> สรุปรายงาน A4
+              </button>
+            </div>
+          </div>
+          
+          <div class="sim-sliders">
+            <!-- Slider 1 -->
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>🚸 อัตราเติบโตนักเรียน:</span>
+                <span class="slider-val" id="lbl-sim-student">+0%</span>
+              </div>
+              <input type="range" id="sim-student" min="-10" max="10" value="0" step="1" oninput="simRecalculate()">
+            </div>
+            <!-- Slider 2 -->
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>🧑‍🏫 โยกย้ายเพิ่มอัตราครู:</span>
+                <span class="slider-val" id="lbl-sim-teacher" style="color: var(--success);">0 อัตรา</span>
+              </div>
+              <input type="range" id="sim-teacher" min="-50" max="50" value="0" step="5" oninput="simRecalculate()">
+            </div>
+            <!-- Slider 3 -->
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>💰 งบประมาณพิเศษรายหัว:</span>
+                <span class="slider-val" id="lbl-sim-budget" style="color: var(--accent);">+0%</span>
+              </div>
+              <input type="range" id="sim-budget" min="-20" max="50" value="0" step="5" oninput="simRecalculate()">
+            </div>
+          </div>
+          
+          <div style="margin-top: 16px; padding: 12px 16px; background: var(--bg); border-radius: var(--radius-sm); border: 1px solid var(--border); font-size: 13px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <strong>อัตราส่วนครูต่อนักเรียนรวมเป้าหมาย:</strong> <span id="val-sim-ratio" style="color: var(--danger); font-weight: 700;">1 : 18.2</span> 
+              <span id="val-sim-alert" style="margin-left: 10px; color: var(--success); font-weight: 600;">(ปกติ)</span>
+            </div>
+            <button onclick="resetSimulation()" style="background: none; border: none; color: var(--primary); font-size: 12px; font-weight: 600; cursor: pointer;">รีเซ็ตค่าจำลอง</button>
+          </div>
+
+          <!-- AI Forecast result bubble -->
+          <div id="ai-forecast-bubble" style="display: none; margin-top: 12px; padding: 16px; background: var(--primary-light); border-radius: var(--radius-sm); border: 1px solid var(--primary); font-size: 13.5px; animation: slideDown 0.3s ease;">
+            <div style="font-weight: 700; color: var(--primary-dark); display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <span class="material-icons-round" style="font-size: 18px;">smart_toy</span>
+              คำทำนาย AI และข้อเสนอเชิงนโยบาย (AI Policy Forecast)
+            </div>
+            <div id="ai-forecast-text"></div>
+          </div>
+        </div>
+
+        <!-- 4 KPI Cards Grid -->
+        <div class="dashboard-grid">
+          <div class="kpi-card" style="--color: var(--primary);">
+            <div class="kpi-header">
+              <span class="kpi-title">นักเรียนรวมทั้งจังหวัด</span>
+              <span class="material-icons-round kpi-icon">people</span>
+            </div>
+            <div class="kpi-value" id="kpi-students">135,780</div>
+            <div class="kpi-trend trend-up">
+              <span class="material-icons-round">trending_up</span>
+              <span>+1.2% จากปีการศึกษาที่แล้ว</span>
+            </div>
+          </div>
+          <div class="kpi-card" style="--color: var(--success);">
+            <div class="kpi-header">
+              <span class="kpi-title">บุคลากรครูทั้งหมด</span>
+              <span class="material-icons-round kpi-icon" style="background-color: rgba(16, 185, 129, 0.15);">school</span>
+            </div>
+            <div class="kpi-value" id="kpi-teachers">7,051</div>
+            <div class="kpi-trend trend-up">
+              <span class="material-icons-round">trending_up</span>
+              <span>+45 อัตราใหม่</span>
+            </div>
+          </div>
+          <div class="kpi-card" style="--color: var(--warning);">
+            <div class="kpi-header">
+              <span class="kpi-title">อัตราความก้าวหน้าการรายงาน</span>
+              <span class="material-icons-round kpi-icon" style="background-color: rgba(245, 158, 11, 0.15);">query_builder</span>
+            </div>
+            <div class="kpi-value" id="kpi-progress">92.3%</div>
+            <div class="kpi-trend trend-up">
+              <span class="material-icons-round">done_all</span>
+              <span>เหลืออีก 1 สังกัดยังค้างรายงาน</span>
+            </div>
+          </div>
+          <div class="kpi-card" style="--color: var(--danger);">
+            <div class="kpi-header">
+              <span class="kpi-title">ความต้องการครูเพิ่มสุทธิ</span>
+              <span class="material-icons-round kpi-icon" style="background-color: rgba(239, 68, 68, 0.15);">error_outline</span>
+            </div>
+            <div class="kpi-value" id="kpi-shortage">245</div>
+            <div class="kpi-trend trend-down">
+              <span class="material-icons-round">trending_down</span>
+              <span>ขาดแคลนมากที่สุด: วิชาเอกคณิตศาสตร์/วิทย์</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- GIS Mapping & Leaderboard Sync Row (WOW feature 2) -->
+        <div class="row-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="material-icons-round" style="color: var(--accent);">map</span>
+                <span>ปักหมุดความหนาแน่นเชิงพื้นที่ (GIS Density Map)</span>
+              </div>
+              <div style="font-size: 11px; color: var(--text-muted);">แผนที่ Leaflet.js ซิงค์ตารางสถิติจริง</div>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <div id="map"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="material-icons-round" style="color: var(--primary);">equalizer</span>
+                <span>ตารางติดตามความก้าวหน้าการนำส่งข้อมูล</span>
+              </div>
+              <span class="badge" style="background: var(--warning); font-size: 10px;">ดีดไลน์วันนี้ 16:30 น.</span>
+            </div>
+            <div class="card-body">
+              <div class="leaderboard-list" id="leaderboard-container">
+                <!-- Dynamically Rendered -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ECharts Graphs Row -->
+        <div class="row-grid">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="material-icons-round" style="color: var(--secondary);">bar_chart</span>
+                <span>เปรียบเทียบอัตราส่วนครูต่อนักเรียนรายสังกัด (Teacher-Student Ratio)</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="chart-ratio" style="height: 350px; width: 100%;"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="material-icons-round" style="color: var(--success);">pie_chart</span>
+                <span>สัดส่วนสถานะการกรอกข้อมูลของระบบ (Submission Overview)</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="chart-submission" style="height: 350px; width: 100%;"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- General User / Agency Content (Submission & Input Panel) -->
+      <div id="view-agency-submission" style="display: none; flex-direction: column; gap: 24px;">
+        
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span class="material-icons-round" style="color: var(--primary);">edit_document</span>
+              <span>แบบฟอร์มนำส่งรายงานสถิติการศึกษาเชิงลึกประจำปี</span>
+            </div>
+            <span class="badge" style="background: var(--primary);">รักษาสิทธิ์เซสชันอัตโนมัติ (Heartbeat On)</span>
+          </div>
+          <div class="card-body">
+            <form class="agency-form" onsubmit="simulateFormSubmit(event)">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                  <label>สังกัดหน่วยงานรายงาน</label>
+                  <input type="text" value="สพป.สกลนคร เขต 1 (สพฐ.)" readonly style="background: var(--bg); cursor: not-allowed;">
+                </div>
+                <div class="form-group">
+                  <label>ปีการศึกษาข้อมูล</label>
+                  <select>
+                    <option>2569 (ปีการศึกษาปัจจุบัน)</option>
+                    <option>2568</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                  <label>จำนวนนักเรียนชาย (คน)</label>
+                  <input type="number" id="input-std-male" value="12450" required onchange="calcAgencyTotal()">
+                </div>
+                <div class="form-group">
+                  <label>จำนวนนักเรียนหญิง (คน)</label>
+                  <input type="number" id="input-std-female" value="11950" required onchange="calcAgencyTotal()">
+                </div>
+                <div class="form-group">
+                  <label>นักเรียนรวม (คำนวณอัตโนมัติ)</label>
+                  <input type="text" id="input-std-total" value="24,400" readonly style="background: var(--bg);">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                  <label>จำนวนครูสายผู้สอน (คน)</label>
+                  <input type="number" id="input-teacher" value="1320" required onchange="calcAgencyTotal()">
+                </div>
+                <div class="form-group">
+                  <label>ความต้องการครูเพิ่มเติมสุทธิ (คน)</label>
+                  <input type="number" id="input-teacher-need" value="48" required>
+                </div>
+                <div class="form-group">
+                  <label>สัดส่วนครูต่อนักเรียนรวม (คำนวณอัตโนมัติ)</label>
+                  <input type="text" id="input-ratio" value="1 : 18.5" readonly style="background: var(--bg); font-weight: 700; color: var(--primary);">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>อัปโหลดข้อมูลรายชื่อนักเรียนและครูด้วยแม่แบบดึงข้อมูล (Template CSV)</label>
+                <div style="border: 2px dashed var(--border); padding: 30px; border-radius: var(--radius-sm); text-align: center; background: var(--bg); display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                  <span class="material-icons-round" style="font-size: 40px; color: var(--text-muted);">cloud_upload</span>
+                  <div style="font-size: 13.5px; font-weight: 600;">ลากและวางไฟล์ CSV หรือคลิกเพื่อเปิดหาไฟล์</div>
+                  <div style="font-size: 11px; color: var(--text-muted);">ระบบรองรับ UTF-8 BOM ป้องกันภาษาไทยเพี้ยน สามารถดาวน์โหลดแม่แบบเปล่าได้ด้านล่าง</div>
+                  <button type="button" class="btn-outlined" style="font-size: 11px; padding: 4px 10px; margin-top: 6px;">
+                    <span class="material-icons-round" style="font-size: 14px;">download</span> ดาวน์โหลดแม่แบบ CSV
+                  </button>
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
+                <button type="button" class="btn-outlined" onclick="alert('บันทึกแบบร่าง (Draft) สำเร็จ! สามารถเข้าแก้ไขได้ภายหลัง')">
+                  <span class="material-icons-round">save</span> บันทึกแบบร่าง
+                </button>
+                <button type="submit" class="btn-filled">
+                  <span class="material-icons-round">send</span> ยืนยันการนำส่งรายงานส่งออก
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div> <!-- view-agency-submission end -->
+
+      <!-- Submission History View -->
+      <div id="view-history" style="display: none; flex-direction: column; gap: 24px;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span class="material-icons-round" style="color: var(--primary);">history</span>
+              <span>ประวัติการนำส่งรายงานและประวัติการตรวจสอบย้อนกลับ (Audit History)</span>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn-outlined" style="font-size:12px; height:32px; padding:0 12px;" onclick="alert('กรองข้อมูลเรียบร้อย')">
+                <span class="material-icons-round" style="font-size:16px;">filter_alt</span> ตัวกรองปีการศึกษา
+              </button>
+            </div>
+          </div>
+          <div class="card-body" style="padding: 0; overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; min-width: 600px;">
+              <thead>
+                <tr style="background: var(--bg); border-bottom: 1px solid var(--border); color: var(--text-muted); font-weight: 600;">
+                  <th style="padding: 16px 24px;">ปีการศึกษา</th>
+                  <th style="padding: 16px;">ประเภทแบบฟอร์ม</th>
+                  <th style="padding: 16px;">หน่วยงาน/สังกัด</th>
+                  <th style="padding: 16px;">วันที่นำส่ง</th>
+                  <th style="padding: 16px;">สถานะการตรวจสอบ</th>
+                  <th style="padding: 16px 24px; text-align: right;">การดำเนินงาน</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--border); transition: var(--transition);">
+                  <td style="padding: 16px 24px; font-weight: 600;">2569</td>
+                  <td style="padding: 16px;">รายงานสถิติการศึกษาและอัตรากำลังประจำปี (EduData 69)</td>
+                  <td style="padding: 16px;">สพป.สกลนคร เขต 1 (สพฐ.)</td>
+                  <td style="padding: 16px;">28/06/2569 09:12:44</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">อนุมัติแล้ว</span></td>
+                  <td style="padding: 16px 24px; text-align: right; display: flex; gap: 8px; justify-content: flex-end;">
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="alert('กำลังแสดงข้อมูลดิบในหน้ากากดูรายงาน...')"><span class="material-icons-round" style="font-size: 14px;">visibility</span> ดู</button>
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px; border-color: var(--primary); color: var(--primary);" onclick="alert('ดาวน์โหลดไฟล์นำส่ง (.PDF) สำเร็จ')"><span class="material-icons-round" style="font-size: 14px;">download</span> PDF</button>
+                  </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border); transition: var(--transition);">
+                  <td style="padding: 16px 24px; font-weight: 600;">2569</td>
+                  <td style="padding: 16px;">รายงานสถิติการศึกษาและอัตรากำลังประจำปี (EduData 69)</td>
+                  <td style="padding: 16px;">สพม.สกลนคร (สพฐ. มัธยม)</td>
+                  <td style="padding: 16px;">29/06/2569 08:00:15</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--warning);">รอการตรวจสอบ</span></td>
+                  <td style="padding: 16px 24px; text-align: right; display: flex; gap: 8px; justify-content: flex-end;">
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="alert('กำลังตรวจสอบข้อมูลรายงาน...')"><span class="material-icons-round" style="font-size: 14px;">check</span> ตรวจสอบ</button>
+                  </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border); transition: var(--transition);">
+                  <td style="padding: 16px 24px; font-weight: 600;">2568</td>
+                  <td style="padding: 16px;">รายงานข้อมูลสถิติเชิงลึกจังหวัด (EduData 68)</td>
+                  <td style="padding: 16px;">สพป.สกลนคร เขต 2 (สพฐ.)</td>
+                  <td style="padding: 16px;">25/06/2568 14:22:10</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">อนุมัติแล้ว</span></td>
+                  <td style="padding: 16px 24px; text-align: right; display: flex; gap: 8px; justify-content: flex-end;">
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="alert('เปิดดูรายละเอียดเรียบร้อย')"><span class="material-icons-round" style="font-size: 14px;">visibility</span> ดู</button>
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px; border-color: var(--primary); color: var(--primary);" onclick="alert('ดาวน์โหลดไฟล์เรียบร้อย')"><span class="material-icons-round" style="font-size: 14px;">download</span> PDF</button>
+                  </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border); transition: var(--transition);">
+                  <td style="padding: 16px 24px; font-weight: 600;">2568</td>
+                  <td style="padding: 16px;">รายงานข้อมูลสถิติเชิงลึกจังหวัด (EduData 68)</td>
+                  <td style="padding: 16px;">อาชีวศึกษาสกลนคร (อศ.)</td>
+                  <td style="padding: 16px;">26/06/2568 10:45:00</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">อนุมัติแล้ว</span></td>
+                  <td style="padding: 16px 24px; text-align: right; display: flex; gap: 8px; justify-content: flex-end;">
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="alert('เปิดดูรายละเอียดเรียบร้อย')"><span class="material-icons-round" style="font-size: 14px;">visibility</span> ดู</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- BI Dashboard Builder View -->
+      <div id="view-bi-builder" style="display: none; flex-direction: column; gap: 24px;">
+        <div style="display: grid; grid-template-columns: 300px 1fr; gap: 24px;">
+          <!-- BI Sidebar ToolBox -->
+          <div class="card" style="align-self: flex-start;">
+            <div class="card-header" style="background: var(--primary-light);">
+              <div class="card-title" style="font-size: 14px; color: var(--primary-dark);">
+                <span class="material-icons-round">construction</span>
+                <span>BI Toolbox & AI Prompt</span>
+              </div>
+            </div>
+            <div class="card-body" style="display: flex; flex-direction: column; gap: 16px;">
+              <!-- AI Prompt Section -->
+              <div style="display: flex; flex-direction: column; gap: 8px; border: 1px solid var(--border); padding: 12px; border-radius: var(--radius-sm); background: var(--bg);">
+                <div style="font-size: 12px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 4px;">
+                  <span class="material-icons-round" style="font-size: 16px;">auto_awesome</span> สั่งสร้างรายงานด้วย AI
+                </div>
+                <textarea id="ai-bi-prompt" style="width: 100%; height: 60px; font-size: 11.5px; border: 1px solid var(--border); border-radius: 4px; padding: 6px; resize: none; outline: none;" placeholder="พิมพ์ความต้องการ เช่น 'เปรียบเทียบอัตราครูต่อนักเรียนรายอำเภอ...'"></textarea>
+                <button class="btn-filled" style="width: 100%; font-size: 11.5px; justify-content: center; height: 32px; background: linear-gradient(135deg, var(--primary), var(--secondary));" onclick="triggerAiBiBuild()">
+                  <span class="material-icons-round" style="font-size: 14px;">psychology</span> 🪄 สั่ง AI ออกแบบรายงาน
+                </button>
+              </div>
+
+              <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;">เลือกตามแม่แบบ BI ระดับสากล:</div>
+              <select id="bi-template-select" style="width: 100%; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg); font-size: 12.5px; font-weight: 600; color: var(--text); outline: none;" onchange="loadBiTemplate(this.value)">
+                <option value="none">— เลือกแม่แบบรายงาน —</option>
+                <option value="grid">ยุทธศาสตร์ความหนาแน่น 360° (Grid 4 ชาร์ต)</option>
+                <option value="split">โครงสร้างอัตรากำลังและปัญหาครูขาดแคลน</option>
+                <option value="demographics">แนวโน้มจำลองประชากรผู้เรียน (Line & Forecast)</option>
+                <option value="ict">แม่แบบ 4: การประเมินเสื่อมสภาพอุปกรณ์ ICT (Pie)</option>
+                <option value="onet">แม่แบบ 5: คะแนนเฉลี่ยผลสัมฤทธิ์ O-NET (Bar)</option>
+                <option value="commute">แม่แบบ 6: อัตราการเข้าเรียนกับการเดินทาง (Scatter)</option>
+                <option value="small_school">แม่แบบ 7: โรงเรียนขนาดเล็กพิเศษรายอำเภอ (Horizontal Bar)</option>
+                <option value="budget_alloc">แม่แบบ 8: การจัดสรรงบประมาณรายหัวรายสังกัด (Mixed)</option>
+                <option value="migration">แม่แบบ 9: อัตราการย้ายถิ่นฐานของผู้เรียน (Funnel)</option>
+                <option value="teacher_qual">แม่แบบ 10: สถิติวุฒิการศึกษาบุคลากรครู (Doughnut)</option>
+                <option value="internet">แม่แบบ 11: ความเร็วและการเข้าถึงอินเทอร์เน็ต (Bar)</option>
+                <option value="mental_health">แม่แบบ 12: ดัชนีสุขภาพจิตและความสุขผู้เรียน (Stacked Bar)</option>
+                <option value="foreign_teachers">แม่แบบ 13: อัตราการจ้างครูต่างชาติตามขนาดสถาบัน (Polar)</option>
+              </select>
+
+              <div style="border-top: 1px solid var(--border); padding-top: 16px; margin-top: 8px;">
+                <div style="font-size: 12px; color: var(--text-muted); font-weight: 600; margin-bottom: 8px;">เพิ่มเครื่องมือเดี่ยว (Widget Library):</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                  <button class="btn-outlined" style="font-size: 11px; padding: 6px; justify-content: center; text-align: center; flex-direction: column; gap: 4px; height: 60px;" onclick="addBiWidget('radar')">
+                    <span class="material-icons-round" style="color: var(--primary);">auto_graph</span> Radar
+                  </button>
+                  <button class="btn-outlined" style="font-size: 11px; padding: 6px; justify-content: center; text-align: center; flex-direction: column; gap: 4px; height: 60px;" onclick="addBiWidget('scatter')">
+                    <span class="material-icons-round" style="color: var(--secondary);">scatter_plot</span> Scatter
+                  </button>
+                  <button class="btn-outlined" style="font-size: 11px; padding: 6px; justify-content: center; text-align: center; flex-direction: column; gap: 4px; height: 60px;" onclick="addBiWidget('line')">
+                    <span class="material-icons-round" style="color: var(--success);">show_chart</span> Trend Line
+                  </button>
+                  <button class="btn-outlined" style="font-size: 11px; padding: 6px; justify-content: center; text-align: center; flex-direction: column; gap: 4px; height: 60px;" onclick="addBiWidget('bar')">
+                    <span class="material-icons-round" style="color: var(--warning);">bar_chart</span> Bar
+                  </button>
+                </div>
+              </div>
+              
+              <div style="border-top: 1px solid var(--border); padding-top: 16px; margin-top: 8px; display: flex; flex-direction: column; gap: 8px;">
+                <button class="btn-filled" style="width: 100%; font-size: 12.5px; justify-content: center;" onclick="alert('บันทึกโครงสร้างแดชบอร์ดสากลเรียบร้อย!')">
+                  <span class="material-icons-round">save</span> บันทึกแดชบอร์ด
+                </button>
+                <button class="btn-outlined" style="width: 100%; font-size: 12.5px; justify-content: center;" onclick="clearBiCanvas()">
+                  <span class="material-icons-round">restart_alt</span> รีเซ็ตพื้นที่ว่าง
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- BI Canvas Workspace -->
+          <div class="card" style="min-height: 600px;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="card-title">
+                <span class="material-icons-round" style="color: var(--primary);">design_services</span>
+                <span>พื้นที่เรนเดอร์รายงานวิเคราะห์สากล (Drag & Drop Canvas Workspace)</span>
+              </div>
+              <span id="bi-status-badge" class="badge" style="background: var(--text-muted); font-size: 11px;">พื้นที่ว่าง</span>
+            </div>
+            
+            <div class="card-body" id="bi-canvas-body" style="background: var(--bg); display: flex; flex-direction: column; position: relative; min-height: 520px; padding: 20px; overflow-y: auto;">
+              
+              <!-- Placeholder View -->
+              <div id="bi-canvas-placeholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 12px; color: var(--text-muted); position: absolute; inset: 0;">
+                <span class="material-icons-round" style="font-size: 64px; opacity: 0.5;">space_dashboard</span>
+                <h4 style="font-weight: 700; font-size: 16px;">หน้าแดชบอร์ดว่างเปล่า</h4>
+                <p style="font-size: 13px; max-width: 380px;">กรอกคำสั่งเสียง/ข้อความให้ AI สร้างรายงาน หรือเลือกแม่แบบระดับสากลจากแถบด้านซ้าย เพื่อจำลองรายงาน ECharts หลายมิติพร้อมกัน</p>
+              </div>
+
+              <!-- Template Layout A: Strategic 360° Grid (2x2 Grid) -->
+              <div id="bi-layout-grid" style="display: none; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 20px; width: 100%; height: 100%;">
+                <div class="card" style="padding:16px; background:var(--surface);"><div id="bi-grid-chart1" style="width:100%; height:230px;"></div></div>
+                <div class="card" style="padding:16px; background:var(--surface);"><div id="bi-grid-chart2" style="width:100%; height:230px;"></div></div>
+                <div class="card" style="padding:16px; background:var(--surface);"><div id="bi-grid-chart3" style="width:100%; height:230px;"></div></div>
+                <div class="card" style="padding:16px; background:var(--surface);"><div id="bi-grid-chart4" style="width:100%; height:230px;"></div></div>
+              </div>
+
+              <!-- Template Layout B: Teacher Resource Analysis (Split Screen & Crosstab) -->
+              <div id="bi-layout-split" style="display: none; grid-template-columns: 1.2fr 1fr; gap: 20px; width: 100%; height: 100%;">
+                <div class="card" style="padding:16px; background:var(--surface);">
+                  <div id="bi-split-chart-left" style="width:100%; height:480px;"></div>
+                </div>
+                <div class="card" style="padding:20px; background:var(--surface); display:flex; flex-direction:column; gap:16px;">
+                  <h4 style="font-size:14.5px; font-weight:700; border-left:4px solid var(--primary); padding-left:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>ตารางไขว้แจกแจงสถิติอัตรากำลัง (Crosstab Matrix)</span>
+                    <span class="badge" style="background:var(--success); font-size:10px;">ข้อมูลเสถียร</span>
+                  </h4>
+                  <div style="overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse; font-size:12.5px; text-align:left;">
+                      <thead>
+                        <tr style="background:var(--bg); border-bottom:1px solid var(--border); font-weight:700; color:var(--text-muted);">
+                          <th style="padding:10px;">สังกัด/เขต</th>
+                          <th style="padding:10px; text-align:right;">จำนวนครู</th>
+                          <th style="padding:10px; text-align:right;">จำนวน นร.</th>
+                          <th style="padding:10px; text-align:right;">สัดส่วน</th>
+                          <th style="padding:10px; text-align:right;">ขาดแคลน</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr style="border-bottom:1px solid var(--border);">
+                          <td style="padding:10px; font-weight:600;">สพป.สก. เขต 1</td>
+                          <td style="padding:10px; text-align:right;">1,890</td>
+                          <td style="padding:10px; text-align:right;">34,500</td>
+                          <td style="padding:10px; text-align:right;">1 : 18.3</td>
+                          <td style="padding:10px; text-align:right; color:var(--success); font-weight:700;">-</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--border);">
+                          <td style="padding:10px; font-weight:600;">สพป.สก. เขต 2</td>
+                          <td style="padding:10px; text-align:right;">1,580</td>
+                          <td style="padding:10px; text-align:right;">28,900</td>
+                          <td style="padding:10px; text-align:right;">1 : 18.3</td>
+                          <td style="padding:10px; text-align:right; color:var(--success); font-weight:700;">-</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--border); background:rgba(239, 68, 68, 0.02);">
+                          <td style="padding:10px; font-weight:600; color:var(--danger);">สพป.สก. เขต 3</td>
+                          <td style="padding:10px; text-align:right; color:var(--danger);">1,100</td>
+                          <td style="padding:10px; text-align:right;">25,700</td>
+                          <td style="padding:10px; text-align:right; color:var(--danger); font-weight:700;">1 : 23.4</td>
+                          <td style="padding:10px; text-align:right; color:var(--danger); font-weight:700;">+45 อัตรา</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--border);">
+                          <td style="padding:10px; font-weight:600;">สพม.สกลนคร</td>
+                          <td style="padding:10px; text-align:right;">1,050</td>
+                          <td style="padding:10px; text-align:right;">18,500</td>
+                          <td style="padding:10px; text-align:right;">1 : 17.6</td>
+                          <td style="padding:10px; text-align:right; color:var(--success); font-weight:700;">-</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--border);">
+                          <td style="padding:10px; font-weight:600;">อาชีวศึกษา</td>
+                          <td style="padding:10px; text-align:right;">500</td>
+                          <td style="padding:10px; text-align:right;">10,800</td>
+                          <td style="padding:10px; text-align:right; color:var(--warning); font-weight:700;">1 : 21.6</td>
+                          <td style="padding:10px; text-align:right; color:var(--warning); font-weight:700;">+12 อัตรา</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--border);">
+                          <td style="padding:10px; font-weight:600;">สช. (เอกชน)</td>
+                          <td style="padding:10px; text-align:right;">260</td>
+                          <td style="padding:10px; text-align:right;">4,230</td>
+                          <td style="padding:10px; text-align:right;">1 : 16.3</td>
+                          <td style="padding:10px; text-align:right; color:var(--success); font-weight:700;">-</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--border);">
+                          <td style="padding:10px; font-weight:600;">อปท. (ท้องถิ่น)</td>
+                          <td style="padding:10px; text-align:right;">94</td>
+                          <td style="padding:10px; text-align:right;">1,900</td>
+                          <td style="padding:10px; text-align:right; color:var(--warning); font-weight:700;">1 : 20.2</td>
+                          <td style="padding:10px; text-align:right; color:var(--warning); font-weight:700;">+5 อัตรา</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--border);">
+                          <td style="padding:10px; font-weight:600;">สกร.</td>
+                          <td style="padding:10px; text-align:right;">110</td>
+                          <td style="padding:10px; text-align:right;">2,400</td>
+                          <td style="padding:10px; text-align:right;">1 : 21.8</td>
+                          <td style="padding:10px; text-align:right; color:var(--warning); font-weight:700;">+4 อัตรา</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--border);">
+                          <td style="padding:10px; font-weight:600;">พระปริยัติธรรม</td>
+                          <td style="padding:10px; text-align:right;">85</td>
+                          <td style="padding:10px; text-align:right;">1,500</td>
+                          <td style="padding:10px; text-align:right;">1 : 17.6</td>
+                          <td style="padding:10px; text-align:right; color:var(--success); font-weight:700;">-</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--border);">
+                          <td style="padding:10px; font-weight:600;">ตชด.</td>
+                          <td style="padding:10px; text-align:right;">55</td>
+                          <td style="padding:10px; text-align:right;">950</td>
+                          <td style="padding:10px; text-align:right;">1 : 17.2</td>
+                          <td style="padding:10px; text-align:right; color:var(--success); font-weight:700;">-</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--border);">
+                          <td style="padding:10px; font-weight:600;">การศึกษาพิเศษ</td>
+                          <td style="padding:10px; text-align:right;">42</td>
+                          <td style="padding:10px; text-align:right;">600</td>
+                          <td style="padding:10px; text-align:right;">1 : 14.3</td>
+                          <td style="padding:10px; text-align:right; color:var(--success); font-weight:700;">-</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--border);">
+                          <td style="padding:10px; font-weight:600;">อุดมศึกษา</td>
+                          <td style="padding:10px; text-align:right;">220</td>
+                          <td style="padding:10px; text-align:right;">4,500</td>
+                          <td style="padding:10px; text-align:right;">1 : 20.4</td>
+                          <td style="padding:10px; text-align:right; color:var(--warning); font-weight:700;">+10 อัตรา</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--border);">
+                          <td style="padding:10px; font-weight:600;">สถานรับเลี้ยงเด็ก</td>
+                          <td style="padding:10px; text-align:right;">65</td>
+                          <td style="padding:10px; text-align:right;">1,200</td>
+                          <td style="padding:10px; text-align:right;">1 : 18.4</td>
+                          <td style="padding:10px; text-align:right; color:var(--success); font-weight:700;">-</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style="font-size:11.5px; color:var(--text-muted); background:var(--bg); padding:10px; border-radius:6px; border:1px solid var(--border); line-height:1.5;">
+                    💡 <strong>วิเคราะห์ด่วน:</strong> สังกัดประถมศึกษา เขต 3 และอาชีวะเผชิญภาวะสัดส่วนตึงตัว แผงควบคุมระบบนำเสนอให้ปรับเพิ่มอัตราการบรรจุครูรอบปลายปีเพื่อลดวิกฤตความหนาแน่นของผู้เรียน
+                  </div>
+                </div>
+              </div>
+
+              <!-- Template Layout C: Student Demographics (Line & Summary Cards) -->
+              <div id="bi-layout-demographics" style="display: none; flex-direction: column; gap: 20px; width: 100%; height: 100%;">
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+                  <div class="card" style="padding:16px; background:var(--surface); text-align:center; border-bottom:3px solid var(--success);">
+                    <div style="font-size:12px; color:var(--text-muted);">อัตราส่วนการเติบโตประชากรเฉลี่ย</div>
+                    <div style="font-size:24px; font-weight:700; color:var(--success); margin-top:4px;">+1.24%</div>
+                  </div>
+                  <div class="card" style="padding:16px; background:var(--surface); text-align:center; border-bottom:3px solid var(--primary);">
+                    <div style="font-size:12px; color:var(--text-muted);">การทำนายงบสะสม 3 ปีถัดไป</div>
+                    <div style="font-size:24px; font-weight:700; color:var(--primary); margin-top:4px;">+18.5 ล้านบาท</div>
+                  </div>
+                  <div class="card" style="padding:16px; background:var(--surface); text-align:center; border-bottom:3px solid var(--danger);">
+                    <div style="font-size:12px; color:var(--text-muted);">สาขาขาดอัตราเฉลี่ยสูงสุด</div>
+                    <div style="font-size:24px; font-weight:700; color:var(--danger); margin-top:4px;">คณิตศาสตร์</div>
+                  </div>
+                </div>
+                <div class="card" style="padding:16px; background:var(--surface);">
+                  <div id="bi-demographics-chart" style="width:100%; height:320px;"></div>
+                </div>
+              </div>
+
+              <!-- Template Layout D: Generic Single Full-width Chart Container -->
+              <div id="bi-layout-single-chart" style="display: none; width: 100%; height: 100%; min-height: 480px;">
+                <div class="card" style="padding: 20px; background: var(--surface); width: 100%; height: 100%;">
+                  <div id="bi-single-chart-dom" style="width: 100%; height: 480px;"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report Monitoring View -->
+      <div id="view-monitor" style="display: none; flex-direction: column; gap: 24px;">
+        
+        <!-- Overall Progress Panel -->
+        <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+          <div class="kpi-card" style="--color: var(--success); padding: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size: 13px; font-weight:600; color: var(--text-muted);">จำนวนสถาบันรายงานสำเร็จ</span>
+              <span class="material-icons-round" style="color: var(--success);">done_all</span>
+            </div>
+            <div style="font-size: 28px; font-weight:700; margin-top:8px;">12 / 13 หน่วยงาน</div>
+            <div style="font-size: 12px; color: var(--text-muted); font-weight:500; margin-top:4px;">คิดเป็น 92.3% ของระบบ</div>
+          </div>
+          <div class="kpi-card" style="--color: var(--warning); padding: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size: 13px; font-weight:600; color: var(--text-muted);">ค้างรายงานแบบร่าง (Draft)</span>
+              <span class="material-icons-round" style="color: var(--warning);">hourglass_empty</span>
+            </div>
+            <div style="font-size: 28px; font-weight:700; margin-top:8px;">1 หน่วยงาน</div>
+            <div style="font-size: 12px; color: var(--text-muted); font-weight:500; margin-top:4px;">เลยกำหนดเดดไลน์การนำส่งแล้ว</div>
+          </div>
+          <div class="kpi-card" style="--color: var(--primary); padding: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size: 13px; font-weight:600; color: var(--text-muted);">ประวัติการดำเนินการความปลอดภัย</span>
+              <span class="material-icons-round" style="color: var(--primary);">admin_panel_settings</span>
+            </div>
+            <div style="font-size: 28px; font-weight:700; margin-top:8px;">128 กิจกรรม</div>
+            <div style="font-size: 12px; color: var(--text-muted); font-weight:500; margin-top:4px;">มีระบบบันทึกประวัติการส่ง UAT เสถียร</div>
+          </div>
+        </div>
+
+        <!-- Monitoring List Table -->
+        <div class="card">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div class="card-title">
+              <span class="material-icons-round" style="color: var(--warning);">track_changes</span>
+              <span>สถานะการส่งข้อมูลจำแนกรายสถานศึกษาสังกัดจังหวัด (Monitoring Matrix)</span>
+            </div>
+            <button class="btn-filled" onclick="openDunningModal()" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); animation: pulseShadow 2s infinite;">
+              <span class="material-icons-round" style="font-size:16px;">mail</span>
+              <span>🚀 รันระบบเมลทวงด้วย AI (Auto-Dunning)</span>
+            </button>
+          </div>
+          <div class="card-body" style="padding: 0; overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; min-width: 800px;">
+              <thead>
+                <tr style="background: var(--bg); border-bottom: 1px solid var(--border); color: var(--text-muted); font-weight: 600;">
+                  <th style="padding: 16px 24px;">สังกัด/หน่วยงานย่อย</th>
+                  <th style="padding: 16px;">สถานะนำส่ง</th>
+                  <th style="padding: 16px;">ความคืบหน้าการกรอก</th>
+                  <th style="padding: 16px;">วันเวลาที่นำส่ง</th>
+                  <th style="padding: 16px;">สถานะตรวจสอบ</th>
+                  <th style="padding: 16px 24px; text-align: right;">คำสั่งดำเนินการ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 16px 24px; font-weight: 600;">สพป.สกลนคร เขต 1</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">ส่งสำเร็จ</span></td>
+                  <td style="padding: 16px;">100%</td>
+                  <td style="padding: 16px;">28/06/2569 09:12</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">อนุมัติแล้ว</span></td>
+                  <td style="padding: 16px 24px; text-align: right;">
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="alert('กำลังดูสถิติข้อมูล สพป. เขต 1')"><span class="material-icons-round" style="font-size: 14px;">visibility</span> ดูรายงาน</button>
+                  </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 16px 24px; font-weight: 600;">สพป.สกลนคร เขต 2</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">ส่งสำเร็จ</span></td>
+                  <td style="padding: 16px;">100%</td>
+                  <td style="padding: 16px;">28/06/2569 11:30</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">อนุมัติแล้ว</span></td>
+                  <td style="padding: 16px 24px; text-align: right;">
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="alert('กำลังดูสถิติข้อมูล สพป. เขต 2')"><span class="material-icons-round" style="font-size: 14px;">visibility</span> ดูรายงาน</button>
+                  </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 16px 24px; font-weight: 600;">สพป.สกลนคร เขต 3</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">ส่งสำเร็จ</span></td>
+                  <td style="padding: 16px;">100%</td>
+                  <td style="padding: 16px;">27/06/2569 14:00</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">อนุมัติแล้ว</span></td>
+                  <td style="padding: 16px 24px; text-align: right;">
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="alert('กำลังดูสถิติข้อมูล สพป. เขต 3')"><span class="material-icons-round" style="font-size: 14px;">visibility</span> ดูรายงาน</button>
+                  </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 16px 24px; font-weight: 600;">สพม.สกลนคร</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">ส่งสำเร็จ</span></td>
+                  <td style="padding: 16px;">100%</td>
+                  <td style="padding: 16px;">29/06/2569 08:00</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--warning);">รอตรวจสอบ</span></td>
+                  <td style="padding: 16px 24px; text-align: right; display:flex; gap:6px; justify-content:flex-end;">
+                    <button class="btn-filled" style="padding: 4px 8px; font-size: 11px; height: 28px; background: var(--success);" onclick="alert('อนุมัติรายงาน สพม.สกลนคร สำเร็จ')"><span class="material-icons-round" style="font-size: 14px;">check</span> อนุมัติ</button>
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px; border-color: var(--danger); color: var(--danger);" onclick="alert('ส่งกลับรายงานให้ตรวจสอบแก้ไข')"><span class="material-icons-round" style="font-size: 14px;">close</span> ส่งกลับ</button>
+                  </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 16px 24px; font-weight: 600;">อาชีวศึกษาสกลนคร</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">ส่งสำเร็จ</span></td>
+                  <td style="padding: 16px;">100%</td>
+                  <td style="padding: 16px;">28/06/2569 10:15</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">อนุมัติแล้ว</span></td>
+                  <td style="padding: 16px 24px; text-align: right;">
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="alert('กำลังดูสถิติข้อมูล อาชีวศึกษา')"><span class="material-icons-round" style="font-size: 14px;">visibility</span> ดูรายงาน</button>
+                  </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 16px 24px; font-weight: 600;">สช. (เอกชน)</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">ส่งสำเร็จ</span></td>
+                  <td style="padding: 16px;">100%</td>
+                  <td style="padding: 16px;">29/06/2569 07:45</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">อนุมัติแล้ว</span></td>
+                  <td style="padding: 16px 24px; text-align: right;">
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="alert('กำลังดูสถิติข้อมูล สช.')"><span class="material-icons-round" style="font-size: 14px;">visibility</span> ดูรายงาน</button>
+                  </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 16px 24px; font-weight: 600;">สกร. (ส่งเสริมการเรียนรู้)</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">ส่งสำเร็จ</span></td>
+                  <td style="padding: 16px;">100%</td>
+                  <td style="padding: 16px;">28/06/2569 15:40</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">อนุมัติแล้ว</span></td>
+                  <td style="padding: 16px 24px; text-align: right;">
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="alert('กำลังดูสถิติข้อมูล สกร.')"><span class="material-icons-round" style="font-size: 14px;">visibility</span> ดูรายงาน</button>
+                  </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 16px 24px; font-weight: 600;">พระปริยัติธรรม</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">ส่งสำเร็จ</span></td>
+                  <td style="padding: 16px;">100%</td>
+                  <td style="padding: 16px;">29/06/2569 06:10</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">อนุมัติแล้ว</span></td>
+                  <td style="padding: 16px 24px; text-align: right;">
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="alert('กำลังดูสถิติข้อมูล พระปริยัติธรรม')"><span class="material-icons-round" style="font-size: 14px;">visibility</span> ดูรายงาน</button>
+                  </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 16px 24px; font-weight: 600;">ตชด. (ตำรวจตระเวนชายแดน)</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">ส่งสำเร็จ</span></td>
+                  <td style="padding: 16px;">100%</td>
+                  <td style="padding: 16px;">28/06/2569 08:30</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">อนุมัติแล้ว</span></td>
+                  <td style="padding: 16px 24px; text-align: right;">
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="alert('กำลังดูสถิติข้อมูล ตชด.')"><span class="material-icons-round" style="font-size: 14px;">visibility</span> ดูรายงาน</button>
+                  </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 16px 24px; font-weight: 600;">การศึกษาพิเศษ</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">ส่งสำเร็จ</span></td>
+                  <td style="padding: 16px;">100%</td>
+                  <td style="padding: 16px;">27/06/2569 11:22</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">อนุมัติแล้ว</span></td>
+                  <td style="padding: 16px 24px; text-align: right;">
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="alert('กำลังดูสถิติข้อมูล การศึกษาพิเศษ')"><span class="material-icons-round" style="font-size: 14px;">visibility</span> ดูรายงาน</button>
+                  </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 16px 24px; font-weight: 600;">อุดมศึกษา (มหาวิทยาลัย)</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">ส่งสำเร็จ</span></td>
+                  <td style="padding: 16px;">100%</td>
+                  <td style="padding: 16px;">28/06/2569 16:15</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">อนุมัติแล้ว</span></td>
+                  <td style="padding: 16px 24px; text-align: right;">
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="alert('กำลังดูสถิติข้อมูล อุดมศึกษา')"><span class="material-icons-round" style="font-size: 14px;">visibility</span> ดูรายงาน</button>
+                  </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 16px 24px; font-weight: 600;">สถานรับเลี้ยงเด็ก/ศพด.</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">ส่งสำเร็จ</span></td>
+                  <td style="padding: 16px;">100%</td>
+                  <td style="padding: 16px;">29/06/2569 07:12</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--success);">อนุมัติแล้ว</span></td>
+                  <td style="padding: 16px 24px; text-align: right;">
+                    <button class="btn-outlined" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="alert('กำลังดูสถิติข้อมูล สถานรับเลี้ยงเด็ก')"><span class="material-icons-round" style="font-size: 14px;">visibility</span> ดูรายงาน</button>
+                  </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border); background: rgba(239, 68, 68, 0.02);">
+                  <td style="padding: 16px 24px; font-weight: 600; color: var(--danger);">อปท. (ท้องถิ่น)</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--danger);">ยังไม่ส่งรายงาน</span></td>
+                  <td style="padding: 16px; color: var(--danger); font-weight:700;">ร่างค้างไว้ 50%</td>
+                  <td style="padding: 16px; color: var(--danger); font-weight:600;">ล่าช้า (เดดไลน์ 08:30 น.)</td>
+                  <td style="padding: 16px;"><span class="badge" style="background: var(--text-muted);">ว่างเปล่า</span></td>
+                  <td style="padding: 16px 24px; text-align: right; display:flex; justify-content:flex-end;">
+                    <button class="btn-filled" style="padding: 4px 8px; font-size: 11px; height: 28px; background: var(--danger); animation: pulseShadowDanger 2s infinite;" onclick="openDunningModal()"><span class="material-icons-round" style="font-size: 14px;">mail</span> ทวงถามด้วย AI</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Conversational BI Floating Assistant Bubble & Panel (WOW feature 3) -->
+  <button class="bi-toggle-btn" onclick="toggleBIChat()" title="ผู้ช่วยวิเคราะห์ BI อัจฉริยะ">
+    <span class="material-icons-round" style="font-size: 28px;">smart_toy</span>
+  </button>
+
+  <div class="bi-chat-panel" id="bi-chat-panel">
+    <div class="bi-header">
+      <div class="bi-header-info">
+        <div class="bi-avatar">🤖</div>
+        <div>
+          <div style="font-weight: 700; font-size: 14px;">Conversational BI AI</div>
+          <div style="font-size: 11px; opacity: 0.8;">ผู้ช่วยวิเคราะห์ข้อมูลระดับอัจฉริยะ</div>
+        </div>
+      </div>
+      <button style="background: none; border: none; color: white; cursor: pointer;" onclick="toggleBIChat()">
+        <span class="material-icons-round">close</span>
+      </button>
+    </div>
+    
+    <div class="bi-messages" id="bi-messages-box">
+      <div class="msg bot">
+        สวัสดีครับ! ผมคือผู้ช่วยวิเคราะห์ข้อมูลประมวลผลด้วย Gemini AI คุณสามารถถามข้อสงสัยเชิงสถิติ หรือสั่งให้ทำแผนภูมิเปรียบเทียบในระบบได้เลยครับ เช่น:
+      </div>
+    </div>
+
+    <!-- Quick Suggestions tags -->
+    <div class="bi-suggestions">
+      <button class="suggest-btn" onclick="sendQuickMessage('สัดส่วนครูต่อนักเรียนรายสังกัด')">📊 สัดส่วนครูต่อนักเรียน</button>
+      <button class="suggest-btn" onclick="sendQuickMessage('เปรียบเทียบความก้าวหน้าการรายงานผล')">📈 ติดตามส่งรายงาน</button>
+      <button class="suggest-btn" onclick="sendQuickMessage('ประเมินจุดวิกฤตขาดแคลนครูสูงสุด')">🚨 จุดขาดแคลนครูวิกฤต</button>
+    </div>
+
+    <div class="bi-input-area">
+      <input type="text" class="bi-input" id="bi-input-text" placeholder="พิมพ์ถามสถิติ เช่น 'สัดส่วนครู...'..." onkeydown="if(event.key==='Enter') sendUserMessage()">
+      <button class="bi-send-btn" onclick="sendUserMessage()">
+        <span class="material-icons-round" style="font-size: 18px;">send</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Policy Briefing Report Modal (WOW feature 4) -->
+  <div class="modal-backdrop" id="briefing-modal">
+    <div class="modal" style="width: 850px;">
+      <div class="modal-header">
+        <h3 style="font-weight: 700; display: flex; align-items: center; gap: 8px;">
+          <span class="material-icons-round" style="color: var(--primary);">picture_as_pdf</span>
+          เอกสารสรุปรายงานนโยบายสำหรับผู้บริหาร (Executive Briefing Pack)
+        </h3>
+        <button class="btn-icon" onclick="closeBriefingPack()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="modal-body" style="background: var(--bg); display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button class="btn-outlined" onclick="alert('จำลองการดาวน์โหลดไฟล์ PDF สำเร็จ!')">
+            <span class="material-icons-round">download</span> ดาวน์โหลด PDF
+          </button>
+          <button class="btn-filled" onclick="window.print()">
+            <span class="material-icons-round">print</span> สั่งพิมพ์รายงาน
+          </button>
+        </div>
+
+        <div class="print-paper" id="briefing-paper">
+          <div class="print-krut">⚜️</div>
+          <div style="text-align: center; font-weight: 700; font-size: 18px; margin-bottom: 20px;">
+            บันทึกข้อความสรุปวิเคราะห์เชิงนโยบายระดับจังหวัด (EduData Sakon AI Report)
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 100px 1fr; font-size: 14px; gap: 8px; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 16px;">
+            <strong>ส่วนราชการ:</strong> <span>สำนักงานศึกษาธิการจังหวัดสกลนคร (กลุ่มงานสารสนเทศ)</span>
+            <strong>เรื่อง:</strong> <span>รายงานการวิเคราะห์สัดส่วนอัตรากำลังครูและสถิตินักเรียนขาดแคลนประจำปี 2569</span>
+            <strong>เรียน:</strong> <span>ผู้ว่าราชการจังหวัดสกลนคร / ศึกษาธิการจังหวัดสกลนคร</span>
+          </div>
+
+          <p style="text-indent: 2.5cm; font-size: 14px; line-height: 1.6;">
+            ตามที่ระบบข้อมูลสารสนเทศการจัดเก็บข้อมูลการศึกษาภาพรวมจังหวัดสกลนคร (EduData Sakon) ได้รวบรวมนำส่งรายงานประจำปีการศึกษา 2569 สำเร็จเสร็จสิ้นแล้วนั้น ระบบปัญญาประดิษฐ์ (AI Gemini Core) ร่วมกับวิศวกรรมข้อมูลระบบ ได้วิเคราะห์และสรุปประเด็นชี้แนะเชิงลึกเพื่อจัดทำแผนนโยบายยุทธศาสตร์ดังนี้:
+          </p>
+
+          <h4 style="font-size: 15px; font-weight: 700; margin-top: 10px;">1. อัตราส่วนความหนาแน่นและสัดส่วนวิกฤตของครูในสังกัด</h4>
+          <p style="font-size: 14px; line-height: 1.6; text-indent: 1.5cm;">
+            ภาพรวมจังหวัดสกลนครมีอัตราส่วนครูต่อนักเรียนเฉลี่ยอยู่ที่ <strong>1 : 18.2</strong> ซึ่งจัดอยู่ในเกณฑ์มาตรฐานความปลอดภัยในสถานศึกษา อย่างไรก็ตาม พบการกระจายตัวที่ไม่สม่ำเสมอเชิงโครงสร้าง โดยในสังกัด <strong>สพป.สกลนคร เขต 3</strong> และกลุ่ม <strong>อาชีวศึกษา</strong> พบวิกฤตสัดส่วนพุ่งสูงไปที่ <strong>1 : 23.4</strong> และ <strong>1 : 21.6</strong> ตามลำดับ ส่งผลกระทบโดยตรงต่อประสิทธิภาพการเรียนการสอนรายวิชาวิทยาศาสตร์และเทคโนโลยีสารสนเทศ
+          </p>
+
+          <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; border: 1px solid #ccc; padding: 15px; border-radius: 8px; margin: 10px 0; background: #fafafa;">
+            <div>
+              <h5 style="font-weight: 700; font-size: 13.5px; margin-bottom: 8px; color: #1e3a8a;">📉 ข้อเสนอแนะเชิงกลยุทธ์จาก AI:</h5>
+              <ul style="margin-left: 20px; font-size: 12.5px; display: flex; flex-direction: column; gap: 6px;">
+                <li>เร่งโยกย้ายบุคลากรครูสายการสอนในเมืองที่ล้นเกณฑ์ไปบรรจุ in โรงเรียนห่างไกล (โดยเฉพาะกลุ่ม สพป. เขต 3) จำนวน 45 อัตรา</li>
+                <li>สนับสนุนการเรียนรวมในวิชาเฉพาะทางโดยใช้แพลตฟอร์มการสอนร่วมกันแบบออนไลน์</li>
+                <li>จัดสรรงบประมาณพิเศษรายหัวพัฒนาทักษะ (Skill Premium Bonus) เพิ่มขึ้น 15% ในกลุ่มสถาบันขาดแคลน</li>
+              </ul>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; border-left: 1px solid #ddd; padding-left: 10px;">
+              <div style="font-size: 26px; font-weight: 700; color: #b91c1c;">1 : 23.4</div>
+              <div style="font-size: 11px; color: #555; text-align: center;">สัดส่วนความหนาแน่นสูงสุด (สพป. เขต 3)</div>
+            </div>
+          </div>
+
+          <h4 style="font-size: 15px; font-weight: 700; margin-top: 10px;">2. บทสรุปประเมินระบบเพื่อเตรียมจัดซื้อทรัพยากร</h4>
+          <p style="font-size: 14px; line-height: 1.6; text-indent: 1.5cm;">
+            ขอเสนอดำเนินนโยบาย <em>"จัดสรรครูตามจุดพิกัด GIS ความจำเป็นสูง"</em> โดยใช้แผนที่นำพิกัดดาวเทียมที่ระบุตำแหน่งความขาดแคลนใน EduData Sakon ปูพรมการบรรจุข้าราชการครูบรรจุใหม่ในรอบถัดไป
+          </p>
+
+          <div style="margin-top: 40px; display: flex; justify-content: flex-end;">
+            <div style="text-align: center; width: 250px; font-size: 14px;">
+              <div>(ลงชื่อ).........................................................</div>
+              <div style="margin-top: 8px; font-weight: 700;">(นายวิชาญ ดีสถิตย์)</div>
+              <div style="font-size: 12.5px; color: #555; margin-top: 2px;">ศึกษาธิการจังหวัดสกลนคร</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auto Dunning Email Modal (WOW feature 5) -->
+  <div class="modal-backdrop" id="dunning-modal">
+    <div class="modal" style="width: 700px;">
+      <div class="modal-header" style="background: var(--danger); color: white;">
+        <h3 style="font-weight: 700; display: flex; align-items: center; gap: 8px;">
+          <span class="material-icons-round">mail_lock</span>
+          ระบบทวงถามรายงานสถิติประมวลผลด้วย AI (AI Auto-Dunning Draft)
+        </h3>
+        <button class="btn-icon" style="background: transparent; border-color: rgba(255,255,255,0.3); color: white;" onclick="closeDunningModal()"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="modal-body" style="background: var(--bg); display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 8px; border: 1px solid var(--border); padding: 16px; background: var(--surface); border-radius: var(--radius-sm); font-size: 13.5px;">
+          <div><strong>ผู้รับ (To):</strong> director_dla@sakonnakhon.go.th (ผู้อำนวยการส่วนการศึกษาท้องถิ่น อปท. สกลนคร)</div>
+          <div style="border-top:1px solid var(--border); padding-top:8px; margin-top:8px;"><strong>สำเนา (Cc):</strong> obec_m_director@obec.go.th (ประธานบอร์ดติดตามสถิติจังหวัด)</div>
+          <div style="border-top:1px solid var(--border); padding-top:8px; margin-top:8px;"><strong>หัวข้อ (Subject):</strong> <span style="color:var(--danger); font-weight:700;">[เตือนคำรบสอง - เร่งด่วนที่สุด] ขอความอนุเคราะห์นำส่งรายงานระบบ EduData Sakon ประจำปี 2569</span></div>
+        </div>
+
+        <div style="background: white; border: 1px solid #ccc; padding: 20px; border-radius: var(--radius-sm); font-family: 'Sarabun', sans-serif; font-size: 14px; line-height: 1.6; text-align: justify; color: #111;">
+          <p>เรียน ผู้อำนวยการส่วนการศึกษาท้องถิ่น (อปท. สกลนคร)</p>
+          <br/>
+          <p style="text-indent: 1.5cm;">ตามที่ คณะกรรมการประสานงานข้อมูลสารสนเทศสถิติการศึกษาภาพรวมจังหวัดสกลนคร ได้กำหนดสิ้นสุดเขตเดดไลน์การนำเข้าข้อมูลสถิติผู้เรียนและตำแหน่งครูประจำปีการศึกษา 2569 ในวันที่ 29 มิถุนายน 2569 เวลา 08:30 น. เพื่อเตรียมรวบรวมนำเสนอต่อที่ประชุมผู้บริหารระดับจังหวัดนั้น</p>
+          <br/>
+          <p style="text-indent: 1.5cm;">จากการตรวจสอบระบบคลาวด์ EduData Sakon อัจฉริยะ พบว่าขณะนี้หน่วยงานของท่าน<b>ยังอยู่ในสถานะแบบร่าง (Draft) 50% และล่วงเลยเวลาส่งข้อมูลมาแล้วกว่า 2 ชั่วโมง</b> ซึ่งส่งผลกระทบต่อรายงานวิเคราะห์ภาพรวมระดับจังหวัด</p>
+          <br/>
+          <p style="text-indent: 1.5cm;">จึงเรียนมาเพื่อโปรดมอบหมายเจ้าหน้าที่ผู้รับผิดชอบเข้าดำเนินการกดยืนยันนำส่งไฟล์ CSV และแบบฟอร์มรายงานด่วนที่สุด หรือติดต่อฝ่ายเทคโนโลยี หากติดขัดปัญหาในระบบทางเทคนิค</p>
+          <br/>
+          <p style="text-align: right;">ขอแสดงความนับถือ</p>
+          <p style="text-align: right; font-weight: 700; margin-top: 10px;">ระบบประสานงานข้อมูลคลาวด์สารสนเทศกลาง AI Agent</p>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px;">
+          <button class="btn-outlined" onclick="closeDunningModal()">ยกเลิกการทวง</button>
+          <button class="btn-filled" style="background: var(--danger);" onclick="sendDunningEmail()">
+            <span class="material-icons-round">send</span> ยืนยันการส่งเมลแจ้งเตือน
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Mock Data representing databases
+    const originalData = {
+      students: 135780,
+      teachers: 7051,
+      agencies: [
+        { id: "OBEC_1", name: "สพป.สกลนคร เขต 1", students: 34500, teachers: 1890, lat: 17.1652, lng: 104.1486, progress: 100, status: "รายงานเสร็จสิ้น", color: "#1a73e8" },
+        { id: "OBEC_2", name: "สพป.สกลนคร เขต 2", students: 28900, teachers: 1580, lat: 17.3321, lng: 103.7745, progress: 100, status: "รายงานเสร็จสิ้น", color: "#00bcd4" },
+        { id: "OBEC_3", name: "สพป.สกลนคร เขต 3", students: 25700, teachers: 1100, lat: 17.6543, lng: 103.5678, progress: 100, status: "รายงานเสร็จสิ้น", color: "#0288d1" },
+        { id: "OBEC_M", name: "สพม.สกลนคร", students: 18500, teachers: 1050, lat: 17.1701, lng: 104.1402, progress: 100, status: "รายงานเสร็จสิ้น", color: "#10b981" },
+        { id: "VEC", name: "อาชีวศึกษา", students: 10800, teachers: 500, lat: 17.1755, lng: 104.1305, progress: 100, status: "รายงานเสร็จสิ้น", color: "#f59e0b" },
+        { id: "OPEC", name: "สช. (เอกชน)", students: 4230, teachers: 260, lat: 17.1580, lng: 104.1450, progress: 100, status: "รายงานเสร็จสิ้น", color: "#06b6d4" },
+        { id: "DLA", name: "อปท. (ท้องถิ่น)", students: 1900, teachers: 94, lat: 17.1620, lng: 104.1500, progress: 50, status: "กำลังดำเนินแบบร่าง", color: "#ef4444" },
+        { id: "DOLE", name: "สกร. (ส่งเสริมการเรียนรู้)", students: 2400, teachers: 110, lat: 17.1550, lng: 104.1350, progress: 100, status: "รายงานเสร็จสิ้น", color: "#8b5cf6" },
+        { id: "BUDDHIST", name: "พระปริยัติธรรม", students: 1500, teachers: 85, lat: 17.1600, lng: 104.1600, progress: 100, status: "รายงานเสร็จสิ้น", color: "#ec4899" },
+        { id: "BPP", name: "ตชด.", students: 950, teachers: 55, lat: 17.1800, lng: 104.1200, progress: 100, status: "รายงานเสร็จสิ้น", color: "#14b8a6" },
+        { id: "SPECIAL", name: "การศึกษาพิเศษ", students: 600, teachers: 42, lat: 17.1900, lng: 104.1100, progress: 100, status: "รายงานเสร็จสิ้น", color: "#f43f5e" },
+        { id: "HIGHER", name: "อุดมศึกษา", students: 4500, teachers: 220, lat: 17.1850, lng: 104.1000, progress: 100, status: "รายงานเสร็จสิ้น", color: "#6366f1" },
+        { id: "NURSERY", name: "สถานรับเลี้ยงเด็ก/ศพด.", students: 1200, teachers: 65, lat: 17.1500, lng: 104.1650, progress: 100, status: "รายงานเสร็จสิ้น", color: "#a855f7" }
+      ],
+      submissionStats: [
+        { name: "รายงานเสร็จสิ้น", value: 12 },
+        { name: "กำลังดำเนินแบบร่าง", value: 1 }
+      ]
+    };
+
+    let currentData = JSON.parse(JSON.stringify(originalData));
+    let map, chartRatio, chartSubmission;
+    let markers = {};
+
+    // Initial load
+    window.addEventListener('DOMContentLoaded', () => {
+      initMap();
+      renderLeaderboard();
+      initCharts();
+      // Auto resize charts on window resize
+      window.addEventListener('resize', () => {
+        if(chartRatio) chartRatio.resize();
+        if(chartSubmission) chartSubmission.resize();
+      });
+    });
+
+    // Theme toggle function
+    function toggleTheme() {
+      const html = document.documentElement;
+      const themeIcon = document.getElementById('theme-icon');
+      if (html.getAttribute('data-theme') === 'light') {
+        html.setAttribute('data-theme', 'dark');
+        themeIcon.textContent = 'light_mode';
+      } else {
+        html.setAttribute('data-theme', 'light');
+        themeIcon.textContent = 'dark_mode';
+      }
+      initCharts(); // Redraw charts with dark theme compatibility
+    }
+
+    // Role switching (WOW feature: shifting layout dynamically)
+    function switchUserRole(role) {
+      const btnExec = document.getElementById('btn-role-executive');
+      const btnAgency = document.getElementById('btn-role-agency');
+      const viewExec = document.getElementById('view-executive-dashboard');
+      const viewAgency = document.getElementById('view-agency-submission');
+      const title = document.getElementById('title-text');
+
+      const menuGroupAdmin = document.getElementById('menu-group-admin');
+      const menuBi = document.getElementById('menu-bi');
+      const menuMonitor = document.getElementById('menu-monitor');
+      const menuReportLabel = document.getElementById('menu-group-report-label');
+      const txtMenuReport = document.getElementById('txt-menu-report');
+
+      const avatarInit = document.getElementById('avatarInit');
+      const userNameText = document.getElementById('userNameText');
+      const userRoleText = document.getElementById('userRoleText');
+
+      if (role === 'executive') {
+        btnExec.classList.add('active');
+        btnAgency.classList.remove('active');
+
+        menuGroupAdmin.style.display = 'block';
+        menuBi.style.display = 'flex';
+        menuMonitor.style.display = 'flex';
+        txtMenuReport.textContent = 'รายงานข้อมูลสถิติ';
+
+        avatarInit.textContent = 'ผ';
+        avatarInit.style.background = 'var(--primary)';
+        userNameText.textContent = 'ผู้บริหารเขตพื้นที่ (Super Admin)';
+        userRoleText.textContent = 'สำนักงานศึกษาธิการจังหวัด';
+
+        // Keep current view if it's an admin view, otherwise route to dashboard
+        const activeTab = document.querySelector('.menu-item.active').id.replace('menu-', '');
+        if (activeTab === 'dashboard' || activeTab === 'bi' || activeTab === 'monitor' || activeTab === 'history') {
+          switchTab(activeTab);
+        } else {
+          switchTab('dashboard');
+        }
+      } else {
+        btnExec.classList.remove('active');
+        btnAgency.classList.add('active');
+
+        menuGroupAdmin.style.display = 'none';
+        menuBi.style.display = 'none';
+        menuMonitor.style.display = 'none';
+        txtMenuReport.textContent = 'ส่งฟอร์มนำส่งรายงาน';
+
+        avatarInit.textContent = 'ร';
+        avatarInit.style.background = 'var(--success)';
+        userNameText.textContent = 'ผู้รายงานสังกัด สพป. สก. 1';
+        userRoleText.textContent = 'สพป.สกลนคร เขต 1 (สพฐ.)';
+
+        switchTab('report');
+      }
+    }
+
+    // Sidebar navigation tabs mockup
+    function switchTab(tab) {
+      document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+      const activeItem = document.getElementById(`menu-${tab}`);
+      if(activeItem) activeItem.classList.add('active');
+
+      // Hide all content views
+      const views = ['view-executive-dashboard', 'view-agency-submission', 'view-history', 'view-bi-builder', 'view-monitor'];
+      views.forEach(v => {
+        const el = document.getElementById(v);
+        if (el) el.style.display = 'none';
+      });
+
+      const title = document.getElementById('title-text');
+
+      if (tab === 'dashboard') {
+        document.getElementById('view-executive-dashboard').style.display = 'flex';
+        title.textContent = 'แดชบอร์ดสรุปวิเคราะห์ข้อมูลสำหรับผู้บริหาร';
+        setTimeout(() => {
+          if(chartRatio) chartRatio.resize();
+          if(chartSubmission) chartSubmission.resize();
+          if(map) map.invalidateSize();
+        }, 100);
+      } else if (tab === 'report') {
+        document.getElementById('view-agency-submission').style.display = 'flex';
+        title.textContent = 'นำส่งรายงานสถิติการศึกษาเชิงลึก';
+      } else if (tab === 'history') {
+        document.getElementById('view-history').style.display = 'flex';
+        title.textContent = 'ประวัติการส่งรายงานและอนุมัติข้อมูล';
+      } else if (tab === 'bi') {
+        document.getElementById('view-bi-builder').style.display = 'flex';
+        title.textContent = 'BI Dashboard Builder — ออกแบบข้อมูลอัจฉริยะ';
+        setTimeout(() => {
+          initBiBuilderChart();
+        }, 100);
+      } else if (tab === 'monitor') {
+        document.getElementById('view-monitor').style.display = 'flex';
+        title.textContent = 'กำกับติดตามความก้าวหน้าการรายงานผล';
+      }
+    }
+
+    // Initialize GIS map with Sakon Nakhon coordinates
+    function initMap() {
+      if (typeof L === 'undefined') {
+        console.error("Leaflet library is not loaded. Cannot initialize map.");
+        const mapEl = document.getElementById('map');
+        if (mapEl) mapEl.innerHTML = `<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; color:var(--danger); font-size:13px; font-weight:600; padding:20px; text-align:center; background:rgba(239, 68, 68, 0.05); border:1px dashed var(--danger); border-radius:8px;">⚠️ ไม่สามารถแสดงแผนที่ได้ เนื่องจากไม่สามารถโหลดไลบรารี Leaflet (ตรวจสอบอินเทอร์เน็ต)</div>`;
+        return;
+      }
+      // Coordinate of Sakon Nakhon city
+      map = L.map('map').setView([17.1526, 104.1475], 9);
+      
+      // Load OpenStreetMap tiles
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      // Add markers for agencies
+      currentData.agencies.forEach(agency => {
+        // Create custom divicon for pulsing effect
+        const customIcon = L.divIcon({
+          className: 'map-pulse-container',
+          html: `<div class="map-pulse" style="--color: ${agency.color}"></div>`,
+          iconSize: [12, 12],
+          iconAnchor: [6, 6]
+        });
+
+        const marker = L.marker([agency.lat, agency.lng], { icon: customIcon }).addTo(map);
+        marker.bindPopup(`
+          <div class="dm-popup">
+            <h3>🏫 ${agency.name}</h3>
+            <div>จำนวนผู้เรียน: <strong>${agency.students.toLocaleString()}</strong> คน</div>
+            <div>จำนวนครูผู้สอน: <strong>${agency.teachers.toLocaleString()}</strong> คน</div>
+            <div class="dm-popup-stat">สัดส่วนครูต่อนักเรียน: <strong>1 : ${(agency.students / agency.teachers).toFixed(1)}</strong></div>
+            <div class="dm-popup-zone">สถานะการนำส่ง: ${agency.status}</div>
+          </div>
+        `);
+        markers[agency.id] = marker;
+      });
+    }
+
+    // --- BI Builder and Monitoring Helper Functions ---
+    let biCharts = [];
+
+    function initBiBuilderChart() {
+      // Automatically load the 'grid' template when opening the BI tab
+      loadBiTemplate('grid');
+    }
+
+    function clearBiCanvas() {
+      // Dispose all active chart instances
+      biCharts.forEach(c => {
+        try { c.dispose(); } catch(e) {}
+      });
+      biCharts = [];
+
+      document.getElementById('bi-canvas-placeholder').style.display = 'flex';
+      document.getElementById('bi-layout-grid').style.display = 'none';
+      document.getElementById('bi-layout-split').style.display = 'none';
+      document.getElementById('bi-layout-demographics').style.display = 'none';
+      
+      const badge = document.getElementById('bi-status-badge');
+      badge.textContent = 'พื้นที่ว่าง';
+      badge.style.background = 'var(--text-muted)';
+      document.getElementById('bi-template-select').value = 'none';
+    }
+
+    function addBiWidget(type) {
+      if (type === 'radar') {
+        loadBiTemplate('split');
+      } else if (type === 'scatter') {
+        loadBiTemplate('grid');
+      } else {
+        loadBiTemplate('demographics');
+      }
+    }
+
+    function triggerAiBiBuild() {
+      const prompt = document.getElementById('ai-bi-prompt').value.trim();
+      if (!prompt) {
+        alert("กรุณากรอกคำสั่งความต้องการให้ AI ออกแบบบอร์ดครับ");
+        return;
+      }
+      
+      // Show typing alert
+      alert("🪄 AI (Gemini Core) กำลังประมวลผลคำสั่ง: \n\"" + prompt + "\"\n\nระบบวิเคราะห์ข้อมูล ยุทธศาสตร์ และทำการจัดสรรตำแหน่งชาร์ตที่เหมาะสมเสร็จสิ้นใน 1.5 วินาที!");
+      loadBiTemplate('grid');
+    }
+
+    function loadBiTemplate(type) {
+      if (type === 'none') {
+        clearBiCanvas();
+        return;
+      }
+      
+      if (typeof echarts === 'undefined') {
+        alert("⚠️ ไม่สามารถแสดงรายงานแดชบอร์ดได้ เนื่องจากไม่สามารถโหลดไลบรารี ECharts ได้จากทุก CDN\n\nโปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตเพื่อโหลดชาร์ตอีกครั้ง");
+        return;
+      }
+      
+      // Dispose existing charts
+      biCharts.forEach(c => {
+        try { c.dispose(); } catch(e) {}
+      });
+      biCharts = [];
+
+      // Hide placeholder
+      document.getElementById('bi-canvas-placeholder').style.display = 'none';
+      
+      // Hide all layouts
+      document.getElementById('bi-layout-grid').style.display = 'none';
+      document.getElementById('bi-layout-split').style.display = 'none';
+      document.getElementById('bi-layout-demographics').style.display = 'none';
+      document.getElementById('bi-layout-single-chart').style.display = 'none';
+
+      const badge = document.getElementById('bi-status-badge');
+      badge.textContent = 'เรนเดอร์สำเร็จ (International Standard)';
+      badge.style.background = 'var(--success)';
+
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const textStyle = { color: isDark ? '#f8fafc' : '#0f172a' };
+      const gridBorder = isDark ? '#1e293b' : '#e2e8f0';
+
+      if (type === 'grid') {
+        document.getElementById('bi-layout-grid').style.display = 'grid';
+        
+        // 1. Radar Chart
+        const chart1 = echarts.init(document.getElementById('bi-grid-chart1'));
+        chart1.setOption({
+          title: { text: '🕸️ ยุทธศาสตร์ความพอเพียงอัตรากำลังครูรายสังกัด', textStyle: { color: textStyle.color, fontSize: 13, fontWeight: 'bold' }, left: 'left' },
+          tooltip: { trigger: 'item' },
+          radar: {
+            indicator: [
+              { name: 'ผู้เรียน (Students)', max: 100 },
+              { name: 'อัตราว่าง (Vacancies)', max: 100 },
+              { name: 'งบรายหัว (Budget)', max: 100 },
+              { name: 'สื่อไอที (IT)', max: 100 },
+              { name: 'ครูผู้สอน (Teachers)', max: 100 }
+            ],
+            radius: '55%',
+            center: ['50%', '60%'],
+            axisName: {
+              color: textStyle.color,
+              backgroundColor: isDark ? '#1e293b' : '#f1f5f9',
+              borderRadius: 4,
+              padding: [3, 5],
+              fontSize: 10
+            }
+          },
+          series: [{
+            type: 'radar',
+            data: [
+              { value: [80, 90, 50, 60, 85], name: 'สพป.สกลนคร เขต 3', itemStyle: { color: '#ef4444' }, areaStyle: { color: 'rgba(239, 68, 68, 0.2)' } },
+              { value: [60, 40, 80, 70, 55], name: 'สพป.สกลนคร เขต 1', itemStyle: { color: '#1a73e8' }, areaStyle: { color: 'rgba(26, 115, 232, 0.2)' } }
+            ]
+          }]
+        });
+        biCharts.push(chart1);
+
+        // 2. Line-Bar Chart
+        const chart2 = echarts.init(document.getElementById('bi-grid-chart2'));
+        chart2.setOption({
+          title: { text: '📊 แนวโน้มประชากรนักเรียนและโควต้าครูสายสอน', textStyle: { color: textStyle.color, fontSize: 13, fontWeight: 'bold' }, left: 'left' },
+          tooltip: { trigger: 'axis' },
+          legend: { data: ['นร. (ร้อยคน)', 'ครู (คน)'], right: 10, textStyle: textStyle, top: 20 },
+          xAxis: { type: 'category', data: ['2565', '2566', '2567', '2568', '2569'], axisLabel: { color: textStyle.color } },
+          yAxis: { type: 'value', axisLabel: { color: textStyle.color }, splitLine: { lineStyle: { color: gridBorder } } },
+          series: [
+            { name: 'นร. (ร้อยคน)', type: 'bar', data: [1120, 1150, 1190, 1220, 1245], itemStyle: { color: '#1a73e8' } },
+            { name: 'ครู (คน)', type: 'line', smooth: true, data: [6200, 6340, 6500, 6720, 6854], itemStyle: { color: '#00bcd4' } }
+          ]
+        });
+        biCharts.push(chart2);
+
+        // 3. Bar Chart
+        const chart3 = echarts.init(document.getElementById('bi-grid-chart3'));
+        chart3.setOption({
+          title: { text: '🚨 ปริมาณความต้องการครูเพิ่มเติมรายสังกัด (คน)', textStyle: { color: textStyle.color, fontSize: 13, fontWeight: 'bold' }, left: 'left' },
+          tooltip: { trigger: 'axis' },
+          xAxis: { type: 'category', data: ['สพป.1', 'สพป.2', 'สพป.3', 'สพม.', 'อาชีวะ'], axisLabel: { color: textStyle.color } },
+          yAxis: { type: 'value', axisLabel: { color: textStyle.color }, splitLine: { lineStyle: { color: gridBorder } } },
+          series: [{
+            type: 'bar',
+            data: [12, 18, 45, 8, 12],
+            itemStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: '#ef4444' },
+                { offset: 1, color: '#f59e0b' }
+              ]),
+              borderRadius: [4, 4, 0, 0]
+            }
+          }]
+        });
+        biCharts.push(chart3);
+
+        // 4. Line Chart
+        const chart4 = echarts.init(document.getElementById('bi-grid-chart4'));
+        chart4.setOption({
+          title: { text: '📈 ความก้าวหน้าและอัตราส่งสัมฤทธิ์สะสม', textStyle: { color: textStyle.color, fontSize: 13, fontWeight: 'bold' }, left: 'left' },
+          tooltip: { trigger: 'axis' },
+          xAxis: { type: 'category', data: ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.'], axisLabel: { color: textStyle.color } },
+          yAxis: { type: 'value', max: 100, axisLabel: { color: textStyle.color }, splitLine: { lineStyle: { color: gridBorder } } },
+          series: [{
+            type: 'line',
+            smooth: true,
+            data: [20, 45, 60, 85, 95],
+            itemStyle: { color: '#10b981' },
+            areaStyle: { color: 'rgba(16, 185, 129, 0.1)' }
+          }]
+        });
+        biCharts.push(chart4);
+
+      } else if (type === 'split') {
+        document.getElementById('bi-layout-split').style.display = 'grid';
+
+        const chartLeft = echarts.init(document.getElementById('bi-split-chart-left'));
+        chartLeft.setOption({
+          title: { text: '🕸️ วิเคราะห์เรดาร์ดัชนีวิกฤตสัดส่วนครู/นักเรียน', textStyle: textStyle, left: 'center' },
+          tooltip: { trigger: 'item' },
+          legend: { bottom: 10, textStyle: textStyle },
+          radar: {
+            indicator: [
+              { name: 'ผู้เรียน (Students)', max: 100 },
+              { name: 'อัตราขาดครู (Shortage)', max: 100 },
+              { name: 'งบประมาณ (Budget)', max: 100 },
+              { name: 'อุปกรณ์ไอที (IT Device)', max: 100 },
+              { name: 'ความหนาแน่นห้อง (Density)', max: 100 }
+            ],
+            radius: '60%',
+            center: ['50%', '50%'],
+            axisName: {
+              color: textStyle.color,
+              backgroundColor: isDark ? '#1e293b' : '#f1f5f9',
+              borderRadius: 4,
+              padding: [3, 5],
+              fontSize: 11
+            }
+          },
+          series: [{
+            name: 'สัดส่วนวิกฤตเปรียบเทียบ',
+            type: 'radar',
+            data: [
+              {
+                value: [85, 90, 45, 55, 80],
+                name: 'สพป.สกลนคร เขต 3 (วิกฤตสูงสุด)',
+                itemStyle: { color: '#ef4444' },
+                areaStyle: { color: 'rgba(239, 68, 68, 0.2)' }
+              },
+              {
+                value: [65, 45, 85, 75, 50],
+                name: 'สพป.สกลนคร เขต 1 (ปกติ)',
+                itemStyle: { color: '#1a73e8' },
+                areaStyle: { color: 'rgba(26, 115, 232, 0.2)' }
+              }
+            ]
+          }]
+        });
+        biCharts.push(chartLeft);
+
+      } else if (type === 'demographics') {
+        document.getElementById('bi-layout-demographics').style.display = 'flex';
+
+        const chartDemo = echarts.init(document.getElementById('bi-demographics-chart'));
+        chartDemo.setOption({
+          title: { text: '📈 การพยากรณ์ประชากรนักเรียนล่วงหน้า 5 ปีรายอำเภอ', textStyle: textStyle, left: 'center' },
+          tooltip: { trigger: 'axis' },
+          legend: { bottom: 0, textStyle: textStyle },
+          xAxis: { type: 'category', data: ['2570', '2571', '2572', '2573', '2574'], axisLabel: { color: textStyle.color } },
+          yAxis: { type: 'value', name: 'จำนวนคน', nameTextStyle: textStyle, axisLabel: { color: textStyle.color }, splitLine: { lineStyle: { color: gridBorder } } },
+          series: [
+            { name: 'อ.เมืองสกลนคร', type: 'line', smooth: true, data: [45000, 46200, 47000, 48500, 49200], itemStyle: { color: '#1a73e8' } },
+            { name: 'อ.สว่างแดนดิน', type: 'line', smooth: true, data: [31000, 31500, 32000, 32400, 32900], itemStyle: { color: '#00bcd4' } },
+            { name: 'อ.วานรนิวาส', type: 'line', smooth: true, data: [28000, 28200, 27900, 27600, 27000], itemStyle: { color: '#ef4444' } }
+          ]
+        });
+        biCharts.push(chartDemo);
+      } else {
+        // Generic full-width single chart layout (Templates 4 to 13)
+        document.getElementById('bi-layout-single-chart').style.display = 'block';
+        const singleChart = echarts.init(document.getElementById('bi-single-chart-dom'));
+        
+        let option = {};
+        if (type === 'ict') {
+          option = {
+            title: { text: '💻 สัดส่วนสถานะการใช้งานและเสื่อมสภาพอุปกรณ์ ICT ในโรงเรียน', textStyle: textStyle, left: 'center' },
+            tooltip: { trigger: 'item', formatter: '{b} : {c} เครื่อง ({d}%)' },
+            legend: { bottom: 10, textStyle: textStyle },
+            series: [{
+              type: 'pie',
+              radius: '65%',
+              data: [
+                { value: 4500, name: 'ใช้งานได้ดี (ปกติ)', itemStyle: { color: '#10b981' } },
+                { value: 2000, name: 'ชำรุดรอซ่อม/เปลี่ยนอะไหล่', itemStyle: { color: '#f59e0b' } },
+                { value: 3500, name: 'ตกรุ่น/ล้าสมัย (ควรจำหน่ายออก)', itemStyle: { color: '#ef4444' } }
+              ]
+            }]
+          };
+        } else if (type === 'onet') {
+          option = {
+            title: { text: '🎯 เปรียบเทียบผลคะแนนเฉลี่ย O-NET ม.3 ย้อนหลัง 3 ปี', textStyle: textStyle, left: 'center' },
+            tooltip: { trigger: 'axis' },
+            legend: { top: 30, textStyle: textStyle },
+            xAxis: { type: 'category', data: ['คณิตศาสตร์', 'วิทยาศาสตร์', 'ภาษาอังกฤษ', 'ภาษาไทย'], axisLabel: { color: textStyle.color } },
+            yAxis: { type: 'value', min: 0, max: 100, axisLabel: { color: textStyle.color }, splitLine: { lineStyle: { color: gridBorder } } },
+            series: [
+              { name: 'ปี 2567', type: 'bar', data: [34.5, 38.2, 29.8, 51.4], itemStyle: { color: '#1a73e8' } },
+              { name: 'ปี 2568', type: 'bar', data: [36.1, 40.5, 31.2, 53.0], itemStyle: { color: '#00bcd4' } },
+              { name: 'ปี 2569 (ล่าสุด)', type: 'bar', data: [39.8, 44.1, 35.6, 57.2], itemStyle: { color: '#10b981' } }
+            ]
+          };
+        } else if (type === 'commute') {
+          option = {
+            title: { text: '🗺️ ความสัมพันธ์ระหว่างระยะทางเดินทาง (กม.) และอัตราการเข้าเรียน (%)', textStyle: textStyle, left: 'center' },
+            tooltip: { trigger: 'item', formatter: 'เดินทาง {c} กม. / อัตราเข้าเรียน {d}%' },
+            xAxis: { name: 'ระยะทาง (กิโลเมตร)', nameTextStyle: textStyle, axisLabel: { color: textStyle.color }, splitLine: { lineStyle: { color: gridBorder } } },
+            yAxis: { name: 'อัตราการเข้าเรียน (%)', min: 70, nameTextStyle: textStyle, axisLabel: { color: textStyle.color }, splitLine: { lineStyle: { color: gridBorder } } },
+            series: [{
+              type: 'scatter',
+              symbolSize: 12,
+              data: [
+                [2.5, 99], [3.0, 98.5], [1.2, 100], [5.0, 97], [10.2, 95], [15.0, 92], [22.5, 88], [25.0, 85],
+                [8.5, 96.5], [12.0, 94.2], [18.4, 91.0], [20.1, 89.5], [4.5, 98.0], [7.2, 96.8], [2.1, 99.4]
+              ],
+              itemStyle: { color: '#0288d1' }
+            }]
+          };
+        } else if (type === 'small_school') {
+          option = {
+            title: { text: '🏫 จำนวนสถาบันขนาดเล็กพิเศษ (ผู้เรียน < 120 คน) จำแนกรายอำเภอ', textStyle: textStyle, left: 'center' },
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            xAxis: { type: 'value', axisLabel: { color: textStyle.color }, splitLine: { lineStyle: { color: gridBorder } } },
+            yAxis: { type: 'category', data: ['อากาศอำนวย', 'พังโคน', 'วานรนิวาส', 'สว่างแดนดิน', 'เมืองสกลนคร'], axisLabel: { color: textStyle.color } },
+            series: [{
+              type: 'bar',
+              data: [15, 22, 34, 45, 18],
+              itemStyle: { color: '#f59e0b' }
+            }]
+          };
+        } else if (type === 'budget_alloc') {
+          option = {
+            title: { text: '💰 งบประมาณอุดหนุนรายหัว (ล้านบาท) เทียบกับจำนวนนักเรียน (พันคน) รายสังกัด', textStyle: textStyle, left: 'center' },
+            tooltip: { trigger: 'axis' },
+            legend: { top: 30, textStyle: textStyle },
+            xAxis: { type: 'category', data: ['สพป.1', 'สพป.2', 'สพป.3', 'สพม.', 'อาชีวะ', 'เอกชน', 'อปท.'], axisLabel: { color: textStyle.color } },
+            yAxis: [
+              { type: 'value', name: 'นักเรียน (พันคน)', nameTextStyle: textStyle, axisLabel: { color: textStyle.color }, splitLine: { lineStyle: { color: gridBorder } } },
+              { type: 'value', name: 'งบประมาณ (ล้านบาท)', nameTextStyle: textStyle, axisLabel: { color: textStyle.color }, splitLine: { show: false } }
+            ],
+            series: [
+              { name: 'จำนวนผู้เรียน (พันคน)', type: 'bar', data: [34.5, 28.9, 25.7, 18.5, 10.8, 4.2, 1.9], itemStyle: { color: '#1a73e8' } },
+              { name: 'งบประมาณจัดสรร (ล้านบาท)', type: 'line', yAxisIndex: 1, data: [120.5, 101.2, 89.9, 78.4, 48.2, 14.5, 6.8], itemStyle: { color: '#10b981' } }
+            ]
+          };
+        } else if (type === 'migration') {
+          option = {
+            title: { text: '🌪️ อัตราการย้ายถิ่นฐานของผู้เรียนประจำปีการศึกษา 2569', textStyle: textStyle, left: 'center' },
+            tooltip: { trigger: 'item', formatter: '{b} : {c}%' },
+            legend: { bottom: 10, textStyle: textStyle },
+            series: [{
+              type: 'funnel',
+              left: '10%',
+              width: '80%',
+              label: { formatter: '{b} {c}%', color: textStyle.color },
+              data: [
+                { value: 100, name: 'ลงทะเบียนแรกเข้าปี 1', itemStyle: { color: '#1a73e8' } },
+                { value: 92, name: 'เรียนต่อต่อเนื่องถึงปีการศึกษาถัดไป', itemStyle: { color: '#00bcd4' } },
+                { value: 8, name: 'ย้ายออกไปต่างจังหวัด/ครอบครัวย้ายถิ่น', itemStyle: { color: '#f59e0b' } },
+                { value: 1.5, name: 'ออกกลางคัน (Dropouts) / ขาดติดต่อ', itemStyle: { color: '#ef4444' } }
+              ]
+            }]
+          };
+        } else if (type === 'teacher_qual') {
+          option = {
+            title: { text: '🎓 สัดส่วนวุฒิการศึกษาสูงสุดของบุคลากรครูสายวิชาการ', textStyle: textStyle, left: 'center' },
+            tooltip: { trigger: 'item', formatter: '{b} : {c} คน ({d}%)' },
+            legend: { bottom: 10, textStyle: textStyle },
+            series: [{
+              type: 'pie',
+              radius: ['45%', '70%'],
+              avoidLabelOverlap: false,
+              label: { show: true, formatter: '{b}: {d}%', color: textStyle.color },
+              data: [
+                { value: 4934, name: 'ปริญญาตรี (Ed.B. / B.Sc.)', itemStyle: { color: '#1a73e8' } },
+                { value: 1713, name: 'ปริญญาโท (Ed.M.)', itemStyle: { color: '#10b981' } },
+                { value: 207, name: 'ปริญญาเอก (Ph.D. / Ed.D.)', itemStyle: { color: '#00bcd4' } }
+              ]
+            }]
+          };
+        } else if (type === 'internet') {
+          option = {
+            title: { text: '⚡ สถิติช่องทางความเร็วอินเทอร์เน็ตที่จัดสรรให้สถานศึกษา', textStyle: textStyle, left: 'center' },
+            tooltip: { trigger: 'axis' },
+            xAxis: { type: 'category', data: ['100 Mbps', '200 Mbps', '500 Mbps', '1000 Mbps (Fiber)', 'ดาวเทียมห่างไกล'], axisLabel: { color: textStyle.color } },
+            yAxis: { type: 'value', axisLabel: { color: textStyle.color }, splitLine: { lineStyle: { color: gridBorder } } },
+            series: [{
+              type: 'bar',
+              data: [45, 120, 340, 520, 15],
+              itemStyle: { color: '#10b981' }
+            }]
+          };
+        } else if (type === 'mental_health') {
+          option = {
+            title: { text: '🧠 ดัชนีประเมินสุขภาพจิตผู้เรียนจำแนกรายสังกัด', textStyle: textStyle, left: 'center' },
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            legend: { top: 30, textStyle: textStyle },
+            xAxis: { type: 'category', data: ['สพป.1', 'สพป.2', 'สพป.3', 'สพม.'], axisLabel: { color: textStyle.color } },
+            yAxis: { type: 'value', max: 100, axisLabel: { color: textStyle.color }, splitLine: { lineStyle: { color: gridBorder } } },
+            series: [
+              { name: 'มีความสุข/ปกติ', type: 'bar', stack: 'total', data: [78, 75, 68, 72], itemStyle: { color: '#10b981' } },
+              { name: 'มีความเครียดสะสม', type: 'bar', stack: 'total', data: [18, 20, 24, 22], itemStyle: { color: '#f59e0b' } },
+              { name: 'ต้องการความช่วยเหลือพิเศษ', type: 'bar', stack: 'total', data: [4, 5, 8, 6], itemStyle: { color: '#ef4444' } }
+            ]
+          };
+        } else if (type === 'foreign_teachers') {
+          option = {
+            title: { text: '🇬🇧 อัตราส่วนการจ้างครูชาวต่างชาติ (Native Speaker) จำแนกตามขนาดโรงเรียน', textStyle: textStyle, left: 'center' },
+            tooltip: { trigger: 'item' },
+            polar: { radius: '65%' },
+            angleAxis: { type: 'category', data: ['ขนาดใหญ่พิเศษ', 'ขนาดใหญ่', 'ขนาดกลาง', 'ขนาดเล็ก'], startAngle: 75, axisLabel: { color: textStyle.color } },
+            radiusAxis: { min: 0, axisLabel: { color: textStyle.color } },
+            series: [{
+              type: 'bar',
+              data: [42, 28, 12, 3],
+              coordinateSystem: 'polar',
+              itemStyle: { color: '#00bcd4' }
+            }]
+          };
+        }
+        singleChart.setOption(option);
+        biCharts.push(singleChart);
+      }
+
+      document.getElementById('bi-template-select').value = type;
+    }
+
+    // Interactive Leaderboard click event
+    function focusMap(id) {
+      if (markers[id]) {
+        const marker = markers[id];
+        map.setView(marker.getLatLng(), 13);
+        marker.openPopup();
+      }
+    }
+
+    // Render leaderboard of agencies
+    function renderLeaderboard() {
+      const container = document.getElementById('leaderboard-container');
+      container.innerHTML = '';
+      
+      currentData.agencies.forEach((agency, index) => {
+        const item = document.createElement('div');
+        item.className = 'leaderboard-item';
+        item.onclick = () => focusMap(agency.id);
+
+        const ratio = (agency.students / agency.teachers).toFixed(1);
+        const progressWidth = agency.progress;
+
+        item.innerHTML = `
+          <div class="leaderboard-left">
+            <span class="rank-num">#${index + 1}</span>
+            <div>
+              <div class="leaderboard-name">${agency.name}</div>
+              <div class="leaderboard-stat">สัดส่วน 1 : ${ratio} (${agency.teachers} ครู / ${agency.students.toLocaleString()} นร.)</div>
+            </div>
+          </div>
+          <div class="leaderboard-right">
+            <span class="badge" style="background: ${progressWidth === 100 ? 'var(--success)' : 'var(--danger)'};">
+              ${progressWidth}%
+            </span>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar" style="width: ${progressWidth}%; background-color: ${agency.color}"></div>
+            </div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // Initialize ECharts Visualizations
+    function initCharts() {
+      if (typeof echarts === 'undefined') {
+        console.error("ECharts library is not loaded. Cannot initialize charts.");
+        ['chart-ratio', 'chart-submission'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.innerHTML = `<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; color:var(--danger); font-size:13px; font-weight:600; padding:20px; text-align:center; background:rgba(239, 68, 68, 0.05); border:1px dashed var(--danger); border-radius:8px;">⚠️ ไม่สามารถแสดงแผนภูมินี้ได้ เนื่องจากไม่สามารถโหลดไลบรารี ECharts (ตรวจสอบอินเทอร์เน็ต)</div>`;
+        });
+        return;
+      }
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const textStyle = { color: isDark ? '#f8fafc' : '#0f172a' };
+      const gridBorder = isDark ? '#1e293b' : '#e2e8f0';
+
+      // 1. Ratio Bar Chart
+      const ratioDom = document.getElementById('chart-ratio');
+      if (chartRatio) chartRatio.dispose();
+      chartRatio = echarts.init(ratioDom);
+
+      const ratioData = currentData.agencies.map(a => (a.students / a.teachers).toFixed(1));
+      const agencyNames = currentData.agencies.map(a => a.name.replace("สกลนคร", "สก."));
+
+      const ratioOption = {
+        grid: { top: 30, right: 20, bottom: 60, left: 40 },
+        tooltip: { trigger: 'axis', formatter: '{b} <br/>สัดส่วน 1 : {c}' },
+        xAxis: {
+          type: 'category',
+          data: agencyNames,
+          axisLabel: { interval: 0, rotate: 25, color: textStyle.color },
+          axisLine: { lineStyle: { color: gridBorder } }
+        },
+        yAxis: {
+          type: 'value',
+          name: 'อัตราส่วน 1 : N',
+          nameTextStyle: { color: textStyle.color },
+          axisLabel: { color: textStyle.color },
+          splitLine: { lineStyle: { color: gridBorder } }
+        },
+        series: [{
+          data: ratioData,
+          type: 'bar',
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#1a73e8' },
+              { offset: 1, color: '#00bcd4' }
+            ]),
+            borderRadius: [4, 4, 0, 0]
+          },
+          markLine: {
+            data: [
+              { type: 'average', name: 'ค่าเฉลี่ยสัดส่วน' }
+            ],
+            lineStyle: { color: '#ef4444', type: 'dashed' }
+          }
+        }]
+      };
+      chartRatio.setOption(ratioOption);
+
+      // 2. Submission Pie Chart
+      const subDom = document.getElementById('chart-submission');
+      if (chartSubmission) chartSubmission.dispose();
+      chartSubmission = echarts.init(subDom);
+
+      const subOption = {
+        tooltip: { trigger: 'item', formatter: '{b}: {c} สังกัด ({d}%)' },
+        legend: { bottom: '5%', left: 'center', textStyle: { color: textStyle.color } },
+        series: [{
+          name: 'สถานะรายงาน',
+          type: 'pie',
+          radius: ['40%', '70%'],
+          avoidLabelOverlap: false,
+          itemStyle: {
+            borderRadius: 10,
+            borderColor: isDark ? '#131b2e' : '#fff',
+            borderWidth: 2
+          },
+          label: { show: false },
+          emphasis: {
+            label: { show: true, fontSize: 16, fontWeight: 'bold', color: textStyle.color }
+          },
+          labelLine: { show: false },
+          data: currentData.submissionStats.map((item, i) => {
+            const colors = ['#10b981', '#ef4444'];
+            return {
+              value: item.value,
+              name: item.name,
+              itemStyle: { color: colors[i] }
+            };
+          })
+        }]
+      };
+      chartSubmission.setOption(subOption);
+    }
+
+    // Recalculate Simulation Values dynamically (WOW feature: realtime sliders)
+    function simRecalculate() {
+      const valStd = parseInt(document.getElementById('sim-student').value);
+      const valTeacher = parseInt(document.getElementById('sim-teacher').value);
+      const valBudget = parseInt(document.getElementById('sim-budget').value);
+
+      document.getElementById('lbl-sim-student').textContent = (valStd >= 0 ? '+' : '') + valStd + '%';
+      document.getElementById('lbl-sim-teacher').textContent = (valTeacher >= 0 ? '+' : '') + valTeacher + ' อัตรา';
+      document.getElementById('lbl-sim-budget').textContent = (valBudget >= 0 ? '+' : '') + valBudget + '%';
+
+      // Deep clone original state
+      currentData = JSON.parse(JSON.stringify(originalData));
+      
+      // Calculate impact on total student & teacher
+      let totalStudents = 0;
+      let totalTeachers = 0;
+
+      currentData.agencies.forEach(agency => {
+        // Adjust values based on slider formula
+        agency.students = Math.round(agency.students * (1 + valStd / 100));
+        // Allocate teacher adjustment proportionally
+        const ratioOfTotal = agency.teachers / originalData.teachers;
+        agency.teachers = Math.round(agency.teachers + (valTeacher * ratioOfTotal));
+
+        totalStudents += agency.students;
+        totalTeachers += agency.teachers;
+      });
+
+      currentData.students = totalStudents;
+      currentData.teachers = totalTeachers;
+
+      // Update KPI text display
+      document.getElementById('kpi-students').textContent = totalStudents.toLocaleString();
+      document.getElementById('kpi-teachers').textContent = totalTeachers.toLocaleString();
+
+      const finalRatio = (totalStudents / totalTeachers).toFixed(1);
+      document.getElementById('val-sim-ratio').textContent = `1 : ${finalRatio}`;
+
+      const alertLbl = document.getElementById('val-sim-alert');
+      if (finalRatio > 20) {
+        alertLbl.textContent = "(ความหนาแน่นวิกฤต)";
+        alertLbl.style.color = "var(--danger)";
+      } else if (finalRatio < 15) {
+        alertLbl.textContent = "(ครูมากเกินเกณฑ์)";
+        alertLbl.style.color = "var(--warning)";
+      } else {
+        alertLbl.textContent = "(ปกติ)";
+        alertLbl.style.color = "var(--success)";
+      }
+
+      // Redraw charts
+      initCharts();
+      renderLeaderboard();
+    }
+
+    function resetSimulation() {
+      document.getElementById('sim-student').value = 0;
+      document.getElementById('sim-teacher').value = 0;
+      document.getElementById('sim-budget').value = 0;
+      simRecalculate();
+      document.getElementById('ai-forecast-bubble').style.display = 'none';
+    }
+
+    // Predictive AI Simulation (WOW feature: client prediction simulator)
+    function triggerPredictiveAI() {
+      const bubble = document.getElementById('ai-forecast-bubble');
+      const text = document.getElementById('ai-forecast-text');
+      bubble.style.display = 'block';
+      text.innerHTML = '<span style="font-weight:600; color:var(--primary);">AI กำลังจำลองแนวโน้ม...</span>';
+
+      setTimeout(() => {
+        const valStd = parseInt(document.getElementById('sim-student').value);
+        const ratio = (currentData.students / currentData.teachers).toFixed(1);
+        
+        let analysis = `**การวิเคราะห์แนวโน้มล่วงหน้า 3 ปี (2570 - 2572)**:<br/>`;
+        if (valStd > 2) {
+          analysis += `⚠️ อัตราการเพิ่มผู้เรียนที่ขยายตัวอย่างต่อเนื่อง (${valStd}%) จะผลักดันสัดส่วนวิกฤตพุ่งไปที่ **1 : ${parseFloat(ratio) + 1.5}** ในปี 2572 หากไม่มีการตั้งอัตรากำลังทดแทนเกษียณ ขอเสนอแนะให้เร่งเพิ่มโควต้าบรรจุครูวิชาคณิตศาสตร์และวิชาเอกอังกฤษเพื่อลดการกระจุกตัวในชุมชนเมือง`;
+        } else if (valStd < -2) {
+          analysis += `📉 อัตราการเกิดที่ลดลงเฉลี่ยส่งผลให้ประชากรผู้เรียนลดลงอย่างรวดเร็ว สัดส่วนครูจะเปลี่ยนเป็น **1 : ${parseFloat(ratio) - 1.2}** ควรพิจารณายุบรวมสาขาย่อยในเขตชนบทและปรับย้ายกำลังครูมาเพิ่มความเข้มข้นทางวิชาการทดแทน`;
+        } else {
+          analysis += `✅ การคาดการณ์สัดส่วนประชากรใน 3 ปีข้างหน้ามีความเสถียร สัดส่วนจะทรงตัวที่ <strong>1 : ${ratio}</strong> ควรเน้นการพัฒนาทักษะวิชาชีพครูและการนำปัญญาประดิษฐ์มาช่วยการสอนแบบเสริมประสิทธิภาพ`;
+        }
+        
+        text.innerHTML = analysis;
+      }, 800);
+    }
+
+    // Briefing Modal Toggle
+    function openBriefingPack() {
+      document.getElementById('briefing-modal').classList.add('active');
+    }
+
+    function closeBriefingPack() {
+      document.getElementById('briefing-modal').classList.remove('active');
+    }
+
+    // Conversational BI panel toggle
+    function toggleBIChat() {
+      document.getElementById('bi-chat-panel').classList.toggle('active');
+    }
+
+    // Chatbot responses mockup (WOW feature: client BI chatbot)
+    function sendUserMessage() {
+      const input = document.getElementById('bi-input-text');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendMessage(text, 'user');
+      input.value = '';
+
+      // Mock AI response
+      setTimeout(() => {
+        let reply = "ขออภัยครับ คำสั่งดังกล่าวยังไม่เปิดให้บริการในเวอร์ชันตัวอย่าง หรือกรุณาคลิกเลือกหัวข้อแนะนำการถามด้านบนครับ";
+        
+        if (text.includes("สัดส่วน") || text.includes("ครู")) {
+          reply = `จากการตรวจสอบข้อมูลในระบบ พบว่า <strong>สพป.สกลนคร เขต 3</strong> มีความหนาแน่นสูงสุดอัตราสัดส่วน 1 : 23.4 (ขาดวิกฤตวิชาเอกภาษาอังกฤษ 12 อัตรา) และ <strong>อาชีวศึกษา</strong> เป็นอันดับถัดมาที่ 1 : 21.6 ครับ`;
+        } else if (text.includes("ติดตาม") || text.includes("ก้าวหน้า")) {
+          reply = `สถานะการส่งรายงานภาพรวมสำเร็จแล้ว <strong>95%</strong> (6 จาก 7 สังกัด) ค้างการนำส่งเฉพาะสังกัด <strong>อปท. (ท้องถิ่น)</strong> ซึ่งค้างอยู่ที่ขั้นตอนร่างแบบฟอร์ม (Draft) สิ้นสุดเวลา 16:30 น. ของวันนี้ครับ`;
+        } else if (text.includes("วิกฤต") || text.includes("ขาดแคลน")) {
+          reply = `🚨 <strong>จุดวิกฤตเร่งด่วน:</strong> สังกัด สพป. เขต 3 มีปริมาณนักเรียนต่ออัตราส่วนครูเกินเกณฑ์มาตรฐาน 20% ควรใช้นโยบายสลับเปลี่ยนกำลังครูระยะสั้น 45 อัตราเพื่อแก้ปัญหาเฉพาะหน้าครับ`;
+        }
+
+        appendMessage(reply, 'bot');
+      }, 600);
+    }
+
+    function sendQuickMessage(text) {
+      appendMessage(text, 'user');
+      setTimeout(() => {
+        let reply = "";
+        if (text.includes("สัดส่วน")) {
+          reply = `📊 <strong>สัดส่วนวิเคราะห์:</strong> อัตราส่วนครูต่อนักเรียนภาพรวมจังหวัดคือ 1 : 18.2 โดย สพป.สกลนคร เขต 3 มีความหนาแน่นวิกฤตสูงสุดที่ <strong>1 : 23.4</strong> ครับ`;
+        } else if (text.includes("ความก้าวหน้า")) {
+          reply = `📈 <strong>สถานะการรายงาน:</strong> นำส่งแล้ว 6 สังกัด, ร่างแบบฟอร์มค้างอยู่ 1 สังกัด (อปท. ท้องถิ่น)`;
+        } else if (text.includes("วิกฤต")) {
+          reply = `🚨 <strong>จุดขาดแคลนครูสูงสุด:</strong> ต้องการเพิ่มครูสายสอนในสังกัดประถมศึกษา เขต 3 เพื่อลดอัตราความแออัดด่วนที่สุดครับ`;
+        }
+        appendMessage(reply, 'bot');
+      }, 500);
+    }
+
+    function appendMessage(text, sender) {
+      const box = document.getElementById('bi-messages-box');
+      const div = document.createElement('div');
+      div.className = `msg ${sender}`;
+      div.innerHTML = text;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // Client Form Calculator (Agency view)
+    function calcAgencyTotal() {
+      const male = parseInt(document.getElementById('input-std-male').value) || 0;
+      const female = parseInt(document.getElementById('input-std-female').value) || 0;
+      const teacher = parseInt(document.getElementById('input-teacher').value) || 1;
+
+      const total = male + female;
+      document.getElementById('input-std-total').value = total.toLocaleString();
+
+      const ratio = (total / teacher).toFixed(1);
+      document.getElementById('input-ratio').value = `1 : ${ratio}`;
+    }
+
+    function simulateFormSubmit(event) {
+      event.preventDefault();
+      alert("จำลองการนำส่งข้อมูลเข้าสู่คลาวด์ Apps Script สำเร็จ! สถานะเปลี่ยนเป็น 'ส่งข้อมูลเรียบร้อย' และลงบันทึกใน AuditLogs ปลอดภัย");
+    }
+
+
+
+    // Monitoring Dunning modal logic
+    function openDunningModal() {
+      document.getElementById('dunning-modal').classList.add('active');
+    }
+
+    function closeDunningModal() {
+      document.getElementById('dunning-modal').classList.remove('active');
+    }
+
+    function sendDunningEmail() {
+      closeDunningModal();
+      alert("✅ ส่งอีเมลแจ้งเตือนทวงถามผ่านระบบ MailApp ของ Google และบันทึกประวัติการทวงถามลงตาราง AuditLogs ของสังกัด อปท. (ท้องถิ่น) สำเร็จเรียบร้อยแล้ว!");
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>คู่มือการสร้างแบบฟอร์มจัดเก็บข้อมูลอย่างละเอียด — EduData Sakon</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@400;600;700&family=Material+Icons+Round&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #ff8f00;
+      --primary-light: #fff3e0;
+      --primary-dark: #e65100;
+      --purple: #7b1fa2;
+      --purple-light: #f3e5f5;
+      --blue: #1a73e8;
+      --blue-light: #e8f0fe;
+      --green: #34a853;
+      --green-light: #e6f4ea;
+      --red: #ea4335;
+      --red-light: #fce8e6;
+      
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --border: #dadce0;
+      --text: #202124;
+      --text-muted: #5f6368;
+      
+      --radius: 14px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.04);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.07);
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f1013;
+      --surface: #1e1f22;
+      --border: #333539;
+      --text: #e3e3e3;
+      --text-muted: #9aa0a6;
+      --primary-light: rgba(255, 143, 0, 0.15);
+      --purple-light: rgba(123, 31, 162, 0.15);
+      --blue-light: rgba(26, 115, 232, 0.15);
+      --green-light: rgba(52, 168, 83, 0.15);
+      --red-light: rgba(234, 67, 53, 0.15);
+      --shadow: 0 4px 20px rgba(0,0,0,0.2);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Sarabun', 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    /* Header styling with premium gradient */
+    .header-banner {
+      background: linear-gradient(135deg, var(--primary-dark), #4e1a00);
+      color: white;
+      padding: 54px 24px 130px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-banner::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -20%;
+      width: 140%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(123,31,162,0.2) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .header-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .meta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .header-title {
+      font-size: 30px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      line-height: 1.35;
+    }
+
+    .header-desc {
+      font-size: 15px;
+      color: rgba(255,255,255,0.8);
+      max-width: 750px;
+      margin: 0 auto;
+    }
+
+    /* Control bar / Tab bar */
+    .control-container {
+      max-width: 1100px;
+      margin: -60px auto 32px;
+      padding: 0 24px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .control-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 24px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .stepper-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      flex: 1;
+    }
+
+    .step-tab {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+
+    .step-tab:hover {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .step-tab.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(255, 143, 0, 0.2);
+    }
+
+    .theme-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+
+    .theme-btn:hover {
+      background: var(--bg);
+    }
+
+    /* Layout structure */
+    .main-grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+
+    @media (min-width: 992px) {
+      .main-grid {
+        grid-template-columns: 3fr 2fr;
+      }
+    }
+
+    /* Content Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+      transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title span {
+      color: var(--primary);
+    }
+
+    p {
+      font-size: 14px;
+      color: var(--text);
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    /* Numbered steps styling */
+    .step-desc-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .step-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-details {
+      flex: 1;
+    }
+
+    .step-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .step-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Visual simulator */
+    .sim-container {
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg);
+      padding: 20px;
+      margin-top: 16px;
+    }
+
+    .sim-form-group {
+      margin-bottom: 14px;
+    }
+
+    .sim-form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .sim-form-group input, .sim-form-group select, .sim-form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .sim-form-group input:focus, .sim-form-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    /* Catalog tags list */
+    .catalog-group {
+      margin-top: 16px;
+    }
+
+    .cat-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .cat-btn {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .cat-btn.active {
+      background: var(--purple-light);
+      color: var(--purple);
+      border-color: var(--purple);
+      font-weight: 600;
+    }
+
+    .chips-area {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 50px;
+      padding: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .item-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12.5px;
+      cursor: pointer;
+      user-select: none;
+      transition: var(--transition);
+    }
+
+    .item-chip:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary-dark);
+    }
+
+    .item-chip.selected {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* Form Preview area */
+    .preview-box {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      padding: 16px;
+      min-height: 100px;
+    }
+
+    .preview-field {
+      padding: 10px 12px;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      background: var(--bg);
+    }
+
+    .preview-field-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+
+    .preview-field-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-action-small {
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-action-small:hover {
+      color: var(--red);
+    }
+
+    /* JSON Display */
+    pre {
+      background: #272822;
+      color: #f8f8f2;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      margin-top: 10px;
+      max-height: 300px;
+    }
+
+    /* Callout Box */
+    .callout {
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      border-left: 4px solid;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .callout-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .callout-content {
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+
+    .callout-content h4 {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .callout.tip {
+      background: var(--green-light);
+      border-color: var(--green);
+      color: var(--text);
+    }
+    .callout.tip .callout-icon { color: var(--green); }
+    .callout.tip h4 { color: var(--green); }
+
+    .callout.warning {
+      background: var(--yellow-light);
+      border-color: var(--yellow);
+      color: var(--text);
+    }
+    .callout.warning .callout-icon { color: var(--yellow); }
+    .callout.warning h4 { color: var(--yellow); }
+
+    .callout.important {
+      background: var(--blue-light);
+      border-color: var(--blue);
+      color: var(--text);
+    }
+    .callout.important .callout-icon { color: var(--blue); }
+    .callout.important h4 { color: var(--blue); }
+
+    /* Interactive dashboard toggle slider */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .switch input { 
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--border);
+      transition: .3s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--green);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+    .d-none {
+      display: none !important;
+    }
+
+    /* Responsive grid columns for standard fields list */
+    .field-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      font-size: 13px;
+    }
+
+    .field-table th, .field-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    .field-table th {
+      background: var(--bg);
+      font-weight: 700;
+    }
+
+    .field-table tr:hover td {
+      background: var(--bg);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Banner -->
+  <div class="header-banner">
+    <div class="header-content">
+      <div class="meta-badge">
+        <span class="material-icons-round" style="font-size: 12px;">build_circle</span> ADVANCED FORM DESIGN MANUAL
+      </div>
+      <h1 class="header-title">คู่มือการสร้างแบบฟอร์มจัดเก็บข้อมูลและตั้งค่าอย่างละเอียด</h1>
+      <p class="header-desc">เจาะลึกขั้นตอนการออกแบบโครงสร้างคำถาม การกำหนดสิทธิ์สังกัด ตัวแปรคำตอบ และการเชื่อมโยงระบบพิกัด/แดชบอร์ดอัจฉริยะ (หัวใจสำคัญของการจัดเก็บข้อมูลสารสนเทศ)</p>
+    </div>
+  </div>
+
+  <!-- Tabs Nav -->
+  <div class="control-container">
+    <div class="control-bar">
+      <div class="stepper-tabs">
+        <button class="step-tab active" onclick="switchSection('process', this)">
+          <span class="material-icons-round">rule</span> 1. ขั้นตอนการสร้าง & มิติตั้งค่า
+        </button>
+        <button class="step-tab" onclick="switchSection('catalog', this)">
+          <span class="material-icons-round">menu_book</span> 2. คลังฟิลด์มาตรฐาน (Built-in)
+        </button>
+        <button class="step-tab" onclick="switchSection('simulator', this)">
+          <span class="material-icons-round">bolt</span> 3. เครื่องวิเคราะห์จำลองฟอร์ม
+        </button>
+      </div>
+      <button class="theme-btn" onclick="toggleTheme()" title="เปลี่ยนโหมดสี">
+        <span class="material-icons-round" id="themeIcon">dark_mode</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Grid -->
+  <div class="main-grid">
+    
+    <!-- Left Column: Manual Content -->
+    <div class="left-col">
+      
+      <!-- SECTION 1: CREATE PROCESS -->
+      <div id="section-process" class="card">
+        <h3 class="card-title"><span class="material-icons-round">account_tree</span> 1. มิติตั้งค่าและขั้นตอนการออกแบบแบบฟอร์ม</h3>
+        <p>การสร้างแบบฟอร์มในระบบ EduData Sakon ออกแบบมาในลักษณะของ <strong>JSON Schema Form Configuration</strong> ซึ่งจะบันทึกคีย์และรูปแบบข้อมูลไว้ เมื่อเจ้าหน้าที่เลือกกรอก ระบบจะแปลงตัวแปรดังกล่าวเป็นช่องข้อมูลนำส่งจริงทันที มีมิติการตั้งค่าหลัก 4 ขั้นตอนดังนี้:</p>
+        
+        <ul class="step-desc-list">
+          <li class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-details">
+              <div class="step-title">ตั้งค่าข้อมูลพื้นฐาน (Metadata Configuration)</div>
+              <div class="step-text">
+                ป้อนข้อมูลทั่วไป ได้แก่ <strong>ชื่อแบบฟอร์ม</strong> (เพื่อเป็นชื่อแสดงผลหลัก เช่น "รายงานงบประมาณรายจ่าย 2568"), <strong>สังกัดผู้รับรายงาน</strong> (เลือกเป็นรายสังกัดเฉพาะตัว เช่น สพม.สกลนคร หรือเลือก "ทุกสังกัด" สำหรับการเก็บครอบคลุมทั้งจังหวัด) และ <strong>วันเดดไลน์</strong> เพื่อส่งสัญญาณเตือนภัย/ทวงถาม AI เมื่อเข้าสู่สัปดาห์สุดท้าย
+              </div>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-details">
+              <div class="step-title">เลือกคลังฟิลด์มาตรฐาน (Built-in Field Selection)</div>
+              <div class="step-text">
+                ระบบได้รวบรวมฟิลด์ข้อมูลสากลทางสถิติไว้ในคลัง (Catalog) แบ่งเป็น 4 หมวด: ข้อมูลหลัก, อาคาร, งบประมาณ, และอื่นๆ แอดมินสามารถคลิกเลือกเพื่อดึงตัวแปรสำเร็จรูปเข้าระบบได้ทันที สะดวกรวดเร็วและใช้คีย์อ้างอิงตรงกันทั่วจังหวัด
+              </div>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-details">
+              <div class="step-title">ออกแบบฟิลด์สร้างเอง (Custom Field Dimension)</div>
+              <div class="step-text">
+                หากข้อคำถามที่ต้องการจัดเก็บไม่พบในคลังมาตรฐาน แอดมินสามารถกดบวกเพิ่มคำถามแบบ Custom และตั้งค่าคุณสมบัติได้ดังนี้:
+                <ul class="step-list" style="margin-top:8px; margin-left:16px;">
+                  <li><strong>ประเภทคำถาม (Types)</strong>: ตัวเลข (Number), ข้อความสั้น (Text), ข้อความยาว (TextArea), ดร็อปดาวน์ (Select), เลือกข้อเดียว (Radio), ติ๊กเครื่องหมาย (Checkbox), วันที่ (Date), และแถบหัวข้อย่อย (Section)</li>
+                  <li><strong>ขีดจำกัดตัวเลข (Min/Max Range)</strong>: กำหนดตัวเลขขั้นต่ำ/สูงสุดที่อนุญาตให้ป้อน (เช่น ต่ำสุด 0 ป้องกันติดลบ)</li>
+                  <li><strong>ตัวเลือก (Options)</strong>: ป้อนรายการตัวเลือกแยกกันด้วยเครื่องหมาย <code>|</code> สำหรับ Select/Radio</li>
+                  <li><strong>วิดเจ็ตแสดงแดชบอร์ด (Dashboard View Toggle)</strong>: ตั้งค่าเปิดใช้งานสำหรับตัวแปรตัวเลขเพื่อให้ระบบดึงข้อมูลไปเป็น Summary Card เปล่งแอนิเมชันบนแดชบอร์ดผู้บริหารหลักอัตโนมัติ</li>
+                </ul>
+              </div>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">4</div>
+            <div class="step-details">
+              <div class="step-title">ตรวจสอบและเผยแพร่ (Validation & Saving)</div>
+              <div class="step-text">
+                แอดมินสามารถคลิกปุ่ม <strong>"แสดงตัวอย่างแบบฟอร์ม"</strong> เพื่อจำลองการแสดงผลหน้าจอกรอกข้อมูล และตั้งค่าสลับฟิลด์ให้เป็นแบบบังคับกรอก (Required) หรือไม่บังคับกรอก จากนั้นคลิกปุ่มบันทึกเพื่อบันทึกลงฐานข้อมูลและส่งสัญญาณพร้อมใช้งานทันที
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- SECTION 2: FIELD CATALOG -->
+      <div id="section-catalog" class="card d-none">
+        <h3 class="card-title"><span class="material-icons-round">menu_book</span> 2. รายการคลังฟิลด์มาตรฐานของระบบ (Built-in Catalog)</h3>
+        <p>ฟิลด์มาตรฐานที่ระบบจัดเตรียมไว้เพื่อการคำนวณสถิติและเปรียบเทียบเชิงลึกอัตโนมัติ (YoY Analysis & GIS Overlays) มีรายละเอียดดังนี้:</p>
+        
+        <table class="field-table">
+          <thead>
+            <tr>
+              <th>คีย์อ้างอิง (Data Key)</th>
+              <th>ชื่อตัวแปรที่แสดง</th>
+              <th>ประเภท</th>
+              <th>บทบาทหน้าที่ / การเชื่อมโยง</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>school_total</code></td>
+              <td>จำนวนสถานศึกษา</td>
+              <td>ตัวเลข (Number)</td>
+              <td>แสดงผลจำนวนแห่งโรงเรียนในสังกัด (สรุปหน้าแดชบอร์ด)</td>
+            </tr>
+            <tr>
+              <td><code>student_total</code></td>
+              <td>ผู้เรียนทั้งหมด</td>
+              <td>ตัวเลข (Number)</td>
+              <td>ยอดรวมนักเรียนทั้งหมดของสังกัด (Summary Card แดชบอร์ดหลัก)</td>
+            </tr>
+            <tr>
+              <td><code>teacher_total</code></td>
+              <td>ครูและบุคลากรรวม</td>
+              <td>ตัวเลข (Number)</td>
+              <td>คำนวณสัดส่วนอัตราครูต่อนักเรียน (Teacher Shortage Map Overlay)</td>
+            </tr>
+            <tr>
+              <td><code>spc_autistic</code></td>
+              <td>ผู้เรียนออทิสติก</td>
+              <td>ตัวเลข (Number)</td>
+              <td>ดึงเข้าสู่ระบบรายงานผู้เรียนต้องการความช่วยเหลือพิเศษเชิงลึก</td>
+            </tr>
+            <tr>
+              <td><code>building_repair</code></td>
+              <td>อาคารต้องซ่อมแซม</td>
+              <td>ตัวเลข (Number)</td>
+              <td>แสดงสถานภาพความเสถียรของสิ่งปลูกสร้างเพื่อวางแผนจัดสรรงบประมาณ</td>
+            </tr>
+            <tr>
+              <td><code>budget_total</code></td>
+              <td>งบประมาณที่ได้รับ</td>
+              <td>ตัวเลข (Number)</td>
+              <td>ใช้ประเมินร่วมกับตัวแปร budget_used เพื่อคำนวณหาประสิทธิภาพการเงิน</td>
+            </tr>
+            <tr>
+              <td><code>internet_status</code></td>
+              <td>สถานะอินเทอร์เน็ต</td>
+              <td>ตัวเลือก (Select)</td>
+              <td>มีตัวเลือกในตัว: ครบทุกโรงเรียน | บางส่วน | ไม่มี</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECTION 3: SIMULATOR -->
+      <div id="section-simulator" class="card d-none">
+        <h3 class="card-title"><span class="material-icons-round">bolt</span> 3. เครื่องมือจำลองการตั้งค่าโครงสร้างแบบฟอร์ม (Interactive Simulator)</h3>
+        <p>ทดลองเป็นผู้ออกแบบแบบฟอร์มจำลอง เลือกฟิลด์ หรือสร้างฟิลด์ใหม่ และตรวจสอบความเปลี่ยนแปลงของโครงสร้าง JSON Schema เพื่อนำไปบันทึกเป็นแบบฟอร์มจริงได้ทันที</p>
+        
+        <!-- Interactive Simulator Tool -->
+        <div class="sim-container">
+          <h4 style="font-size:14px; font-weight:700; margin-bottom:12px; color:var(--text); display:flex; align-items:center; gap:8px;">
+            <span class="material-icons-round" style="color:var(--primary);">design_services</span>
+            ระบบจำลองหน้าต่างตั้งค่า Form Builder
+          </h4>
+          
+          <div class="sim-form-group">
+            <label>1. ชื่อแบบฟอร์มรายงาน (Form Title)</label>
+            <input type="text" id="simTitle" value="รายงานข้อมูลสถิติสิ่งปลูกสร้างและเด็กพิเศษประจำปี" oninput="updateSimulation()">
+          </div>
+
+          <div class="sim-form-group">
+            <label>2. กำหนดวันปิดส่งข้อมูล (Deadline)</label>
+            <input type="date" id="simDeadline" value="2026-06-30" onchange="updateSimulation()">
+          </div>
+
+          <!-- Catalog Group Selection -->
+          <div class="catalog-group">
+            <label style="font-size:12px; font-weight:700; color:var(--text-muted);">3. เลือกฟิลด์ข้อมูลมาตรฐาน (Built-in Catalog)</label>
+            <div class="cat-tabs">
+              <button class="cat-btn active" onclick="switchCat('main', this)">ข้อมูลหลัก</button>
+              <button class="cat-btn" onclick="switchCat('building', this)">อาคาร</button>
+              <button class="cat-btn" onclick="switchCat('budget', this)">งบประมาณ</button>
+            </div>
+            <div class="chips-area" id="catalogChips">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Custom field adding -->
+          <div style="margin-top:16px; padding:12px; border:1px solid var(--border); border-radius:10px; background:var(--surface);">
+            <label style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:8px; display:block;">4. บวกเพิ่มคำถามสร้างเอง (Custom Field Creator)</label>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px;">
+              <input type="text" id="customLabel" placeholder="ชื่อหัวข้อแสดงผล เช่น จำนวนห้องประชุม">
+              <select id="customType" onchange="toggleCustomOpts()">
+                <option value="number">ตัวเลข (Number)</option>
+                <option value="text">ข้อความสั้น (Text)</option>
+                <option value="select">ดรอปดาวน์ (Select)</option>
+                <option value="textarea">ความเห็นยาว (TextArea)</option>
+              </select>
+            </div>
+
+            <div class="sim-form-group d-none" id="customOptsGroup">
+              <label>ป้อนตัวเลือกคำตอบ (แยกกันด้วยเครื่องหมาย | )</label>
+              <input type="text" id="customOpts" placeholder="เช่น มีความพร้อม | ปานกลาง | ควรปรับปรุง">
+            </div>
+
+            <!-- Dashboard view switch for number fields -->
+            <div class="sim-form-group" id="customDashGroup" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <div>
+                <div style="font-weight: 700; font-size:12px; color:var(--text);">แสดงผลเป็น Widget สรุปบน Dashboard</div>
+                <div style="font-size: 10px; color: var(--text-muted);">จะเรนเดอร์การ์ดแอนิเมชันให้ผู้บริหารทันทีบนหน้าแรก</div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="customDashToggle">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <button type="button" onclick="addCustomSimField()" style="width:100%; padding:8px; border:none; background:var(--primary); color:white; font-weight:700; border-radius:6px; cursor:pointer; font-family:inherit; font-size:13px;">
+              + เพิ่มคำถามสร้างเองเข้าสู่แบบฟอร์ม
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Sim Preview & JSON Inspector -->
+    <div class="right-col">
+      
+      <!-- PREVIEW CARD -->
+      <div class="card" style="position: sticky; top: 24px;">
+        <h3 class="card-title"><span class="material-icons-round">visibility</span> พรีวิวและตัวเก็บข้อมูล JSON Schema</h3>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">แบบฟอร์มจำลองการเรนเดอร์คำถาม และ โครงสร้าง JSON ที่บันทึกขึ้นระบบ Google Sheets:</p>
+        
+        <!-- Live Form Simulator Preview -->
+        <div style="margin-bottom:20px;">
+          <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px;">หน้าต่างกรอกแบบฟอร์มของเจ้าหน้าที่หน่วยงาน</div>
+          <div class="preview-box" id="previewArea">
+            <!-- Rendered fields -->
+          </div>
+        </div>
+
+        <!-- Live JSON Schema Inspector -->
+        <div>
+          <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px;">ตารางฐานข้อมูลตาราง Settings & FormTemplates (JSON)</div>
+          <pre><code id="jsonSchema">{}</code></pre>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // Theme Manager
+    function initTheme() {
+      const saved = localStorage.getItem('form_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', saved);
+      updateThemeIcon(saved);
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('form_theme', next);
+      updateThemeIcon(next);
+    }
+
+    function updateThemeIcon(theme) {
+      const icon = document.getElementById('themeIcon');
+      if (icon) {
+        icon.innerText = theme === 'dark' ? 'light_mode' : 'dark_mode';
+      }
+    }
+
+    // Switch manual sections
+    function switchSection(secId, btnElement) {
+      document.getElementById('section-process').classList.add('d-none');
+      document.getElementById('section-catalog').classList.add('d-none');
+      document.getElementById('section-simulator').classList.add('d-none');
+      
+      document.getElementById('section-' + secId).classList.remove('d-none');
+      
+      document.querySelectorAll('.step-tab').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      btnElement.classList.add('active');
+    }
+
+    // Simulator Logic
+    const SIM_CATALOG = {
+      main: [
+        { name:'school_total', label:'จำนวนสถานศึกษา', type:'number', dash:true },
+        { name:'student_total', label:'ผู้เรียนทั้งหมด', type:'number', dash:true },
+        { name:'teacher_total', label:'ครูและบุคลากรรวม', type:'number', dash:true }
+      ],
+      building: [
+        { name:'building_total', label:'อาคารเรียนทั้งหมด', type:'number', dash:false },
+        { name:'internet_status', label:'สถานะอินเทอร์เน็ต', type:'select', opts:'ครบทุกโรงเรียน|บางส่วน|ไม่มี' },
+        { name:'problem_desc', label:'ปัญหาที่พบ', type:'textarea' }
+      ],
+      budget: [
+        { name:'budget_total', label:'งบประมาณที่ได้รับ', type:'number', dash:false },
+        { name:'quarter', label:'ไตรมาสที่รายงาน', type:'select', opts:'ไตรมาส 1|ไตรมาส 2|ไตรมาส 3|ไตรมาส 4' }
+      ]
+    };
+
+    let activeCat = 'main';
+    let simSelectedFields = [
+      { name:'school_total', label:'จำนวนสถานศึกษา', type:'number', required:true, dash:true },
+      { name:'student_total', label:'ผู้เรียนทั้งหมด', type:'number', required:true, dash:true }
+    ];
+
+    function switchCat(catName, btnElement) {
+      activeCat = catName;
+      document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+      btnElement.classList.add('active');
+      renderCatalogChips();
+    }
+
+    function renderCatalogChips() {
+      const area = document.getElementById('catalogChips');
+      const fields = SIM_CATALOG[activeCat];
+      area.innerHTML = fields.map(f => {
+        const isSelected = simSelectedFields.some(x => x.name === f.name);
+        const activeClass = isSelected ? 'selected' : '';
+        return `<div class="item-chip ${activeClass}" onclick="toggleSimField('${f.name}')">${f.label}</div>`;
+      }).join('');
+    }
+
+    function toggleSimField(name) {
+      const fields = SIM_CATALOG[activeCat];
+      const target = fields.find(f => f.name === name);
+      if (!target) return;
+
+      const idx = simSelectedFields.findIndex(x => x.name === name);
+      if (idx >= 0) {
+        simSelectedFields.splice(idx, 1);
+      } else {
+        simSelectedFields.push({ ...target, required: true });
+      }
+      renderCatalogChips();
+      updateSimulation();
+    }
+
+    function toggleCustomOpts() {
+      const type = document.getElementById('customType').value;
+      const optsGroup = document.getElementById('customOptsGroup');
+      const dashGroup = document.getElementById('customDashGroup');
+      
+      optsGroup.classList.toggle('d-none', type !== 'select');
+      dashGroup.classList.toggle('d-none', type !== 'number');
+    }
+
+    function addCustomSimField() {
+      const label = document.getElementById('customLabel').value.trim();
+      const type = document.getElementById('customType').value;
+      const opts = document.getElementById('customOpts').value.trim();
+      const isDash = type === 'number' && document.getElementById('customDashToggle').checked;
+
+      if (!label) {
+        alert('กรุณากรอกชื่อหัวข้อคำถาม!');
+        return;
+      }
+      if (type === 'select' && !opts) {
+        alert('กรุณากรอกตัวเลือก!');
+        return;
+      }
+
+      const newKey = 'custom_' + type.charAt(0) + '_' + Date.now().toString(36);
+      const newItem = {
+        name: newKey,
+        label: label,
+        type: type,
+        required: true,
+        dash: isDash
+      };
+      if (type === 'select') newItem.opts = opts;
+
+      simSelectedFields.push(newItem);
+      
+      // Reset inputs
+      document.getElementById('customLabel').value = '';
+      document.getElementById('customOpts').value = '';
+      
+      updateSimulation();
+      renderCatalogChips();
+    }
+
+    function removeSimField(name) {
+      simSelectedFields = simSelectedFields.filter(f => f.name !== name);
+      updateSimulation();
+      renderCatalogChips();
+    }
+
+    function toggleRequired(name) {
+      const field = simSelectedFields.find(f => f.name === name);
+      if (field) {
+        field.required = !field.required;
+      }
+      updateSimulation();
+    }
+
+    function updateSimulation() {
+      const title = document.getElementById('simTitle').value.trim() || 'ตัวอย่างแบบฟอร์ม';
+      const deadline = document.getElementById('simDeadline').value;
+      
+      // 1. Render Preview fields list
+      const previewArea = document.getElementById('previewArea');
+      
+      // Static default title input
+      let html = `<div class="sim-form-group">
+        <label>หัวข้อการรายงาน (คงที่สำหรับทุกแบบฟอร์ม)${simSelectedFields.length > 0 ? ' <span style="color:var(--red);">*</span>' : ''}</label>
+        <input type="text" value="${title}" disabled style="background:var(--bg);">
+      </div>`;
+
+      // Render other dynamic inputs
+      html += simSelectedFields.map(f => {
+        const reqStr = f.required ? '<span style="color:var(--red); margin-left:2px;">*</span>' : '';
+        const reqCheck = f.required ? 'checked' : '';
+        const dashBadge = f.dash ? '<span style="background:var(--green-light); color:var(--green); font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700; margin-left:8px;">📊 Dashboard</span>' : '';
+        
+        let controlHtml = '';
+        if (f.type === 'number') {
+          controlHtml = '<input type="number" placeholder="กรอกตัวเลข">';
+        } else if (f.type === 'select') {
+          const opts = (f.opts || '').split('|').map(o => `<option>${o.trim()}</option>`).join('');
+          controlHtml = `<select><option>-- กรุณาเลือก --</option>${opts}</select>`;
+        } else if (f.type === 'textarea') {
+          controlHtml = '<textarea rows="2" placeholder="กรอกรายละเอียด..."></textarea>';
+        } else {
+          controlHtml = '<input type="text" placeholder="กรอกข้อความ">';
+        }
+
+        return `<div class="preview-field" style="flex-direction:column; align-items:stretch; gap:6px;">
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <span style="font-weight:600; font-size:13px;">${f.label}${reqStr}${dashBadge}</span>
+            <div class="preview-field-right">
+              <label style="font-size:11px; cursor:pointer; display:inline-flex; align-items:center; gap:3px; font-weight:normal;">
+                <input type="checkbox" ${reqCheck} onchange="toggleRequired('${f.name}')"> บังคับกรอก
+              </label>
+              <button class="btn-action-small" onclick="removeSimField('${f.name}')" title="ลบฟิลด์">×</button>
+            </div>
+          </div>
+          ${controlHtml}
+        </div>`;
+      }).join('');
+
+      previewArea.innerHTML = html;
+
+      // 2. Render JSON Schema config
+      const jsonArea = document.getElementById('jsonSchema');
+      const schemaPayload = {
+        formId: "FORM_" + Date.now().toString(36).toUpperCase(),
+        formName: title,
+        deadline: deadline || null,
+        agencyId: "ALL", // Default targets all
+        formConfig: [
+          { name: "report_title", label: "หัวข้อการรายงาน", type: "text", required: true }
+        ].concat(simSelectedFields.map(f => {
+          const c = { name: f.name, label: f.label, type: f.type, required: f.required };
+          if (f.opts) c.opts = f.opts;
+          return c;
+        }))
+      };
+
+      jsonArea.innerText = JSON.stringify(schemaPayload, null, 2);
+    }
+
+    // Run startup functions
+    initTheme();
+    renderCatalogChips();
+    updateSimulation();
+  </script>
+</body>
+</html>

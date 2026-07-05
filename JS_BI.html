@@ -1,0 +1,2700 @@
+<script>
+// ============================================================
+
+// ── Data Source Registry (ครบถ้วนทุก widget) ─────────────────
+var BI_DATA_SOURCES = [
+  { group:'📊 ภาพรวมจังหวัด', sources:[
+    { key:'totalSchools',   label:'สถานศึกษาทั้งหมด',      unit:'แห่ง', path:'root.totalSchools',   icon:'domain',       color:'#1a73e8', chartType:['kpi','kpi_compare','gauge','bar','line'] },
+    { key:'totalStudents',  label:'ผู้เรียนรวมทั้งจังหวัด', unit:'คน',   path:'root.totalStudents',  icon:'groups',       color:'#34a853', chartType:['kpi','kpi_compare','gauge','bar','line'] },
+    { key:'totalTeachers',  label:'ครูและบุคลากรรวม',      unit:'คน',   path:'root.totalTeachers',  icon:'co_present',   color:'#673ab7', chartType:['kpi','kpi_compare','gauge','bar','line'] },
+    { key:'totalSpecial',   label:'ผู้เรียนพิเศษรวม',      unit:'คน',   path:'root.totalSpecial',   icon:'accessibility',color:'#e91e63', chartType:['kpi','kpi_compare','gauge','bar','line'] },
+    { key:'pendingCount',   label:'รอการอนุมัติ',           unit:'ฉบับ', path:'root.pendingCount',   icon:'schedule',     color:'#fbbc04', chartType:['kpi','kpi_compare','gauge'] },
+  ]},
+  { group:'🎓 ผู้เรียนแยกระดับชั้น', sources:[
+    { key:'std_pre',    label:'ก่อนประถมศึกษา', unit:'คน', path:'studentSummary.ก่อนประถม', icon:'child_care', color:'#1a73e8', chartType:['kpi','bar','bar_h','pie','donut','line','area','radar'] },
+    { key:'std_p',      label:'ประถมศึกษา',     unit:'คน', path:'studentSummary.ประถม',     icon:'school',     color:'#34a853', chartType:['kpi','bar','bar_h','pie','donut','line','area','radar'] },
+    { key:'std_m_ton',  label:'มัธยมศึกษาตอนต้น',unit:'คน',path:'studentSummary.ม.ต้น',    icon:'school',     color:'#673ab7', chartType:['kpi','bar','bar_h','pie','donut','line','area','radar'] },
+    { key:'std_m_plai', label:'มัธยมศึกษาตอนปลาย',unit:'คน',path:'studentSummary.ม.ปลาย', icon:'school',     color:'#ea4335', chartType:['kpi','bar','bar_h','pie','donut','line','area','radar'] },
+    { key:'std_voc',    label:'อาชีวศึกษา ปวช./ปวส.',unit:'คน',path:'studentSummary.ปวช/ปวส',icon:'engineering',color:'#ff9800',chartType:['kpi','bar','bar_h','pie','donut','line','area','radar'] },
+    { key:'student_all_levels', label:'ผู้เรียนทุกระดับ (กราฟรวม)', unit:'', path:'studentSummary', icon:'bar_chart', color:'#1a73e8', chartType:['bar','bar_h','pie','donut','radar','line','area'] },
+  ]},
+  { group:'👩‍🏫 บุคลากรแยกสังกัด', sources:[
+    { key:'teacher_by_agency', label:'ครูแยกตามสังกัด (กราฟ)', unit:'คน', path:'teacherSummary', icon:'co_present', color:'#673ab7', chartType:['bar','bar_h','pie','donut','radar','line','area'] },
+  ]},
+  { group:'♿ ผู้เรียนพิเศษ', sources:[
+    { key:'spc_autistic', label:'ออทิสติก',            unit:'คน', path:'specialSummary.ออทิสติก', icon:'accessibility', color:'#9c27b0', chartType:['kpi','bar','bar_h','pie','donut','radar'] },
+    { key:'spc_physical', label:'บกพร่องทางร่างกาย',   unit:'คน', path:'specialSummary.ร่างกาย',  icon:'accessibility', color:'#2196f3', chartType:['kpi','bar','bar_h','pie','donut','radar'] },
+    { key:'spc_mental',   label:'บกพร่องสติปัญญา',    unit:'คน', path:'specialSummary.สติปัญญา', icon:'accessibility', color:'#f44336', chartType:['kpi','bar','bar_h','pie','donut','radar'] },
+    { key:'special_all',  label:'ผู้เรียนพิเศษทุกประเภท (กราฟ)', unit:'', path:'specialSummary', icon:'pie_chart', color:'#e91e63', chartType:['bar','bar_h','pie','donut','radar'] },
+  ]},
+  { group:'🏫 สถานศึกษาแยกสังกัด', sources:[
+    { key:'chart_agency', label:'สถานศึกษาแยกสังกัด (กราฟ)', unit:'แห่ง', path:'agencySummary', icon:'bar_chart', color:'#1a73e8', chartType:['bar','bar_h','pie','donut','radar','line','area','ranking','table'] },
+  ]},
+  { group:'📋 การรายงาน (Monitoring)', sources:[
+    { key:'mon_total',    label:'จำนวนสังกัดทั้งหมด',  unit:'หน่วย', path:'monitor.allAgencies',   icon:'account_balance', color:'#1a73e8', chartType:['kpi','gauge'] },
+    { key:'mon_approved', label:'อนุมัติแล้ว',          unit:'ฉบับ',  path:'monitor.totalApproved', icon:'check_circle',    color:'#34a853', chartType:['kpi','gauge','bar','line'] },
+    { key:'mon_pending',  label:'รออนุมัติ',            unit:'ฉบับ',  path:'monitor.totalPending',  icon:'schedule',        color:'#fbbc04', chartType:['kpi','gauge','bar','line'] },
+    { key:'mon_rejected', label:'ส่งกลับแก้ไข',         unit:'ฉบับ',  path:'monitor.totalRejected', icon:'cancel',          color:'#ea4335', chartType:['kpi','gauge','bar','line'] },
+    { key:'mon_notsent',  label:'ยังไม่ส่ง',            unit:'หน่วย', path:'monitor.totalNotSent',  icon:'radio_button_unchecked', color:'#9e9e9e', chartType:['kpi','gauge','bar'] },
+    { key:'mon_pct',      label:'% ความสำเร็จรวม',      unit:'%',     path:'monitor.overallPct',    icon:'donut_large',     color:'#34a853', chartType:['kpi','gauge','progress'] },
+    { key:'mon_status_table', label:'ตารางสถานะการรายงาน', unit:'', path:'monitor', icon:'fact_check', color:'#ea4335', chartType:['monitor_tbl','table'] },
+  ]},
+  { group:'✏️ กำหนดเอง (Custom)', sources:[
+    { key:'custom_number', label:'ตัวเลขกำหนดเอง',  unit:'', path:'custom', icon:'edit', color:'#607d8b', chartType:['kpi','gauge','progress','bar','line'] },
+    { key:'custom_pct',    label:'เปอร์เซ็นต์กำหนดเอง', unit:'%', path:'custom', icon:'percent', color:'#607d8b', chartType:['kpi','gauge','progress'] },
+    { key:'custom_text',   label:'ข้อความกำหนดเอง', unit:'', path:'custom', icon:'title', color:'#607d8b', chartType:['text'] },
+  ]},
+];
+
+// ── Resolve value from data source ───────────────────────────────
+function biResolveValue(path, customVal) {
+  if (!path || path === 'custom') return customVal !== undefined ? customVal : 0;
+  var parts = path.split('.');
+  var root  = parts[0];
+  var key   = parts.slice(1).join('.');
+  var d = _biDashData || {};
+  var m = _biMonitorData || {};
+
+  if (root === 'root') {
+    var keys = key.split('.');
+    var val = d;
+    keys.forEach(function(k){ val = val ? val[k] : undefined; });
+    return val !== undefined ? val : 0;
+  }
+  if (root === 'studentSummary') return _biSummaryValue(d.studentSummary, key);
+  if (root === 'specialSummary') return _biSummaryValue(d.specialSummary, key);
+  if (root === 'agencySummary')  return d.agencySummary  || { labels:[], values:[] };
+  if (root === 'teacherSummary') return d.teacherSummary || { labels:[], values:[] };
+  if (root === 'studentSummary' && !key) return d.studentSummary || { labels:[], values:[] };
+  if (root === 'monitor') {
+    var ov = (m && m.overall) ? m.overall : {};
+    return key ? (ov[key] || 0) : ov;
+  }
+  return customVal !== undefined ? customVal : 0;
+}
+
+function _biSummaryValue(summary, key) {
+  if (!summary || !summary.labels) return 0;
+  var idx = summary.labels.indexOf(key);
+  return idx >= 0 ? (summary.values[idx] || 0) : 0;
+}
+
+function biGetSourceDef(key) {
+  for (var g = 0; g < BI_DATA_SOURCES.length; g++) {
+    var src = BI_DATA_SOURCES[g].sources.find(function(s){ return s.key === key; });
+    if (src) return src;
+  }
+  return null;
+}
+
+// ── Get filtered sources for widget type ─────────────────────────
+function biGetSourcesForType(widgetType) {
+  var result = [];
+  BI_DATA_SOURCES.forEach(function(grp) {
+    var filtered = grp.sources.filter(function(s) {
+      return !s.chartType || s.chartType.indexOf(widgetType) >= 0;
+    });
+    if (filtered.length > 0) {
+      result.push({ group: grp.group, sources: filtered });
+    }
+  });
+  return result;
+}
+
+// ── Widget type labels ────────────────────────────────────────────
+var BI_TYPE_LABELS = {
+  kpi:'KPI Card', kpi_compare:'KPI เปรียบเทียบ', stat_group:'กลุ่ม KPI 4 ค่า',
+  bar:'Bar Chart', bar_h:'Horizontal Bar', line:'Line Chart', area:'Area Chart',
+  pie:'Pie Chart', donut:'Donut Chart', radar:'Radar Chart',
+  progress:'Progress Bar', gauge:'Gauge / Speedometer',
+  table:'ตาราง Agency', ranking:'Ranking List', monitor_tbl:'สถานะการรายงาน',
+  map:'แผนที่สังกัด', yoy:'เปรียบเทียบ YoY', text:'Text / Heading',
+  divider:'Divider', spacer:'Spacer'
+};
+
+// ════════════════════════════════════════════════════════════════
+//  PROPERTY PANEL — Power BI Style
+// ════════════════════════════════════════════════════════════════
+function _openPropPanel(w) {
+  var panel = document.getElementById('bi-prop-panel');
+  var cont  = document.getElementById('bi-prop-content');
+  if (!panel || !cont) return;
+  panel.style.display = '';
+  cont.innerHTML = '';
+
+  // ── Tab System ────────────────────────────────────────────────
+  var tabs = [
+    { id:'data',   icon:'storage',      label:'ข้อมูล' },
+    { id:'visual', icon:'palette',      label:'รูปแบบ' },
+    { id:'format', icon:'text_fields',  label:'ข้อความ' },
+    { id:'layout', icon:'dashboard',    label:'Layout' },
+  ];
+
+  var noDataTypes = ['text','divider','spacer','map'];
+  if (noDataTypes.indexOf(w.type) >= 0) {
+    tabs = tabs.filter(function(t){ return t.id !== 'data'; });
+  }
+
+  var tabBar = document.createElement('div');
+  tabBar.style.cssText = 'display:flex;border-bottom:2px solid var(--border-l);margin-bottom:0;background:var(--s1);margin:-16px -16px 16px;';
+
+  var activeTab = w._activeTab || tabs[0].id;
+  tabs.forEach(function(tab) {
+    var btn = document.createElement('button');
+    var isActive = tab.id === activeTab;
+    btn.style.cssText = 'flex:1;padding:10px 4px 8px;border:none;background:transparent;cursor:pointer;font-size:10px;font-weight:700;color:' + (isActive?'var(--blue)':'var(--muted)') + ';border-bottom:2px solid ' + (isActive?'var(--blue)':'transparent') + ';margin-bottom:-2px;transition:.15s;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:Google Sans,Sarabun,sans-serif;';
+    btn.innerHTML = '<span class="material-icons-round" style="font-size:16px;">' + tab.icon + '</span>' + tab.label;
+    btn.addEventListener('click', function() {
+      w._activeTab = tab.id;
+      _openPropPanel(w);
+    });
+    tabBar.appendChild(btn);
+  });
+  cont.appendChild(tabBar);
+
+  // ── Tab Content ────────────────────────────────────────────────
+  var tabBody = document.createElement('div');
+  tabBody.style.cssText = 'padding:0;';
+  cont.appendChild(tabBody);
+
+  if (activeTab === 'data')   _renderDataTab(w, tabBody);
+  if (activeTab === 'visual') _renderVisualTab(w, tabBody);
+  if (activeTab === 'format') _renderFormatTab(w, tabBody);
+  if (activeTab === 'layout') _renderLayoutTab(w, tabBody);
+
+  // ── Footer Actions ────────────────────────────────────────────
+  var footer = document.createElement('div');
+  footer.style.cssText = 'margin-top:16px;padding-top:12px;border-top:1px solid var(--border-l);display:flex;gap:6px;';
+  footer.innerHTML = '<button onclick="biDupeWidget(\'' + w.id + '\')" class="btn btn-outlined btn-sm" style="flex:1;font-size:11px;">'
+    + '<span class="material-icons-round" style="font-size:13px;">content_copy</span> ทำสำเนา</button>'
+    + '<button onclick="biRemoveWidget(\'' + w.id + '\')" class="btn btn-ghost btn-sm" style="color:var(--red);width:32px;padding:0;" title="ลบ Widget">'
+    + '<span class="material-icons-round" style="font-size:16px;">delete</span></button>';
+  cont.appendChild(footer);
+}
+
+// ════════════ TAB: ข้อมูล (Data) ════════════════════════════════
+function _renderDataTab(w, container) {
+  // Widget type info badge
+  _propSection(container, 'ประเภท Widget', function(sec) {
+    var badge = document.createElement('div');
+    badge.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 12px;background:' + (w.color||'#1a73e8') + '11;border-radius:8px;border:1px solid ' + (w.color||'#1a73e8') + '33;';
+    var typeDef = BI_WIDGET_TYPES.find(function(t){ return t.type===w.type; }) || {};
+    badge.innerHTML = '<span class="material-icons-round" style="font-size:18px;color:' + (w.color||'#1a73e8') + ';">' + (typeDef.icon||'widgets') + '</span>'
+      + '<div><div style="font-size:12px;font-weight:700;color:var(--text);">' + (BI_TYPE_LABELS[w.type]||w.type) + '</div>'
+      + '<div style="font-size:10px;color:var(--muted);">Widget Type</div></div>';
+    sec.appendChild(badge);
+  });
+
+  // Primary data source
+  var filteredSources = biGetSourcesForType(w.type);
+  _propSection(container, 'แหล่งข้อมูลหลัก', function(sec) {
+    var hint = document.createElement('div');
+    hint.style.cssText = 'font-size:10px;color:var(--muted);margin-bottom:8px;padding:6px 8px;background:var(--s1);border-radius:6px;border-left:3px solid var(--blue);';
+    hint.innerText = 'เลือกแหล่งข้อมูลที่ต้องการแสดงใน widget นี้';
+    sec.appendChild(hint);
+
+    var sel = _makeSelect(filteredSources, w.dataKey, function(val) {
+      w.dataKey = val;
+      // auto-apply color from source
+      var srcDef = biGetSourceDef(val);
+      if (srcDef && srcDef.color && !w._colorCustomized) {
+        w.color = srcDef.color;
+      }
+      // auto-apply unit
+      if (srcDef && srcDef.unit) w.unit = srcDef.unit;
+      _biSaveToStorage();
+      _biRenderCanvas();
+      _openPropPanel(w);
+    });
+    sec.appendChild(sel);
+
+    // Live preview of current value
+    var curSrc = biGetSourceDef(w.dataKey);
+    if (curSrc && w.type !== 'text') {
+      var preview = document.createElement('div');
+      preview.style.cssText = 'margin-top:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border-l);border-radius:8px;display:flex;align-items:center;gap:10px;';
+      var rawVal = biResolveValue(curSrc.path, w.customVal || 0);
+      var dispVal = typeof rawVal === 'number' ? rawVal.toLocaleString() : (typeof rawVal === 'object' ? '(ชุดข้อมูล)' : rawVal);
+      preview.innerHTML = '<span class="material-icons-round" style="font-size:14px;color:var(--muted);">preview</span>'
+        + '<div style="flex:1;"><div style="font-size:10px;color:var(--muted);">ค่าปัจจุบัน</div>'
+        + '<div style="font-size:16px;font-weight:700;color:' + (curSrc.color||'var(--blue)') + ';">' + dispVal + ' ' + (w.unit||curSrc.unit||'') + '</div></div>';
+      sec.appendChild(preview);
+    }
+  });
+
+  // Custom value (for custom_number, custom_pct, custom_text)
+  if (w.dataKey && w.dataKey.startsWith('custom')) {
+    _propSection(container, 'ค่าที่กำหนดเอง', function(sec) {
+      var isText = w.dataKey === 'custom_text';
+      var inp = document.createElement('input');
+      inp.type = isText ? 'text' : 'number';
+      inp.className = 'bi-prop-input';
+      inp.value = w.customVal !== undefined ? w.customVal : '';
+      inp.placeholder = isText ? 'พิมพ์ข้อความ...' : '0';
+      inp.addEventListener('input', function() {
+        w.customVal = isText ? this.value : parseFloat(this.value) || 0;
+        _biSaveToStorage();
+        _biRenderCanvas();
+      });
+      sec.appendChild(inp);
+    });
+  }
+
+  // Secondary data source (for kpi_compare)
+  if (w.type === 'kpi_compare') {
+    _propSection(container, 'แหล่งข้อมูลที่ 2 (เปรียบเทียบ)', function(sec) {
+      var sel2 = _makeSelect(filteredSources, w.dataKey2, function(val) {
+        w.dataKey2 = val;
+        _biSaveToStorage();
+        _biRenderCanvas();
+        _openPropPanel(w);
+      });
+      sec.appendChild(sel2);
+    });
+  }
+
+  // Aggregation / calculation
+  if (['bar','bar_h','line','area','pie','donut','radar'].indexOf(w.type) >= 0) {
+    _propSection(container, 'การคำนวณ', function(sec) {
+      _makeToggleRow(sec, 'แสดงเป็น %', 'showPct', w, w.showPct);
+      _makeToggleRow(sec, 'เรียงลำดับจากมากไปน้อย', 'sortDesc', w, w.sortDesc);
+      _makeToggleRow(sec, 'จำกัดจำนวนรายการ', 'limitData', w, w.limitData);
+      if (w.limitData) {
+        var limitInp = _makeNumberInput('จำนวนสูงสุด', 'dataLimit', w.dataLimit || 10, 1, 50, w);
+        sec.appendChild(limitInp);
+      }
+    });
+  }
+}
+
+// ════════════ TAB: รูปแบบ (Visual) ══════════════════════════════
+function _renderVisualTab(w, container) {
+  // Colors
+  _propSection(container, 'สีหลัก (Accent Color)', function(sec) {
+    var presets = ['#1a73e8','#34a853','#ea4335','#fbbc04','#673ab7','#e91e63','#00bcd4','#ff5722','#795548','#607d8b','#4caf50','#ff9800'];
+    var swatchRow = document.createElement('div');
+    swatchRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;';
+    presets.forEach(function(c) {
+      var sw = document.createElement('div');
+      sw.style.cssText = 'width:24px;height:24px;border-radius:6px;cursor:pointer;background:' + c
+        + ';border:2px solid ' + (c === w.color ? 'var(--text)' : 'transparent')
+        + ';transition:.15s;flex-shrink:0;';
+      sw.title = c;
+      sw.addEventListener('click', function() {
+        w.color = c;
+        w._colorCustomized = true;
+        _biSaveToStorage();
+        _biRenderCanvas();
+        _openPropPanel(w);
+      });
+      swatchRow.appendChild(sw);
+    });
+    sec.appendChild(swatchRow);
+    // Custom color picker
+    var customRow = document.createElement('div');
+    customRow.style.cssText = 'display:flex;align-items:center;gap:8px;';
+    var colorPick = document.createElement('input');
+    colorPick.type = 'color';
+    colorPick.value = w.color || '#1a73e8';
+    colorPick.style.cssText = 'width:40px;height:32px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;padding:2px;';
+    colorPick.addEventListener('input', function() {
+      w.color = this.value;
+      w._colorCustomized = true;
+      _biSaveToStorage();
+      _biRenderCanvas();
+    });
+    var colorLabel = document.createElement('span');
+    colorLabel.style.cssText = 'font-size:11px;color:var(--muted);font-family:monospace;';
+    colorLabel.innerText = w.color || '#1a73e8';
+    colorPick.addEventListener('input', function(){ colorLabel.innerText = this.value; });
+    customRow.appendChild(colorPick);
+    customRow.appendChild(colorLabel);
+    sec.appendChild(customRow);
+  });
+
+  // Background
+  _propSection(container, 'สีพื้นหลัง Card', function(sec) {
+    var bgPresets = ['#ffffff','#f8f9fa','#e8f0fe','#e6f4ea','#fce8e6','#fef3e2','#f3e5f5','#e0f2f1','#1a1a2e','#0d1b2a'];
+    var swatchRow = document.createElement('div');
+    swatchRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;';
+    bgPresets.forEach(function(c) {
+      var sw = document.createElement('div');
+      var isCurrent = (w.bgColor||'') === c || (!w.bgColor && c === '#ffffff');
+      sw.style.cssText = 'width:24px;height:24px;border-radius:6px;cursor:pointer;background:' + c
+        + ';border:2px solid ' + (isCurrent ? 'var(--blue)' : 'var(--border)')
+        + ';transition:.15s;flex-shrink:0;';
+      sw.title = c;
+      sw.addEventListener('click', function() {
+        w.bgColor = c === '#ffffff' ? '' : c;
+        _biSaveToStorage();
+        _biRenderCanvas();
+        _openPropPanel(w);
+      });
+      swatchRow.appendChild(sw);
+    });
+    sec.appendChild(swatchRow);
+    var cpRow = document.createElement('div');
+    cpRow.style.cssText = 'display:flex;align-items:center;gap:8px;';
+    var bgPick = document.createElement('input');
+    bgPick.type = 'color';
+    bgPick.value = w.bgColor || '#ffffff';
+    bgPick.style.cssText = 'width:40px;height:32px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;padding:2px;';
+    bgPick.addEventListener('input', function() {
+      w.bgColor = this.value;
+      _biSaveToStorage();
+      _biRenderCanvas();
+    });
+    var clearBtn = document.createElement('button');
+    clearBtn.className = 'btn btn-ghost btn-sm';
+    clearBtn.style.cssText = 'font-size:11px;height:28px;';
+    clearBtn.innerHTML = '<span class="material-icons-round" style="font-size:13px;">format_color_reset</span> ล้าง';
+    clearBtn.addEventListener('click', function() {
+      w.bgColor = '';
+      _biSaveToStorage();
+      _biRenderCanvas();
+      _openPropPanel(w);
+    });
+    cpRow.appendChild(bgPick);
+    cpRow.appendChild(clearBtn);
+    sec.appendChild(cpRow);
+  });
+
+  // Border
+  _propSection(container, 'ขอบ Card', function(sec) {
+    _makeToggleRow(sec, 'แสดงขอบสี', 'showBorder', w, w.showBorder);
+    if (w.showBorder) {
+      var bpRow = document.createElement('div');
+      bpRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:8px;';
+      var bPick = document.createElement('input');
+      bPick.type = 'color';
+      bPick.value = w.borderColor || w.color || '#1a73e8';
+      bPick.style.cssText = 'width:40px;height:32px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;padding:2px;';
+      bPick.addEventListener('input', function() {
+        w.borderColor = this.value;
+        _biSaveToStorage();
+        _biRenderCanvas();
+      });
+      var bLabel = document.createElement('span');
+      bLabel.style.cssText = 'font-size:11px;color:var(--muted);';
+      bLabel.innerText = 'สีขอบ';
+      bpRow.appendChild(bPick);
+      bpRow.appendChild(bLabel);
+      sec.appendChild(bpRow);
+    }
+  });
+
+  // Chart-specific visual options
+  if (['bar','bar_h','line','area','pie','donut','radar'].indexOf(w.type) >= 0) {
+    _propSection(container, 'ตัวเลือกกราฟ', function(sec) {
+      if (['pie','donut'].indexOf(w.type) >= 0) {
+        _makeToggleRow(sec, 'แสดง Legend', 'showLegend', w, w.showLegend);
+        _makeToggleRow(sec, 'แสดง Label บนกราฟ', 'showLabel', w, w.showLabel);
+      } else {
+        _makeToggleRow(sec, 'แสดง Data Label', 'showLabel', w, w.showLabel);
+        _makeToggleRow(sec, 'แสดง Grid Lines', 'showGrid', w, w.showGrid !== false);
+        _makeToggleRow(sec, 'แสดง Legend', 'showLegend', w, w.showLegend);
+      }
+      if (['line','area'].indexOf(w.type) >= 0) {
+        _makeToggleRow(sec, 'เส้นโค้งแบบ Smooth', 'smoothLine', w, w.smoothLine !== false);
+      }
+      // Color palette for multi-data charts
+      var palettes = [
+        { label:'Google', colors:['#1a73e8','#34a853','#fbbc04','#ea4335','#673ab7','#00bcd4'] },
+        { label:'Pastel', colors:['#90caf9','#a5d6a7','#fff59d','#ef9a9a','#ce93d8','#80deea'] },
+        { label:'Bold',   colors:['#0d47a1','#1b5e20','#e65100','#b71c1c','#4a148c','#006064'] },
+        { label:'Earth',  colors:['#795548','#8d6e63','#a1887f','#bcaaa4','#d7ccc8','#efebe9'] },
+      ];
+      var pLabel = document.createElement('div');
+      pLabel.style.cssText = 'font-size:10px;font-weight:600;color:var(--muted);margin-top:10px;margin-bottom:6px;letter-spacing:.3px;';
+      pLabel.innerText = 'COLOR PALETTE';
+      sec.appendChild(pLabel);
+      palettes.forEach(function(pal) {
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:5px;cursor:pointer;padding:5px 8px;border-radius:7px;border:1.5px solid ' + (w._palette===pal.label?'var(--blue)':'var(--border-l)') + ';background:' + (w._palette===pal.label?'var(--blue-ll)':'var(--surface)') + ';';
+        row.innerHTML = '<span style="font-size:11px;font-weight:600;color:var(--text);width:38px;">' + pal.label + '</span>'
+          + pal.colors.map(function(c){ return '<div style="width:14px;height:14px;border-radius:3px;background:' + c + ';"></div>'; }).join('');
+        row.addEventListener('click', function() {
+          w._palette = pal.label;
+          w._paletteColors = pal.colors;
+          _biSaveToStorage();
+          _biRenderCanvas();
+          _openPropPanel(w);
+        });
+        sec.appendChild(row);
+      });
+    });
+  }
+
+  // KPI-specific
+  if (['kpi','kpi_compare'].indexOf(w.type) >= 0) {
+    _propSection(container, 'ตัวเลือก KPI', function(sec) {
+      _makeToggleRow(sec, 'แสดง Trend Indicator', 'showTrend', w, w.showTrend);
+      _makeToggleRow(sec, 'แสดง Icon', 'showIcon', w, w.showIcon);
+      _makeToggleRow(sec, 'แยกหลักด้วยจุลภาค (1,234)', 'useComma', w, w.useComma !== false);
+      // Comparison baseline
+      if (w.showTrend) {
+        _propSection(sec, 'เป้าหมาย (Target)', function(inner) {
+          var tgt = document.createElement('input');
+          tgt.type = 'number';
+          tgt.className = 'bi-prop-input';
+          tgt.value = w.targetValue || 0;
+          tgt.placeholder = 'ใส่ค่าเป้าหมาย';
+          tgt.addEventListener('input', function() {
+            w.targetValue = parseFloat(this.value) || 0;
+            _biSaveToStorage();
+            _biRenderCanvas();
+          });
+          inner.appendChild(tgt);
+        });
+      }
+    });
+  }
+
+  // Progress / Gauge specific
+  if (['progress','gauge'].indexOf(w.type) >= 0) {
+    _propSection(container, 'ตัวเลือก ' + (w.type==='gauge'?'Gauge':'Progress'), function(sec) {
+      var maxRow = _makeNumberInput('ค่าสูงสุด (Max)', 'gaugeMax', w.gaugeMax || 100, 1, 999999, w);
+      sec.appendChild(maxRow);
+      var minRow = _makeNumberInput('ค่าต่ำสุด (Min)', 'gaugeMin', w.gaugeMin || 0, 0, 999999, w);
+      sec.appendChild(minRow);
+      // Threshold colors
+      _makeToggleRow(sec, 'สีเปลี่ยนตามค่า (เขียว/เหลือง/แดง)', 'autoColor', w, w.autoColor !== false);
+    });
+  }
+}
+
+// ════════════ TAB: ข้อความ (Format) ════════════════════════════
+function _renderFormatTab(w, container) {
+  _propSection(container, 'ชื่อ Widget', function(sec) {
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'bi-prop-input';
+    inp.value = w.title || '';
+    inp.placeholder = 'ชื่อ Widget...';
+    inp.addEventListener('input', function() {
+      w.title = this.value;
+      _biSaveToStorage();
+      _biRenderCanvas();
+    });
+    sec.appendChild(inp);
+  });
+
+  _propSection(container, 'คำอธิบาย / Subtitle', function(sec) {
+    var ta = document.createElement('textarea');
+    ta.className = 'bi-prop-input';
+    ta.style.cssText = 'height:60px;resize:vertical;padding:8px 10px;font-size:12px;';
+    ta.value = w.desc || '';
+    ta.placeholder = 'คำอธิบายเพิ่มเติม...';
+    ta.addEventListener('input', function() {
+      w.desc = this.value;
+      _biSaveToStorage();
+      _biRenderCanvas();
+    });
+    sec.appendChild(ta);
+  });
+
+  _propSection(container, 'หน่วยวัด', function(sec) {
+    var units = ['คน','แห่ง','ฉบับ','บาท','%','ห้อง','เครื่อง','หน่วย'];
+    var presetRow = document.createElement('div');
+    presetRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;';
+    units.forEach(function(u) {
+      var chip = document.createElement('div');
+      chip.style.cssText = 'padding:4px 10px;border-radius:100px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid '
+        + (w.unit===u?'var(--blue)':'var(--border)') + ';background:' + (w.unit===u?'var(--blue)':'var(--surface)') + ';color:' + (w.unit===u?'white':'var(--text-2)') + ';transition:.12s;';
+      chip.innerText = u;
+      chip.addEventListener('click', function() {
+        w.unit = u;
+        _biSaveToStorage();
+        _biRenderCanvas();
+        _openPropPanel(w);
+      });
+      presetRow.appendChild(chip);
+    });
+    sec.appendChild(presetRow);
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'bi-prop-input';
+    inp.value = w.unit || '';
+    inp.placeholder = 'หรือพิมพ์หน่วยเอง...';
+    inp.addEventListener('input', function() {
+      w.unit = this.value;
+      _biSaveToStorage();
+      _biRenderCanvas();
+    });
+    sec.appendChild(inp);
+  });
+
+  _propSection(container, 'ขนาดตัวอักษร', function(sec) {
+    var sizes = [16,20,24,32,40,48,56];
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;';
+    sizes.forEach(function(s) {
+      var btn = document.createElement('button');
+      var cur = parseInt(w.fontSize) === s;
+      btn.style.cssText = 'padding:4px 8px;border-radius:6px;border:1.5px solid '+(cur?'var(--blue)':'var(--border)')+';background:'+(cur?'var(--blue)':'var(--surface)')+';color:'+(cur?'white':'var(--text-2)')+';font-size:11px;font-weight:700;cursor:pointer;';
+      btn.innerText = s;
+      btn.addEventListener('click', function() {
+        w.fontSize = String(s);
+        _biSaveToStorage();
+        _biRenderCanvas();
+        _openPropPanel(w);
+      });
+      row.appendChild(btn);
+    });
+    sec.appendChild(row);
+  });
+
+  // Text alignment (for text widget)
+  if (w.type === 'text') {
+    _propSection(container, 'การจัดแนวข้อความ', function(sec) {
+      var aligns = [{v:'left',i:'format_align_left'},{v:'center',i:'format_align_center'},{v:'right',i:'format_align_right'}];
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:6px;';
+      aligns.forEach(function(a) {
+        var btn = document.createElement('button');
+        var cur = (w.textAlign||'left') === a.v;
+        btn.style.cssText = 'flex:1;height:34px;border-radius:7px;border:1.5px solid '+(cur?'var(--blue)':'var(--border-l)')+';background:'+(cur?'var(--blue)':'var(--surface)')+';cursor:pointer;color:'+(cur?'white':'var(--muted)')+';display:flex;align-items:center;justify-content:center;';
+        btn.innerHTML = '<span class="material-icons-round" style="font-size:16px;">' + a.i + '</span>';
+        btn.addEventListener('click', function() {
+          w.textAlign = a.v;
+          _biSaveToStorage();
+          _biRenderCanvas();
+          _openPropPanel(w);
+        });
+        row.appendChild(btn);
+      });
+      sec.appendChild(row);
+    });
+  }
+
+  // Number format
+  if (['kpi','kpi_compare','gauge','progress'].indexOf(w.type) >= 0) {
+    _propSection(container, 'รูปแบบตัวเลข', function(sec) {
+      var formats = [
+        { key:'number',  label:'1,234,567' },
+        { key:'compact', label:'1.2M / 1.2K' },
+        { key:'pct',     label:'12.3%' },
+        { key:'fixed0',  label:'1235 (ไม่มีทศนิยม)' },
+        { key:'fixed2',  label:'1,234.56' },
+      ];
+      var sel = document.createElement('select');
+      sel.className = 'bi-prop-select';
+      formats.forEach(function(f) {
+        var opt = document.createElement('option');
+        opt.value = f.key;
+        opt.selected = (w.numFormat||'number') === f.key;
+        opt.innerText = f.label;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('change', function() {
+        w.numFormat = this.value;
+        _biSaveToStorage();
+        _biRenderCanvas();
+      });
+      sec.appendChild(sel);
+    });
+  }
+}
+
+// ════════════ TAB: Layout ═══════════════════════════════════════
+function _renderLayoutTab(w, container) {
+  _propSection(container, 'ขนาด Widget (คอลัมน์ 1-12)', function(sec) {
+    var sizes = [
+      { c:3,  l:'¼  (3/12)', icon:'view_column' },
+      { c:4,  l:'⅓  (4/12)', icon:'view_column' },
+      { c:6,  l:'½  (6/12)', icon:'view_column' },
+      { c:8,  l:'⅔  (8/12)', icon:'view_column' },
+      { c:12, l:'เต็มแถว',   icon:'view_agenda' },
+    ];
+    sizes.forEach(function(s) {
+      var btn = document.createElement('div');
+      var cur = w.cols === s.c;
+      btn.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;margin-bottom:5px;border:1.5px solid '
+        + (cur?'var(--blue)':'var(--border-l)') + ';background:' + (cur?'var(--blue-ll)':'var(--surface)') + ';transition:.12s;';
+      // Visual representation
+      var vis = document.createElement('div');
+      vis.style.cssText = 'display:flex;gap:2px;';
+      for (var i=0;i<12;i++) {
+        var cell = document.createElement('div');
+        cell.style.cssText = 'width:7px;height:16px;border-radius:2px;background:'
+          + (i < s.c ? (cur?'var(--blue)':'#9aa0a6') : 'var(--border-l)') + ';';
+        vis.appendChild(cell);
+      }
+      btn.appendChild(vis);
+      var lbl = document.createElement('span');
+      lbl.style.cssText = 'font-size:12px;font-weight:600;color:' + (cur?'var(--blue)':'var(--text-2)') + ';';
+      lbl.innerText = s.l;
+      btn.appendChild(lbl);
+      if (cur) {
+        var chk = document.createElement('span');
+        chk.className = 'material-icons-round';
+        chk.style.cssText = 'font-size:16px;color:var(--blue);margin-left:auto;';
+        chk.innerText = 'check_circle';
+        btn.appendChild(chk);
+      }
+      btn.addEventListener('click', function() {
+        w.cols = s.c;
+        _biSaveToStorage();
+        _biRenderCanvas();
+        _openPropPanel(w);
+      });
+      sec.appendChild(btn);
+    });
+  });
+
+  // Chart height
+  if (['bar','bar_h','line','area','pie','donut','radar','gauge','yoy'].indexOf(w.type) >= 0) {
+    _propSection(container, 'ความสูงกราฟ (px)', function(sec) {
+      var heights = [160, 200, 240, 280, 360];
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:5px;flex-wrap:wrap;';
+      heights.forEach(function(h) {
+        var btn = document.createElement('button');
+        var cur = (w.chartHeight || 240) === h;
+        btn.style.cssText = 'padding:5px 10px;border-radius:7px;border:1.5px solid '+(cur?'var(--blue)':'var(--border-l)')+';background:'+(cur?'var(--blue)':'var(--surface)')+';color:'+(cur?'white':'var(--text-2)')+';font-size:11px;font-weight:700;cursor:pointer;';
+        btn.innerText = h + 'px';
+        btn.addEventListener('click', function() {
+          w.chartHeight = h;
+          _biSaveToStorage();
+          _biRenderCanvas();
+          _openPropPanel(w);
+        });
+        row.appendChild(btn);
+      });
+      sec.appendChild(row);
+    });
+  }
+
+  // Position order info
+  _propSection(container, 'ตำแหน่ง Widget', function(sec) {
+    var idx = _biWidgets.findIndex(function(x){ return x.id === w.id; });
+    var info = document.createElement('div');
+    info.style.cssText = 'font-size:12px;color:var(--muted);margin-bottom:8px;';
+    info.innerText = 'Widget ที่ ' + (idx+1) + ' จาก ' + _biWidgets.length + ' รายการ';
+    sec.appendChild(info);
+    var moveRow = document.createElement('div');
+    moveRow.style.cssText = 'display:flex;gap:6px;';
+    [{dir:-1,icon:'arrow_back',label:'ย้ายซ้าย'},{dir:1,icon:'arrow_forward',label:'ย้ายขวา'}].forEach(function(d) {
+      var btn = document.createElement('button');
+      btn.className = 'btn btn-outlined btn-sm';
+      btn.style.cssText = 'flex:1;font-size:11px;';
+      btn.innerHTML = '<span class="material-icons-round" style="font-size:14px;">' + d.icon + '</span> ' + d.label;
+      btn.addEventListener('click', function() { biMoveWidget(w.id, d.dir); });
+      moveRow.appendChild(btn);
+    });
+    sec.appendChild(moveRow);
+  });
+}
+
+// ════════════ HELPER FUNCTIONS ═══════════════════════════════════
+function _propSection(parent, title, renderFn) {
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'margin-bottom:16px;';
+  var lbl = document.createElement('div');
+  lbl.style.cssText = 'font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;';
+  lbl.innerText = title;
+  wrap.appendChild(lbl);
+  renderFn(wrap);
+  parent.appendChild(wrap);
+  return wrap;
+}
+
+function _makeSelect(filteredSources, currentKey, onChange) {
+  var sel = document.createElement('select');
+  sel.className = 'bi-prop-select';
+  sel.style.cssText = 'width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);font-size:12px;color:var(--text);outline:none;font-family:Google Sans,Sarabun,sans-serif;cursor:pointer;';
+
+  if (!currentKey) {
+    var empty = document.createElement('option');
+    empty.value = '';
+    empty.innerText = '-- เลือกแหล่งข้อมูล --';
+    empty.selected = true;
+    sel.appendChild(empty);
+  }
+
+  filteredSources.forEach(function(grp) {
+    var og = document.createElement('optgroup');
+    og.label = grp.group;
+    grp.sources.forEach(function(s) {
+      var opt = document.createElement('option');
+      opt.value = s.key;
+      opt.selected = s.key === currentKey;
+      opt.innerText = s.label + (s.unit ? ' (' + s.unit + ')' : '');
+      og.appendChild(opt);
+    });
+    sel.appendChild(og);
+  });
+
+  sel.addEventListener('change', function() { onChange(this.value); });
+  return sel;
+}
+
+function _makeToggleRow(parent, label, key, w, currentVal) {
+  var row = document.createElement('div');
+  row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border-l);cursor:pointer;';
+  var lbl = document.createElement('span');
+  lbl.style.cssText = 'font-size:12px;color:var(--text-2);font-weight:500;';
+  lbl.innerText = label;
+
+  var isOn = !!currentVal;
+  var toggle = document.createElement('div');
+  toggle.style.cssText = 'width:34px;height:18px;border-radius:9px;background:' + (isOn?'var(--blue)':'var(--border)') + ';position:relative;transition:.2s;flex-shrink:0;';
+  var knob = document.createElement('div');
+  knob.style.cssText = 'width:12px;height:12px;border-radius:50%;background:white;position:absolute;top:3px;left:' + (isOn?'19px':'3px') + ';transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);';
+  toggle.appendChild(knob);
+  row.appendChild(lbl);
+  row.appendChild(toggle);
+
+  row.addEventListener('click', function() {
+    w[key] = !w[key];
+    _biSaveToStorage();
+    _biRenderCanvas();
+    _openPropPanel(w);
+  });
+  parent.appendChild(row);
+  return row;
+}
+
+function _makeNumberInput(label, key, currentVal, min, max, w) {
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'margin-top:8px;';
+  var lbl = document.createElement('div');
+  lbl.style.cssText = 'font-size:10px;font-weight:600;color:var(--muted);margin-bottom:4px;';
+  lbl.innerText = label;
+  var inp = document.createElement('input');
+  inp.type = 'number';
+  inp.min = min; inp.max = max;
+  inp.value = currentVal;
+  inp.className = 'bi-prop-input';
+  inp.style.fontSize = '12px';
+  inp.addEventListener('input', function() {
+    w[key] = parseFloat(this.value) || 0;
+    _biSaveToStorage();
+    _biRenderCanvas();
+  });
+  wrap.appendChild(lbl);
+  wrap.appendChild(inp);
+  return wrap;
+}
+
+// ── Format number by numFormat setting ───────────────────────────
+function biFormatNumber(val, w) {
+  var fmt = w.numFormat || 'number';
+  if (typeof val !== 'number') return val;
+  if (fmt === 'compact') {
+    if (val >= 1000000) return (val/1000000).toFixed(1) + 'M';
+    if (val >= 1000)    return (val/1000).toFixed(1) + 'K';
+    return val.toLocaleString();
+  }
+  if (fmt === 'pct')    return val.toFixed(1) + '%';
+  if (fmt === 'fixed0') return Math.round(val).toLocaleString();
+  if (fmt === 'fixed2') return val.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+  return (w.useComma !== false) ? val.toLocaleString() : String(Math.round(val));
+}
+
+// ════════════════════════════════════════════════════════════════
+//  WIDGET BODY RENDERER v3 — รองรับทุก settings จาก prop panel
+// ════════════════════════════════════════════════════════════════
+function _biRenderWidgetBody(w) {
+  var srcDef = biGetSourceDef(w.dataKey);
+  var rawVal = 0;
+  if (srcDef && w.dataKey && !w.dataKey.startsWith('chart_') && w.dataKey !== 'mon_status_table' && w.dataKey !== 'mon_pct' && !['monitor_tbl','table','ranking','map','yoy','radar'].includes(w.type)) {
+    rawVal = biResolveValue(srcDef.path, w.customVal !== undefined ? w.customVal : 0);
+    if (typeof rawVal !== 'number') rawVal = 0;
+  }
+  var unit    = w.unit || (srcDef ? srcDef.unit : '');
+  var fs      = parseInt(w.fontSize) || 32;
+  var color   = w.color || (srcDef ? srcDef.color : '#1a73e8');
+  var chartH  = w.chartHeight || (w.cols >= 8 ? 280 : w.cols >= 6 ? 220 : 180);
+
+  switch(w.type) {
+    // ── KPI Card ─────────────────────────────────────────────────
+    case 'kpi': {
+      var dispVal = biFormatNumber(rawVal, w);
+      var isCustomText = w.dataKey === 'custom_text';
+      if (isCustomText) dispVal = w.customVal || '—';
+      // Trend vs target
+      var trendHtml = '';
+      if (w.showTrend && !isCustomText) {
+        var target = w.targetValue || 0;
+        if (target > 0) {
+          var pctOfTarget = Math.round(rawVal / target * 100);
+          var trendColor = rawVal >= target ? 'var(--green)' : 'var(--red)';
+          var trendIcon  = rawVal >= target ? 'trending_up' : 'trending_down';
+          trendHtml = '<div style="display:flex;align-items:center;gap:5px;margin-top:8px;">'
+            + '<span class="material-icons-round" style="font-size:16px;color:' + trendColor + ';">' + trendIcon + '</span>'
+            + '<span style="font-size:12px;font-weight:700;color:' + trendColor + ';">' + pctOfTarget + '% ของเป้าหมาย</span>'
+            + '<span style="font-size:11px;color:var(--muted);">/' + target.toLocaleString() + ' ' + unit + '</span>'
+          + '</div>';
+        } else {
+          trendHtml = '<div style="display:flex;align-items:center;gap:5px;margin-top:8px;">'
+            + '<span class="material-icons-round" style="font-size:14px;color:var(--green);">trending_up</span>'
+            + '<span style="font-size:11px;color:var(--muted);">อัปเดตล่าสุด</span></div>';
+        }
+      }
+      var iconHtml = '';
+      if (w.showIcon && srcDef) {
+        iconHtml = '<div style="width:36px;height:36px;border-radius:9px;background:' + color + '1a;display:flex;align-items:center;justify-content:center;margin-bottom:10px;">'
+          + '<span class="material-icons-round" style="font-size:20px;color:' + color + ';">' + (srcDef.icon||'bar_chart') + '</span></div>';
+      }
+      return '<div class="bi-widget-body">'
+        + iconHtml
+        + (w.desc ? '<div style="font-size:11px;color:var(--muted);margin-bottom:5px;">' + w.desc + '</div>' : '')
+        + '<div style="font-size:' + fs + 'px;font-weight:800;color:' + color + ';line-height:1.1;">' + dispVal
+          + (unit ? '<span style="font-size:' + Math.round(fs*0.4) + 'px;color:var(--muted);font-weight:500;margin-left:4px;">' + unit + '</span>' : '')
+        + '</div>'
+        + trendHtml
+      + '</div>';
+    }
+
+    // ── KPI Compare ───────────────────────────────────────────────
+    case 'kpi_compare': {
+      var s1 = biGetSourceDef(w.dataKey);
+      var s2 = biGetSourceDef(w.dataKey2);
+      var v1 = s1 ? biResolveValue(s1.path, w.customVal||0) : 0;
+      var v2 = s2 ? biResolveValue(s2.path, 0) : 0;
+      var diff = typeof v1==='number' && typeof v2==='number' ? v1 - v2 : null;
+      return '<div class="bi-widget-body">'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:' + (diff!==null?'8':'0') + 'px;">'
+          + '<div style="padding:10px;border-radius:9px;background:' + ((s1?s1.color:color)+'11') + ';">'
+            + '<div style="font-size:10px;color:var(--muted);margin-bottom:4px;">' + (s1?s1.label:'—') + '</div>'
+            + '<div style="font-size:22px;font-weight:800;color:' + (s1?s1.color:color) + ';">' + biFormatNumber(typeof v1==='number'?v1:0,w) + '</div>'
+            + (s1&&s1.unit?'<div style="font-size:10px;color:var(--muted);">' + s1.unit + '</div>':'')
+          + '</div>'
+          + '<div style="padding:10px;border-radius:9px;background:' + ((s2?s2.color:'#607d8b')+'11') + ';">'
+            + '<div style="font-size:10px;color:var(--muted);margin-bottom:4px;">' + (s2?s2.label:'—') + '</div>'
+            + '<div style="font-size:22px;font-weight:800;color:' + (s2?s2.color:'#607d8b') + ';">' + biFormatNumber(typeof v2==='number'?v2:0,w) + '</div>'
+            + (s2&&s2.unit?'<div style="font-size:10px;color:var(--muted);">' + s2.unit + '</div>':'')
+          + '</div>'
+        + '</div>'
+        + (diff!==null ? '<div style="text-align:center;font-size:12px;color:' + (diff>=0?'var(--green)':'var(--red)') + ';font-weight:700;">'
+            + (diff>=0?'▲ +':'▼ ') + biFormatNumber(Math.abs(diff),w) + ' ส่วนต่าง</div>' : '')
+      + '</div>';
+    }
+
+    // ── Stat Group ────────────────────────────────────────────────
+    case 'stat_group': {
+      var keys4 = ['totalSchools','totalStudents','totalTeachers','pendingCount'];
+      return '<div class="bi-widget-body" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
+        + keys4.map(function(k){
+            var s = biGetSourceDef(k); if(!s) return '';
+            var val4 = biResolveValue(s.path, '');
+            return '<div style="padding:12px;border-radius:10px;background:' + s.color + '11;text-align:center;border:1px solid ' + s.color + '22;">'
+              + '<span class="material-icons-round" style="font-size:20px;color:' + s.color + ';">' + s.icon + '</span>'
+              + '<div style="font-size:18px;font-weight:800;color:' + s.color + ';margin:4px 0;">' + (typeof val4==='number'?val4.toLocaleString():val4) + '</div>'
+              + '<div style="font-size:10px;color:var(--muted);font-weight:600;">' + s.label + '</div></div>';
+          }).join('')
+      + '</div>';
+    }
+
+    // ── Progress Bar ───────────────────────────────────────────────
+    case 'progress': {
+      var progVal = 0;
+      if (w.dataKey === 'mon_pct') progVal = ((_biMonitorData&&_biMonitorData.overall) ? _biMonitorData.overall.overallPct : 0);
+      else progVal = typeof rawVal === 'number' ? rawVal : 0;
+      var gaugeMax2 = w.gaugeMax || 100;
+      var gaugeMin2 = w.gaugeMin || 0;
+      var pct3 = Math.min(100, Math.max(0, (progVal - gaugeMin2) / (gaugeMax2 - gaugeMin2) * 100));
+      var pc = w.autoColor === false ? color
+             : pct3>=80 ? '#34a853' : pct3>=50 ? '#fbbc04' : '#ea4335';
+      return '<div class="bi-widget-body">'
+        + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">'
+          + '<span style="font-size:12px;color:var(--muted);">' + (w.desc||srcDef&&srcDef.label||'ความคืบหน้า') + '</span>'
+          + '<span style="font-size:20px;font-weight:800;color:' + pc + ';">' + biFormatNumber(progVal, w) + ' ' + unit + '</span>'
+        + '</div>'
+        + '<div style="height:16px;border-radius:8px;background:var(--s2);overflow:hidden;position:relative;">'
+          + '<div style="height:100%;width:' + pct3.toFixed(1) + '%;background:linear-gradient(90deg,' + pc + ',' + pc + 'bb);border-radius:8px;transition:.5s;position:relative;">'
+            + (pct3 > 20 ? '<div style="position:absolute;right:6px;top:0;bottom:0;display:flex;align-items:center;font-size:10px;font-weight:700;color:white;">' + pct3.toFixed(0) + '%</div>' : '')
+          + '</div>'
+        + '</div>'
+        + '<div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--muted);">'
+          + '<span>' + (gaugeMin2||0) + '</span><span>' + gaugeMax2 + ' ' + unit + '</span>'
+        + '</div>'
+      + '</div>';
+    }
+
+    // ── Charts (ECharts) ───────────────────────────────────────────
+    case 'gauge':
+    case 'bar': case 'bar_h':
+    case 'line': case 'area':
+    case 'pie': case 'donut':
+    case 'radar': case 'yoy': {
+      return '<div class="bi-widget-body"><div id="bic-' + w.id + '" style="height:' + chartH + 'px;"></div></div>';
+    }
+
+    // ── Table ──────────────────────────────────────────────────────
+    case 'table': {
+      var pts = (_biDashData && _biDashData.mapPoints || []).filter(function(p){ return p.hasData; });
+      if (pts.length === 0) return '<div class="bi-widget-body" style="text-align:center;padding:24px;color:var(--muted);font-size:12px;"><span class="material-icons-round" style="font-size:32px;display:block;margin-bottom:6px;opacity:.3;">table_chart</span>ยังไม่มีข้อมูล</div>';
+      return '<div class="bi-widget-body" style="overflow:auto;max-height:' + (chartH||280) + 'px;">'
+        + '<table style="width:100%;border-collapse:collapse;font-size:12px;">'
+        + '<thead><tr style="background:var(--s1);position:sticky;top:0;">'
+          + '<th style="padding:8px 10px;text-align:left;border-bottom:2px solid var(--border-l);font-weight:700;color:var(--text-2);">สังกัด</th>'
+          + '<th style="padding:8px 10px;text-align:right;border-bottom:2px solid var(--border-l);font-weight:700;color:var(--text-2);">สถานศึกษา</th>'
+          + '<th style="padding:8px 10px;text-align:right;border-bottom:2px solid var(--border-l);font-weight:700;color:var(--text-2);">ผู้เรียน</th>'
+          + '<th style="padding:8px 10px;text-align:right;border-bottom:2px solid var(--border-l);font-weight:700;color:var(--text-2);">ครู</th>'
+        + '</tr></thead><tbody>'
+        + pts.map(function(p,i){ return '<tr style="' + (i%2?'background:var(--s1)':'') + '">'
+          + '<td style="padding:7px 10px;">' + p.name + '</td>'
+          + '<td style="padding:7px 10px;text-align:right;font-weight:600;color:var(--blue);">' + (p.schools||0).toLocaleString() + '</td>'
+          + '<td style="padding:7px 10px;text-align:right;font-weight:600;color:var(--green);">' + (p.students||0).toLocaleString() + '</td>'
+          + '<td style="padding:7px 10px;text-align:right;font-weight:600;color:var(--text);">' + (p.teachers||0).toLocaleString() + '</td>'
+        + '</tr>'; }).join('')
+        + '</tbody></table></div>';
+    }
+
+    // ── Ranking ────────────────────────────────────────────────────
+    case 'ranking': {
+      var summary = (_biDashData && _biDashData.agencySummary) || { labels:[], values:[] };
+      var pairs = summary.labels.map(function(l,i){ return { n:l, v:summary.values[i]||0 }; })
+        .sort(function(a,b){ return b.v-a.v; });
+      if (w.limitData && w.dataLimit) pairs = pairs.slice(0, w.dataLimit);
+      var maxV2 = pairs.length > 0 ? pairs[0].v : 1;
+      var medals = ['🥇','🥈','🥉'];
+      return '<div class="bi-widget-body">'
+        + pairs.map(function(p,i){
+            var pct4 = maxV2>0 ? Math.round(p.v/maxV2*100) : 0;
+            return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;">'
+              + '<div style="width:24px;height:24px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:' + (i<3?'16':'11') + 'px;font-weight:700;color:' + (i<3?'inherit':'var(--muted)') + ';">' + (i<3?medals[i]:(i+1)) + '</div>'
+              + '<div style="flex:1;min-width:0;">'
+                + '<div style="font-size:12px;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;">' + p.n + '</div>'
+                + '<div style="height:5px;border-radius:3px;background:var(--s2);">'
+                  + '<div style="height:100%;width:' + pct4 + '%;background:' + color + ';border-radius:3px;transition:.4s;"></div>'
+                + '</div>'
+              + '</div>'
+              + '<div style="font-size:12px;font-weight:700;color:var(--text);flex-shrink:0;min-width:40px;text-align:right;">' + p.v.toLocaleString() + '</div>'
+            + '</div>';
+          }).join('')
+      + '</div>';
+    }
+
+    // ── Monitor Table ──────────────────────────────────────────────
+    case 'monitor_tbl': {
+      var agSumm = (_biMonitorData && _biMonitorData.agencySummary || []);
+      if (w.limitData && w.dataLimit) agSumm = agSumm.slice(0, w.dataLimit);
+      if (agSumm.length === 0) return '<div class="bi-widget-body" style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">ยังไม่มีข้อมูล Monitor</div>';
+      return '<div class="bi-widget-body" style="overflow:auto;max-height:' + (chartH||280) + 'px;">'
+        + '<table style="width:100%;border-collapse:collapse;font-size:12px;">'
+        + '<thead><tr style="background:var(--s1);position:sticky;top:0;">'
+          + '<th style="padding:7px 10px;text-align:left;border-bottom:2px solid var(--border-l);font-weight:700;">สังกัด</th>'
+          + '<th style="padding:7px;text-align:center;border-bottom:2px solid var(--border-l);font-weight:700;">ฟอร์ม</th>'
+          + '<th style="padding:7px;text-align:center;border-bottom:2px solid var(--border-l);font-weight:700;">✅</th>'
+          + '<th style="padding:7px;text-align:center;border-bottom:2px solid var(--border-l);font-weight:700;">⏳</th>'
+          + '<th style="padding:7px;text-align:center;border-bottom:2px solid var(--border-l);font-weight:700;">%</th>'
+        + '</tr></thead><tbody>'
+        + agSumm.map(function(a,i){
+            var c5 = a.completionPct>=80?'#34a853':a.completionPct>=50?'#fbbc04':'#ea4335';
+            return '<tr style="' + (i%2?'background:var(--s1)':'') + '">'
+              + '<td style="padding:6px 10px;font-weight:600;">' + a.agencyName + '</td>'
+              + '<td style="padding:6px;text-align:center;color:var(--text);">' + a.totalForms + '</td>'
+              + '<td style="padding:6px;text-align:center;color:#34a853;font-weight:700;">' + a.approved + '</td>'
+              + '<td style="padding:6px;text-align:center;color:#fbbc04;font-weight:700;">' + a.pending + '</td>'
+              + '<td style="padding:6px;text-align:center;">'
+                + '<span style="background:' + c5 + '1a;color:' + c5 + ';padding:2px 7px;border-radius:5px;font-weight:800;font-size:11px;">' + a.completionPct + '%</span>'
+              + '</td>'
+            + '</tr>';
+          }).join('')
+        + '</tbody></table></div>';
+    }
+
+    // ── Map ────────────────────────────────────────────────────────
+    case 'map':
+      return '<div class="bi-widget-body" style="text-align:center;padding:20px;">'
+        + '<span class="material-icons-round" style="font-size:40px;color:' + color + ';opacity:.8;display:block;margin-bottom:8px;">map</span>'
+        + '<div style="font-size:13px;font-weight:600;color:var(--text);">แผนที่สังกัดจังหวัดสกลนคร</div>'
+        + '<div style="font-size:11px;color:var(--muted);margin-top:4px;">แผนที่แสดงในหน้าแดชบอร์ดหลัก</div>'
+        + '<button class="btn btn-outlined btn-sm" style="margin-top:10px;font-size:11px;" onclick="navigate(\'dashboard\')">'
+          + '<span class="material-icons-round" style="font-size:14px;">open_in_new</span> ดูแผนที่</button>'
+        + '</div>';
+
+    // ── YoY Chart ─────────────────────────────────────────────────
+    case 'yoy':
+      return '<div class="bi-widget-body"><div id="bic-' + w.id + '" style="height:' + chartH + 'px;"></div></div>';
+
+    // ── Text ──────────────────────────────────────────────────────
+    case 'text':
+      return '<div class="bi-widget-body" style="text-align:' + (w.textAlign||'left') + ';">'
+        + '<div style="font-size:' + fs + 'px;font-weight:800;color:' + color + ';line-height:1.3;word-break:break-word;">' + (w.title||'ข้อความ') + '</div>'
+        + (w.desc ? '<div style="font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6;word-break:break-word;">' + w.desc + '</div>' : '')
+      + '</div>';
+
+    default:
+      return '<div class="bi-widget-body" style="text-align:center;color:var(--muted);padding:20px;font-size:12px;">' + (BI_TYPE_LABELS[w.type]||w.type) + '</div>';
+  }
+}
+
+// ── ECharts Draw (Updated with palette + new settings) ──────────
+function _biDrawChart(w, el) {
+  var existing = echarts.getInstanceByDom(el);
+  if (existing) existing.dispose();
+  var chart = echarts.init(el, null, { renderer:'canvas' });
+  var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  var tc = isDark ? '#c4c7c5' : '#5f6368';
+  var gc = isDark ? '#444746' : '#e8eaed';
+  var d  = _biGetChartData(w);
+  var color = w.color || '#1a73e8';
+  var unit = w.unit || '';
+  var wSrcDef = biGetSourceDef(w.dataKey);
+  if (wSrcDef && !w.unit) unit = wSrcDef.unit || '';
+
+  var palette = w._paletteColors || [
+    '#1a73e8','#34a853','#fbbc04','#ea4335','#673ab7','#00bcd4','#ff5722','#ff9800','#4caf50','#9c27b0','#607d8b','#795548'
+  ];
+
+  var opt = { backgroundColor:'transparent', color: palette };
+  var chartH = w.chartHeight || 220;
+
+  var tooltipStyle = {
+    trigger:'axis',
+    backgroundColor: isDark?'#2d3035':'#fff',
+    borderColor: isDark?'#444':'#e8eaed',
+    textStyle:{ color: isDark?'#e3e3e3':'#202124', fontFamily:'Google Sans,Sarabun,sans-serif', fontSize:12 }
+  };
+
+  switch(w.type) {
+    case 'bar':
+      opt = Object.assign(opt,{
+        tooltip: Object.assign({},tooltipStyle),
+        grid:{top:8, bottom: (w.showLegend?40:28), left:50, right:8},
+        xAxis:{type:'category',data:d.labels,axisLabel:{color:tc,fontSize:10,rotate:d.labels.length>5?25:0},axisLine:{lineStyle:{color:gc}}},
+        yAxis:{type:'value',axisLabel:{color:tc,fontSize:10},splitLine:{lineStyle:{color:gc,type:(w.showGrid!==false?'dashed':'none')}}},
+        legend: w.showLegend ? {bottom:0, textStyle:{color:tc,fontSize:10}} : null,
+        series:[{
+          type:'bar', data: d.values.map(function(v,i){ return {value:v,itemStyle:{color:palette[i%palette.length]}}; }),
+          barMaxWidth:40, itemStyle:{borderRadius:[5,5,0,0]},
+          label: w.showLabel ? {show:true,position:'top',fontSize:10,color:tc,formatter:function(p){ return p.value.toLocaleString(); }} : null
+        }]
+      });
+      break;
+
+    case 'bar_h':
+      opt = Object.assign(opt,{
+        tooltip: Object.assign({},tooltipStyle),
+        grid:{top:8,bottom:8,left:100,right:50},
+        xAxis:{type:'value',axisLabel:{color:tc,fontSize:10},splitLine:{lineStyle:{color:gc,type:'dashed'}}},
+        yAxis:{type:'category',data:d.labels,axisLabel:{color:tc,fontSize:10}},
+        series:[{
+          type:'bar', data:d.values.map(function(v,i){ return {value:v,itemStyle:{color:palette[i%palette.length]}}; }),
+          barMaxWidth:24, itemStyle:{borderRadius:[0,5,5,0]},
+          label:{show:true,position:'right',fontSize:10,color:tc,formatter:function(p){ return p.value.toLocaleString(); }}
+        }]
+      });
+      break;
+
+    case 'line':
+      opt = Object.assign(opt,{
+        tooltip: Object.assign({},tooltipStyle),
+        grid:{top:8,bottom:28,left:50,right:8},
+        xAxis:{type:'category',data:d.labels,axisLabel:{color:tc,fontSize:10},axisLine:{lineStyle:{color:gc}}},
+        yAxis:{type:'value',axisLabel:{color:tc,fontSize:10},splitLine:{lineStyle:{color:gc,type:'dashed'}}},
+        series:[{
+          type:'line',data:d.values,smooth:w.smoothLine!==false,
+          lineStyle:{color:color,width:2.5},
+          symbol:'circle',symbolSize:5,itemStyle:{color:color},
+          label: w.showLabel ? {show:true,position:'top',fontSize:10,color:tc} : null
+        }]
+      });
+      break;
+
+    case 'area':
+      opt = Object.assign(opt,{
+        tooltip: Object.assign({},tooltipStyle),
+        grid:{top:8,bottom:28,left:50,right:8},
+        xAxis:{type:'category',data:d.labels,axisLabel:{color:tc,fontSize:10},axisLine:{lineStyle:{color:gc}}},
+        yAxis:{type:'value',axisLabel:{color:tc,fontSize:10},splitLine:{lineStyle:{color:gc,type:'dashed'}}},
+        series:[{
+          type:'line',data:d.values,smooth:w.smoothLine!==false,
+          lineStyle:{color:color,width:2},
+          areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:color+'66'},{offset:1,color:color+'05'}]}},
+          symbol:'none',itemStyle:{color:color}
+        }]
+      });
+      break;
+
+    case 'pie':
+      opt = Object.assign(opt,{
+        tooltip:{trigger:'item',backgroundColor:isDark?'#2d3035':'#fff',borderColor:isDark?'#444':'#e8eaed',textStyle:{color:tc,fontFamily:'Google Sans,Sarabun,sans-serif'}},
+        legend: w.showLegend ? {bottom:0,textStyle:{color:tc,fontSize:10},type:'scroll'} : null,
+        series:[{
+          type:'pie',radius:'72%',
+          center:['50%', w.showLegend?'43%':'50%'],
+          data:d.pieData,
+          label:{show:w.showLabel,fontSize:10,formatter:function(p){ return p.name+'\n'+p.value.toLocaleString(); }},
+          itemStyle:{borderRadius:5,borderWidth:2,borderColor:isDark?'#1f1f1f':'#fff'}
+        }]
+      });
+      break;
+
+    case 'donut':
+      opt = Object.assign(opt,{
+        tooltip:{trigger:'item',backgroundColor:isDark?'#2d3035':'#fff',borderColor:isDark?'#444':'#e8eaed',textStyle:{color:tc,fontFamily:'Google Sans,Sarabun,sans-serif'}},
+        legend: w.showLegend ? {bottom:0,textStyle:{color:tc,fontSize:10},type:'scroll'} : null,
+        series:[{
+          type:'pie',radius:['42%','68%'],
+          center:['50%', w.showLegend?'43%':'50%'],
+          data:d.pieData,
+          label:{show:w.showLabel,fontSize:10},
+          itemStyle:{borderRadius:5,borderWidth:2,borderColor:isDark?'#1f1f1f':'#fff'}
+        }]
+      });
+      break;
+
+    case 'radar': {
+      var maxR = d.values.length > 0 ? Math.max.apply(null,d.values)*1.2 : 100;
+      opt = Object.assign(opt,{
+        tooltip:{},
+        radar:{indicator:d.labels.map(function(l){ return {name:l,max:maxR}; }),axisName:{color:tc,fontSize:10},splitLine:{lineStyle:{color:gc}}},
+        series:[{
+          type:'radar',data:[{value:d.values,areaStyle:{color:color+'33'},lineStyle:{color:color,width:2},itemStyle:{color:color}}]
+        }]
+      });
+      break;
+    }
+
+case 'gauge': {
+      var gVal2 = 0;
+      if (w.dataKey === 'mon_pct') gVal2 = ((_biMonitorData&&_biMonitorData.overall)?_biMonitorData.overall.overallPct:0);
+      else { var gs2 = biGetSourceDef(w.dataKey); if(gs2){ var rv2 = biResolveValue(gs2.path,w.customVal||0); gVal2 = typeof rv2==='number'?rv2:0; }}
+      var gMax = w.gaugeMax || 100;
+      var gMin = w.gaugeMin || 0;
+      var gColor2 = w.autoColor===false ? color : (gVal2/gMax>=0.8?'#34a853':gVal2/gMax>=0.5?'#fbbc04':'#ea4335');
+      opt = Object.assign(opt,{
+        series:[{type:'gauge',min:gMin,max:gMax,startAngle:205,endAngle:-25,
+          pointer:{show:true,length:'60%',width:4,itemStyle:{color:gColor2}},
+          progress:{show:true,width:14,itemStyle:{color:gColor2}},
+          axisLine:{lineStyle:{width:14,color:[[1,isDark?'#333':'#e8eaed']]}},
+          axisTick:{show:false},splitLine:{show:false},
+          axisLabel:{color:tc,fontSize:10,distance:16},
+          title:{show:true,offsetCenter:[0,'70%'],fontSize:10,color:tc},
+          detail:{valueAnimation:true,formatter:function(v){ return biFormatNumber(v,w) + (unit?' '+unit:''); },fontSize:18,fontWeight:800,color:gColor2,offsetCenter:[0,'35%']},
+          data:[{value:gVal2,name:''}]
+        }]
+      });
+      break;
+    }
+
+    case 'yoy': {
+      var yData2 = _biGetYoYData();
+      opt = Object.assign(opt,{
+        grid:{top:8,bottom:32,left:60,right:60},
+        tooltip:Object.assign({},tooltipStyle),
+        legend:{data:['ค่า','เปลี่ยนแปลง (%)'],bottom:0,textStyle:{color:tc,fontSize:10}},
+        xAxis:{type:'category',data:yData2.years,axisLabel:{color:tc}},
+        yAxis:[{type:'value',axisLabel:{color:tc,formatter:function(v){ return v.toLocaleString(); }}},
+               {type:'value',axisLabel:{color:tc,formatter:'{value}%'},splitLine:{show:false}}],
+        series:[
+          {name:'ค่า',type:'bar',data:yData2.values,yAxisIndex:0,itemStyle:{color:color,borderRadius:[4,4,0,0]},barMaxWidth:40},
+          {name:'เปลี่ยนแปลง (%)',type:'line',data:yData2.pcts,yAxisIndex:1,lineStyle:{color:'#34a853',width:2},
+           symbol:'circle',symbolSize:6,itemStyle:{color:'#34a853'},
+           label:{show:true,fontSize:10,color:'#34a853',formatter:function(p){ return (p.value>0?'+':'')+p.value+'%'; }}}
+        ]
+      });
+      break;
+    }
+  }
+
+  // Apply sort if requested
+  if (w.sortDesc && d.values.length > 0 && d.labels.length > 0 && ['bar','bar_h'].indexOf(w.type) >= 0) {
+    var pairs2 = d.labels.map(function(l,i){ return {l:l,v:d.values[i]}; }).sort(function(a,b){ return b.v-a.v; });
+    if (opt.xAxis && opt.xAxis.data) opt.xAxis.data = pairs2.map(function(p){ return p.l; });
+    if (opt.yAxis && opt.yAxis.data) opt.yAxis.data = pairs2.map(function(p){ return p.l; });
+    if (opt.series && opt.series[0]) {
+      opt.series[0].data = pairs2.map(function(p,i){ return {value:p.v,itemStyle:{color:palette[i%palette.length]}}; });
+    }
+  }
+
+  chart.setOption(opt);
+  setTimeout(function(){ chart.resize(); }, 100);
+}
+
+// ── Get chart data (updated to support all sources) ──────────────
+function _biGetChartData(w) {
+  var d = _biDashData || {};
+  var labels = [], values = [], pieData = [];
+  var summary = null;
+
+  if (w.dataKey === 'chart_agency' || w.dataKey === 'totalSchools') summary = d.agencySummary;
+  else if (w.dataKey === 'student_all_levels') summary = d.studentSummary;
+  else if (w.dataKey === 'teacher_by_agency') summary = d.teacherSummary;
+  else if (w.dataKey === 'special_all') summary = d.specialSummary;
+  else if (w.dataKey === 'chart_teacher') summary = d.teacherSummary;
+  else if (w.dataKey === 'chart_student') summary = d.studentSummary;
+  else if (w.dataKey === 'chart_special') summary = d.specialSummary;
+  else {
+    // single-value source used in chart → mock series over agencies
+    var srcDef2 = biGetSourceDef(w.dataKey);
+    if (srcDef2 && d.agencySummary && d.agencySummary.labels) {
+      summary = d.agencySummary;
+    } else {
+      summary = { labels:['สพป.เขต 1','สพป.เขต 2','สพป.เขต 3','สพม.','อาชีวะ'], values:[420,380,350,120,45] };
+    }
+  }
+
+  if (summary && summary.labels) {
+    labels = summary.labels;
+    values = summary.values;
+    var pal2 = w._paletteColors || ['#1a73e8','#34a853','#fbbc04','#ea4335','#673ab7','#00bcd4','#ff5722','#ff9800'];
+    pieData = labels.map(function(l,i){ return { name:l, value:values[i]||0, itemStyle:{color:pal2[i%pal2.length]} }; });
+  }
+
+  if (w.showPct && values.length > 0) {
+    var total5 = values.reduce(function(a,b){ return a+b; }, 0);
+    values = values.map(function(v){ return total5>0 ? parseFloat((v/total5*100).toFixed(1)) : 0; });
+  }
+
+  return { labels:labels, values:values, pieData:pieData };
+}
+
+
+// ── State Variables (ประกาศถ้ายังไม่มี) ──────────────────────────
+if (typeof _biWidgets  === 'undefined') var _biWidgets  = [];
+if (typeof _biSelected === 'undefined') var _biSelected = null;
+if (typeof _biPreview  === 'undefined') var _biPreview  = false;
+if (typeof _biNextId   === 'undefined') var _biNextId   = 1;
+if (typeof _biDashData === 'undefined') var _biDashData = null;
+if (typeof _biMonitorData === 'undefined') var _biMonitorData = null;
+
+// ── Widget Type Catalog ───────────────────────────────────────────
+if (typeof BI_WIDGET_TYPES === 'undefined') {
+  var BI_WIDGET_TYPES = [
+    { type:'kpi',         label:'KPI Card',              icon:'speed',                 color:'#1a73e8', group:'ตัวเลข' },
+    { type:'kpi_compare', label:'KPI เปรียบเทียบ',       icon:'compare_arrows',        color:'#34a853', group:'ตัวเลข' },
+    { type:'stat_group',  label:'กลุ่ม KPI 4 ค่า',       icon:'grid_view',             color:'#673ab7', group:'ตัวเลข' },
+    { type:'bar',         label:'Bar Chart',             icon:'bar_chart',             color:'#1a73e8', group:'กราฟ'   },
+    { type:'bar_h',       label:'Bar Horizontal',        icon:'bar_chart',             color:'#34a853', group:'กราฟ'   },
+    { type:'line',        label:'Line Chart',            icon:'show_chart',            color:'#1a73e8', group:'กราฟ'   },
+    { type:'area',        label:'Area Chart',            icon:'area_chart',            color:'#673ab7', group:'กราฟ'   },
+    { type:'pie',         label:'Pie Chart',             icon:'pie_chart',             color:'#ea4335', group:'กราฟ'   },
+    { type:'donut',       label:'Donut Chart',           icon:'donut_large',           color:'#fbbc04', group:'กราฟ'   },
+    { type:'radar',       label:'Radar Chart',           icon:'track_changes',         color:'#00bcd4', group:'กราฟ'   },
+    { type:'progress',    label:'Progress Bar',          icon:'linear_scale',          color:'#34a853', group:'ความคืบหน้า' },
+    { type:'gauge',       label:'Gauge / Speedometer',   icon:'speed',                 color:'#1a73e8', group:'ความคืบหน้า' },
+    { type:'table',       label:'ตาราง Agency',          icon:'table_chart',           color:'#607d8b', group:'ตาราง'  },
+    { type:'ranking',     label:'Ranking List',          icon:'format_list_numbered',  color:'#673ab7', group:'ตาราง'  },
+    { type:'monitor_tbl', label:'สถานะการรายงาน',        icon:'fact_check',            color:'#ea4335', group:'ตาราง'  },
+    { type:'map',         label:'แผนที่สังกัด',          icon:'map',                   color:'#00bcd4', group:'พิเศษ'  },
+    { type:'yoy',         label:'เปรียบเทียบ YoY',      icon:'trending_up',           color:'#34a853', group:'พิเศษ'  },
+    { type:'text',        label:'Text / Heading',        icon:'title',                 color:'#607d8b', group:'Layout' },
+    { type:'divider',     label:'Divider',               icon:'horizontal_rule',       color:'#9e9e9e', group:'Layout' },
+    { type:'spacer',      label:'Spacer',                icon:'space_bar',             color:'#bdbdbd', group:'Layout' },
+  ];
+}
+
+// ════════════════════════════════════════════════════════════════
+// CORE BI FUNCTIONS
+// ════════════════════════════════════════════════════════════════
+
+function loadBIBuilder() {
+  _biRenderWidgetLibrary();
+  _biLoadFromStorage();
+  _biRenderCanvas();
+  // โหลด dashboard data
+  if (AppState && AppState.currentDashboardData) {
+    _biDashData = AppState.currentDashboardData;
+  } else if (typeof google !== 'undefined' && google.script) {
+    google.script.run
+      .withSuccessHandler(function(d) { _biDashData = d; _biRenderCanvas(); })
+      .getDashboardData({ sessionToken: AppState ? AppState.sessionToken : null });
+  }
+  // โหลด monitor data
+  if (typeof google !== 'undefined' && google.script) {
+    google.script.run
+      .withSuccessHandler(function(d) { _biMonitorData = d; _biRenderCanvas(); })
+      .getMonitoringData({ userRole: AppState ? AppState.userRole : 'admin', sessionToken: AppState ? AppState.sessionToken : null });
+  }
+}
+
+function _biLoadFromStorage() {
+  try {
+    var s = localStorage.getItem('bi_widgets');
+    if (s) _biWidgets = JSON.parse(s);
+    var n = localStorage.getItem('bi_next_id');
+    if (n) _biNextId = parseInt(n) || 1;
+    var t = document.getElementById('biDashTitle');
+    var st = localStorage.getItem('bi_dash_title');
+    if (t && st) t.value = st;
+  } catch(e) { _biWidgets = []; }
+}
+
+function _biSaveToStorage() {
+  try {
+    localStorage.setItem('bi_widgets', JSON.stringify(_biWidgets));
+    localStorage.setItem('bi_next_id', String(_biNextId));
+    var t = document.getElementById('biDashTitle');
+    if (t) localStorage.setItem('bi_dash_title', t.value);
+  } catch(e) {}
+}
+
+function _biGetYoYData() {
+  return {
+    years:  ['2565', '2566', '2567', '2568'],
+    values: [35000,  37500,  39000,  40000],
+    pcts:   [0,      7.1,    4.0,    2.6]
+  };
+}
+
+// ── Widget Library Panel ──────────────────────────────────────────
+function biOpenWidgetPanel() {
+  var p = document.getElementById('bi-widget-panel');
+  if (!p) return;
+  p.style.display = p.style.display === 'none' ? '' : 'none';
+}
+
+function _biRenderWidgetLibrary() {
+  var lib = document.getElementById('bi-widget-library');
+  if (!lib) return;
+  lib.innerHTML = '';
+  var groups = {};
+  BI_WIDGET_TYPES.forEach(function(w) {
+    if (!groups[w.group]) groups[w.group] = [];
+    groups[w.group].push(w);
+  });
+  Object.keys(groups).forEach(function(grpName) {
+    var hd = document.createElement('div');
+    hd.style.cssText = 'font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin:10px 0 6px;text-transform:uppercase;';
+    hd.innerText = grpName;
+    lib.appendChild(hd);
+    groups[grpName].forEach(function(def) {
+      var item = document.createElement('div');
+      item.className = 'bi-lib-item';
+      item.innerHTML =
+        '<div class="bi-lib-icon" style="background:' + def.color + '22;">'
+        + '<span class="material-icons-round" style="font-size:18px;color:' + def.color + ';">' + def.icon + '</span></div>'
+        + '<div><div style="font-size:12px;font-weight:700;color:var(--text);">' + def.label + '</div></div>';
+      item.addEventListener('click', function() { biAddWidget(def.type); });
+      lib.appendChild(item);
+    });
+  });
+}
+
+// ── Add / Remove / Dupe / Move Widget ────────────────────────────
+function biAddWidget(type) {
+  var def = BI_WIDGET_TYPES.find(function(w) { return w.type === type; }) || {};
+  var defaultCols = {
+    kpi:3, kpi_compare:4, stat_group:6,
+    bar:6, bar_h:6, line:6, area:6, pie:4, donut:4, radar:6,
+    progress:6, gauge:4,
+    table:12, ranking:6, monitor_tbl:12,
+    map:6, yoy:12,
+    text:6, divider:12, spacer:12
+  };
+  var defaultKey = 'totalSchools';
+  if (['bar','line','area','pie','donut'].indexOf(type) >= 0) defaultKey = 'chart_agency';
+  if (type === 'radar')       defaultKey = 'student_all_levels';
+  if (['progress','gauge'].indexOf(type) >= 0) defaultKey = 'mon_pct';
+  if (['monitor_tbl','ranking','table','map','yoy','text','divider','spacer'].indexOf(type) >= 0) defaultKey = '';
+
+  var w = {
+    id:          'w' + (_biNextId++),
+    type:        type,
+    title:       def.label || type,
+    cols:        defaultCols[type] || 6,
+    color:       def.color || '#1a73e8',
+    dataKey:     defaultKey,
+    dataKey2:    'totalStudents',
+    customVal:   0,
+    unit:        '',
+    desc:        '',
+    fontSize:    '32',
+    showTrend:   false,
+    showIcon:    false,
+    showLegend:  true,
+    showLabel:   false,
+    showGrid:    true,
+    smoothLine:  true,
+    autoColor:   true,
+    useComma:    true,
+    sortDesc:    false,
+    limitData:   false,
+    dataLimit:   10,
+    gaugeMax:    100,
+    gaugeMin:    0,
+    numFormat:   'number',
+    textAlign:   'left',
+    bgColor:     '',
+    borderColor: '',
+    showBorder:  false,
+    chartHeight: 220,
+    _activeTab:  'data',
+  };
+  _biWidgets.push(w);
+  _biSelected = w.id;
+  _biSaveToStorage();
+  _biRenderCanvas();
+  _openPropPanel(w);
+  var propPanel = document.getElementById('bi-prop-panel');
+  if (propPanel) propPanel.style.display = '';
+}
+
+function biRemoveWidget(id) {
+  _biWidgets = _biWidgets.filter(function(w) { return w.id !== id; });
+  if (_biSelected === id) {
+    _biSelected = null;
+    var pp = document.getElementById('bi-prop-panel');
+    if (pp) pp.style.display = 'none';
+  }
+  _biSaveToStorage();
+  _biRenderCanvas();
+}
+
+function biDupeWidget(id) {
+  var w = _biWidgets.find(function(x) { return x.id === id; });
+  if (!w) return;
+  var clone = JSON.parse(JSON.stringify(w));
+  clone.id    = 'w' + (_biNextId++);
+  clone.title = clone.title + ' (สำเนา)';
+  var idx = _biWidgets.findIndex(function(x) { return x.id === id; });
+  _biWidgets.splice(idx + 1, 0, clone);
+  _biSelected = clone.id;
+  _biSaveToStorage();
+  _biRenderCanvas();
+  _openPropPanel(clone);
+}
+
+function biMoveWidget(id, dir) {
+  var idx = _biWidgets.findIndex(function(w) { return w.id === id; });
+  if (idx < 0) return;
+  var ni = idx + dir;
+  if (ni < 0 || ni >= _biWidgets.length) return;
+  var tmp = _biWidgets[idx];
+  _biWidgets[idx] = _biWidgets[ni];
+  _biWidgets[ni]  = tmp;
+  _biSaveToStorage();
+  _biRenderCanvas();
+}
+
+function biClearCanvas() {
+  if (_biWidgets.length === 0) return;
+  Swal.fire({
+    title: 'ล้าง Dashboard?',
+    html: '<div style="font-size:13px;">จะลบ widget ทั้งหมด ' + _biWidgets.length + ' รายการ</div>',
+    icon: 'warning', showCancelButton: true,
+    confirmButtonText: 'ล้าง', cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: '#d93025'
+  }).then(function(r) {
+    if (!r.isConfirmed) return;
+    _biWidgets  = [];
+    _biSelected = null;
+    _biSaveToStorage();
+    _biRenderCanvas();
+    var pp = document.getElementById('bi-prop-panel');
+    if (pp) pp.style.display = 'none';
+  });
+}
+
+// ── Canvas Renderer ───────────────────────────────────────────────
+function _biMakeActions(wid) {
+  return '<div class="bi-widget-actions">'
+    + '<div class="bi-act-btn" title="ซ้าย" onclick="event.stopPropagation();biMoveWidget(\'' + wid + '\',-1)">'
+      + '<span class="material-icons-round" style="font-size:14px;">chevron_left</span></div>'
+    + '<div class="bi-act-btn" title="ขวา" onclick="event.stopPropagation();biMoveWidget(\'' + wid + '\',1)">'
+      + '<span class="material-icons-round" style="font-size:14px;">chevron_right</span></div>'
+    + '<div class="bi-act-btn" title="ทำสำเนา" onclick="event.stopPropagation();biDupeWidget(\'' + wid + '\')">'
+      + '<span class="material-icons-round" style="font-size:14px;">content_copy</span></div>'
+    + '<div class="bi-act-btn del" title="ลบ" onclick="event.stopPropagation();biRemoveWidget(\'' + wid + '\')">'
+      + '<span class="material-icons-round" style="font-size:14px;">delete</span></div>'
+    + '</div>';
+}
+
+function _biRenderCanvas() {
+  var grid  = document.getElementById('bi-grid');
+  var empty = document.getElementById('bi-empty-state');
+  var cnt   = document.getElementById('biWidgetCount');
+  if (!grid) return;
+
+  if (cnt)   cnt.innerText = _biWidgets.length + ' widgets';
+  if (empty) empty.style.display = _biWidgets.length === 0 ? 'flex' : 'none';
+  grid.style.display = _biWidgets.length === 0 ? 'none' : 'grid';
+  grid.innerHTML = '';
+
+  _biWidgets.forEach(function(w) {
+    // Spacer
+    if (w.type === 'spacer') {
+      var sp = document.createElement('div');
+      sp.style.gridColumn = 'span ' + Math.min(12, w.cols || 12);
+      sp.style.minHeight  = '24px';
+      grid.appendChild(sp);
+      return;
+    }
+    // Divider
+    if (w.type === 'divider') {
+      var dv = document.createElement('div');
+      dv.style.cssText = 'grid-column:span ' + Math.min(12, w.cols || 12)
+        + ';height:2px;background:' + (w.color || 'var(--border-l)')
+        + ';border-radius:1px;margin:4px 0;';
+      grid.appendChild(dv);
+      return;
+    }
+
+    var cell = document.createElement('div');
+    cell.className = 'bi-widget-card'
+      + (w.id === _biSelected ? ' selected' : '')
+      + (_biPreview ? ' preview-mode' : '');
+    cell.style.gridColumn = 'span ' + Math.min(12, Math.max(1, w.cols || 6));
+    if (w.bgColor) cell.style.background = w.bgColor;
+    if (w.showBorder && w.borderColor) cell.style.borderColor = w.borderColor;
+    cell.dataset.wid = w.id;
+
+    var actions = _biPreview ? '' : _biMakeActions(w.id);
+    var defType = BI_WIDGET_TYPES.find(function(t) { return t.type === w.type; }) || {};
+    var wSrcDef = (typeof biGetSourceDef === 'function') ? biGetSourceDef(w.dataKey) : null;
+
+    var header = w.type === 'text' ? '' :
+      '<div class="bi-widget-header">'
+      + '<span class="material-icons-round" style="font-size:16px;color:' + (w.color || '#1a73e8') + ';">' + (defType.icon || 'widgets') + '</span>'
+      + '<span class="bi-widget-title">' + (w.title || '') + '</span>'
+      + (wSrcDef ? '<span style="font-size:10px;color:var(--muted);margin-left:auto;padding-left:8px;white-space:nowrap;overflow:hidden;max-width:80px;text-overflow:ellipsis;">' + wSrcDef.label + '</span>' : '')
+      + '</div>';
+
+    var bodyHtml = '';
+    if (typeof _biRenderWidgetBody === 'function') {
+      bodyHtml = _biRenderWidgetBody(w);
+    } else {
+      bodyHtml = '<div class="bi-widget-body" style="text-align:center;color:var(--muted);padding:20px;font-size:12px;">' + (w.type) + '</div>';
+    }
+
+    cell.innerHTML = actions + header + bodyHtml;
+
+    if (!_biPreview) {
+      cell.addEventListener('click', function(e) {
+        if (e.target.closest('.bi-act-btn')) return;
+        _biSelected = w.id;
+        _biRenderCanvas();
+        if (typeof _openPropPanel === 'function') _openPropPanel(w);
+        var pp = document.getElementById('bi-prop-panel');
+        if (pp) pp.style.display = '';
+      });
+    }
+    grid.appendChild(cell);
+
+    // Draw ECharts after DOM ready
+    var chartTypes = ['bar','bar_h','line','area','pie','donut','radar','gauge','yoy'];
+    if (chartTypes.indexOf(w.type) >= 0) {
+      (function(wRef) {
+        setTimeout(function() {
+          var el = document.getElementById('bic-' + wRef.id);
+          if (el && typeof echarts !== 'undefined' && typeof _biDrawChart === 'function') {
+            _biDrawChart(wRef, el);
+          }
+        }, 80);
+      })(w);
+    }
+  });
+}
+
+// ── Preview Toggle ────────────────────────────────────────────────
+function biTogglePreview() {
+  _biPreview = !_biPreview;
+  var view = document.getElementById('view-bi');
+  var btn  = document.getElementById('biPreviewBtn');
+  if (view) view.classList.toggle('preview', _biPreview);
+  if (btn) {
+    btn.innerHTML = _biPreview
+      ? '<span class="material-icons-round" style="font-size:16px;">edit</span> แก้ไข'
+      : '<span class="material-icons-round" style="font-size:16px;">preview</span> Preview';
+  }
+  // ซ่อน/แสดง panels
+  var widgetPanel = document.getElementById('bi-widget-panel');
+  var propPanel   = document.getElementById('bi-prop-panel');
+  if (widgetPanel) widgetPanel.style.display = _biPreview ? 'none' : '';
+  if (propPanel)   propPanel.style.display   = _biPreview ? 'none' : '';
+
+  _biRenderCanvas();
+  showToast(_biPreview ? '👁️ Preview Mode — กด Preview อีกครั้งเพื่อแก้ไข' : '✏️ Edit Mode', 'info');
+}
+
+// ── Save Dashboard ────────────────────────────────────────────────
+function biSaveDashboard() {
+  _biSaveToStorage();
+  showToast('💾 บันทึก Dashboard แล้ว (' + _biWidgets.length + ' widgets)', 'success');
+}
+
+// ── Export PDF ────────────────────────────────────────────────────
+function biExportPDF() {
+  if (!_biWidgets || _biWidgets.length === 0) {
+    showToast('ไม่มี widget — กรุณาเลือก Template หรือเพิ่ม widget ก่อน', 'warning');
+    return;
+  }
+  var dashTitle = (document.getElementById('biDashTitle') || {}).value || 'BI Dashboard';
+  var now       = new Date();
+  var dd = now.getDate(), mm = now.getMonth()+1, yyyy = now.getFullYear();
+  var dateStr = dd+'/'+mm+'/'+(yyyy+543);
+  var timeStr = now.getHours()+':'+String(now.getMinutes()).padStart(2,'0')+' น.';
+  var d   = _biDashData    || {};
+  var mon = _biMonitorData || {};
+
+  var kpiWidgets = _biWidgets.filter(function(w){return w.type==='kpi';}).slice(0,8);
+  var kpiHTML = kpiWidgets.map(function(w){
+    var val = biResolveValue(w.dataKey, w.customVal);
+    var num = typeof val==='number' ? val.toLocaleString() : (val||'-');
+    return '<div style="flex:1;min-width:110px;background:#fff;border:1.5px solid #e8eaed;border-radius:10px;padding:14px 10px;text-align:center;border-top:3px solid '+(w.color||'#1a73e8')+';">'
+      +'<div style="font-size:24px;font-weight:700;color:'+(w.color||'#1a73e8')+';line-height:1.1;">'+num+'</div>'
+      +'<div style="font-size:11px;color:#5f6368;margin-top:4px;">'+w.title+'</div>'
+      +(w.unit?'<div style="font-size:10px;color:#9aa0a6;">'+w.unit+'</div>':'')
+      +'</div>';
+  }).join('');
+
+  var textW = _biWidgets.find(function(w){return w.type==='text';});
+  var reportTitle = textW ? textW.title : dashTitle;
+  var reportDesc  = textW ? (textW.desc||'') : '';
+  var filterLabel = typeof biGetFilterLabel==='function' ? biGetFilterLabel() : 'ข้อมูลทั้งหมด';
+
+  var agencyRows = '';
+  if (d.agencySummary) {
+    var lbls=d.agencySummary.labels||[]; var vals=d.agencySummary.values||[];
+    lbls.forEach(function(l,i){
+      agencyRows+='<tr style="background:'+(i%2?'#fff':'#f8f9fa')+';">'
+        +'<td style="padding:6px 10px;border-bottom:1px solid #e8eaed;">'+l+'</td>'
+        +'<td style="padding:6px 10px;border-bottom:1px solid #e8eaed;text-align:right;font-weight:600;color:#1a73e8;">'+(vals[i]||0).toLocaleString()+'</td></tr>';
+    });
+  }
+  if (!agencyRows) agencyRows='<tr><td colspan="2" style="padding:14px;text-align:center;color:#9aa0a6;">ไม่มีข้อมูล</td></tr>';
+
+  var sMap={approved:'อนุมัติแล้ว',pending:'รออนุมัติ',rejected:'ส่งกลับแก้ไข',not_sent:'ยังไม่ส่ง'};
+  var sClr={approved:'#1e8e3e',pending:'#f29900',rejected:'#d93025',not_sent:'#5f6368'};
+  var monRows='';
+  (mon.agencies||[]).slice(0,13).forEach(function(ag,i){
+    var st=ag.status||'not_sent';
+    monRows+='<tr style="background:'+(i%2?'#fff':'#f8f9fa')+';">'
+      +'<td style="padding:6px 10px;border-bottom:1px solid #e8eaed;font-size:11px;">'+(ag.name||'-')+'</td>'
+      +'<td style="padding:6px 10px;border-bottom:1px solid #e8eaed;text-align:center;">'
+      +'<span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:'+(sClr[st]||'#5f6368')+'22;color:'+(sClr[st]||'#5f6368')+';"> '+(sMap[st]||st)+'</span></td>'
+      +'<td style="padding:6px 10px;border-bottom:1px solid #e8eaed;font-size:11px;text-align:center;">'+(ag.updatedAt?ag.updatedAt.substring(0,10):'-')+'</td></tr>';
+  });
+  if (!monRows) monRows='<tr><td colspan="3" style="padding:14px;text-align:center;color:#9aa0a6;">ไม่มีข้อมูล</td></tr>';
+
+  var parts = [
+    '<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8">',
+    '<title>'+reportTitle+'</title>',
+    '<style>',
+    '@import url("https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap");',
+    '*{margin:0;padding:0;box-sizing:border-box;}',
+    'body{font-family:"Sarabun",Arial,sans-serif;font-size:13px;color:#202124;background:#fff;padding:0;}',
+    '@page{size:A4 landscape;margin:10mm 12mm;}',
+    '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.no-print{display:none!important;}}',
+    '.pg{max-width:1060px;margin:0 auto;padding:8px;}',
+    '.hd{background:#1a73e8;border-radius:10px 10px 0 0;padding:14px 20px;color:#fff;display:flex;justify-content:space-between;align-items:flex-start;}',
+    '.hd-l{display:flex;align-items:center;gap:12px;}',
+    '.ic{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}',
+    '.ht{font-size:16px;font-weight:700;}.hs{font-size:11px;opacity:.85;margin-top:2px;}',
+    '.hd-r{text-align:right;font-size:11px;opacity:.85;line-height:1.9;}',
+    '.bar{height:4px;background:linear-gradient(90deg,#1a73e8 0%,#34a853 35%,#fbbc04 65%,#ea4335 100%);margin-bottom:14px;}',
+    '.sec{font-size:11px;font-weight:700;color:#1a73e8;letter-spacing:.06em;text-transform:uppercase;margin:14px 0 7px;padding-bottom:4px;border-bottom:2px solid #e8f0fe;}',
+    '.kpi{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}',
+    '.two{display:flex;gap:12px;margin-bottom:14px;}',
+    '.tl{flex:1;min-width:0;}.tr{width:295px;flex-shrink:0;}',
+    'table{width:100%;border-collapse:collapse;font-size:12px;}',
+    'thead th{background:#1a73e8;color:#fff;padding:7px 10px;text-align:left;font-weight:600;font-size:11px;}',
+    '.ft{display:flex;justify-content:space-between;align-items:center;margin-top:14px;',
+    '    padding:9px 16px;background:#f8f9fa;border:1px solid #e8eaed;border-radius:0 0 10px 10px;font-size:10px;color:#9aa0a6;}',
+    '.wm{position:fixed;bottom:16mm;right:8mm;opacity:.05;font-size:72px;font-weight:900;',
+    '    color:#1a73e8;transform:rotate(-28deg);letter-spacing:-2px;pointer-events:none;}',
+    '.pb{position:fixed;top:12px;right:12px;padding:10px 22px;background:#1a73e8;color:#fff;',
+    '    border:none;border-radius:8px;font-size:13px;font-family:"Sarabun",sans-serif;cursor:pointer;font-weight:600;z-index:999;}',
+    '</style></head><body>',
+    '<button class="pb no-print" onclick="window.print()">พิมพ์ / บันทึก PDF</button>',
+    '<div class="wm">EduData</div>',
+    '<div class="pg">',
+    '<div class="hd"><div class="hd-l"><div class="ic">📊</div><div>',
+    '<div class="ht">'+reportTitle+'</div>',
+    '<div class="hs">สำนักงานเขตพื้นที่การศึกษา | EduData Sakon Enterprise v2.1</div>',
+    '</div></div><div class="hd-r">',
+    '<div>วันที่พิมพ์: <strong>'+dateStr+'</strong> เวลา '+timeStr+'</div>',
+    '<div>'+filterLabel+'</div>',
+    (reportDesc?'<div>'+reportDesc+'</div>':''),
+    '</div></div><div class="bar"></div>',
+    (kpiHTML?'<div class="sec">ตัวชี้วัดหลัก (KPI)</div><div class="kpi">'+kpiHTML+'</div>':''),
+    '<div class="two">',
+    '<div class="tl"><div class="sec">ข้อมูลแยกสังกัด</div>',
+    '<table><thead><tr><th>สังกัด</th><th style="text-align:right;">จำนวนสถานศึกษา</th></tr></thead>',
+    '<tbody>'+agencyRows+'</tbody></table></div>',
+    '<div class="tr"><div class="sec">สถานะการรายงาน</div>',
+    '<table><thead><tr><th>สังกัด</th><th>สถานะ</th><th style="text-align:center;">วันที่</th></tr></thead>',
+    '<tbody>'+monRows+'</tbody></table></div>',
+    '</div>',
+    '<div class="ft">',
+    '<span style="font-weight:700;color:#1a73e8;">EduData Sakon Enterprise v2.1</span>',
+    '<span>พิมพ์เมื่อ '+dateStr+' '+timeStr+'</span>',
+    '<span>จังหวัดสกลนคร | สารสนเทศด้านการศึกษา</span>',
+    '</div></div>',
+    '</body></html>',
+  ];
+  var html = parts.join('');
+
+  showToast('กำลังเตรียม PDF...', 'info');
+  var pw = window.open('', '_blank', 'width=1120,height=800,scrollbars=yes');
+  if (!pw) { showToast('กรุณาอนุญาต popup ใน browser แล้วลองใหม่', 'warning'); return; }
+  pw.document.open();
+  pw.document.write(html);
+  pw.document.close();
+  setTimeout(function(){ pw.print(); }, 600);
+  showToast('เปิดหน้าพิมพ์แล้ว — เลือก "บันทึกเป็น PDF"', 'success');
+}
+
+function _biFallbackPrint(html, wasPreview) {
+  var pw = window.open('','_blank','width=1120,height=800,scrollbars=yes');
+  if (!pw) { showToast('กรุณาอนุญาต popup แล้วลองใหม่','warning'); return; }
+  pw.document.open(); pw.document.write(html); pw.document.close();
+  if (!wasPreview) { _biPreview=false; _biRenderCanvas(); }
+}
+
+// ── Format number helper (ถ้ายังไม่มี) ───────────────────────────
+if (typeof biFormatNumber === 'undefined') {
+  function biFormatNumber(val, w) {
+    var fmt = (w && w.numFormat) || 'number';
+    if (typeof val !== 'number') return val;
+    if (fmt === 'compact') {
+      if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+      if (val >= 1000)    return (val / 1000).toFixed(1) + 'K';
+      return val.toLocaleString();
+    }
+    if (fmt === 'pct')    return val.toFixed(1) + '%';
+    if (fmt === 'fixed0') return Math.round(val).toLocaleString();
+    if (fmt === 'fixed2') return val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return (w && w.useComma !== false) ? val.toLocaleString() : String(Math.round(val));
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// END OF BI MISSING FUNCTIONS PACK
+// ════════════════════════════════════════════════════════════════
+
+function openReportBuilder() {
+  // Highlight เมนูที่เลือก
+  document.querySelectorAll('.ni').forEach(function(el) {
+    el.classList.remove('on');
+  });
+  var navEl = document.getElementById('nav-report');
+  if (navEl) navEl.classList.add('on');
+
+  // ดึง URL แล้วเปิดใน Tab ใหม่
+  if (typeof google !== 'undefined' && google.script) {
+    google.script.run
+      .withSuccessHandler(function(url) {
+        var tok = AppState && AppState.sessionToken ? '&token=' + encodeURIComponent(AppState.sessionToken) : '';
+        window.open(url + tok, '_blank');
+      })
+      .withFailureHandler(function() {
+        showToast('ไม่สามารถเปิด Report Builder ได้', 'error');
+      })
+      .getReportBuilderUrl();
+  } else {
+    // Mock: เปิดไฟล์โดยตรง (ทดสอบนอก Apps Script)
+    window.open('ReportBuilder.html', '_blank');
+  }
+}
+
+
+
+
+
+// ══════════════════════════════════════════════════════════════════
+// BI REPORT TEMPLATE GALLERY — EduData Sakon Enterprise v2.1
+// ══════════════════════════════════════════════════════════════════
+
+var BI_REPORT_TEMPLATES = [
+  { id:'exec_overview',   name:'ภาพรวมจังหวัด (ผู้บริหาร)',        desc:'KPI 4 ตัว + กราฟสังกัด + แผนที่ + สถานะรายงาน',   cat:'executive', icon:'business_center', color:'#1a73e8', colorBg:'#e8f0fe', badge:'แนะนำ',    badgeColor:'#1a73e8', badgeBg:'#e8f0fe',
+    widgets:[
+      {type:'text',        title:'รายงานภาพรวมสารสนเทศด้านการศึกษา จังหวัดสกลนคร', cols:12, fontSize:'22', desc:'ปีการศึกษา 2567'},
+      {type:'kpi',         title:'สถานศึกษาทั้งหมด',  cols:3, dataKey:'totalSchools',  color:'#1a73e8', unit:'แห่ง'},
+      {type:'kpi',         title:'ผู้เรียนรวม',        cols:3, dataKey:'totalStudents', color:'#1e8e3e', unit:'คน'},
+      {type:'kpi',         title:'ครูและบุคลากร',      cols:3, dataKey:'totalTeachers', color:'#f29900', unit:'คน'},
+      {type:'kpi',         title:'ผู้เรียนพิเศษ',      cols:3, dataKey:'totalSpecial',  color:'#d93025', unit:'คน'},
+      {type:'pie',         title:'สถานศึกษาแยกสังกัด', cols:5, dataKey:'chart_agency',  showLegend:true},
+      {type:'bar',         title:'ผู้เรียนแยกระดับชั้น',cols:7, dataKey:'student_all_levels'},
+      {type:'monitor_tbl', title:'สถานะการรายงานข้อมูล', cols:12},
+    ]},
+  { id:'exec_policy',     name:'รายงานนโยบายการศึกษา',              desc:'KPI เปรียบเทียบ + Gauge + Progress + Ranking',       cat:'executive', icon:'policy',          color:'#7b1fa2', colorBg:'#f3e5f5', badge:'ผู้บริหาร', badgeColor:'#7b1fa2', badgeBg:'#f3e5f5',
+    widgets:[
+      {type:'text',        title:'รายงานติดตามนโยบายการศึกษา',  cols:12, fontSize:'20', desc:'ปีการศึกษา 2567'},
+      {type:'kpi_compare', title:'เปรียบเทียบผู้เรียน',          cols:4, dataKey:'totalStudents', dataKey2:'std_pre', color:'#7b1fa2'},
+      {type:'gauge',       title:'% ความสำเร็จการรายงาน',        cols:4, dataKey:'mon_pct', color:'#1e8e3e'},
+      {type:'progress',    title:'ความครอบคลุมการรายงาน',        cols:4, dataKey:'mon_pct', color:'#1a73e8'},
+      {type:'bar',         title:'สถานศึกษาแยกสังกัด',           cols:6, dataKey:'chart_agency', showLabel:true},
+      {type:'ranking',     title:'อันดับสังกัดที่รายงานสำเร็จ',   cols:6},
+      {type:'yoy',         title:'แนวโน้มผู้เรียน 4 ปีย้อนหลัง', cols:12},
+    ]},
+  { id:'student_full',    name:'รายงานสถิติผู้เรียนครบถ้วน',        desc:'จำนวนนักเรียนแยกระดับ + พิเศษ + กราฟ',              cat:'student',   icon:'school',          color:'#1e8e3e', colorBg:'#e6f4ea', badge:'ครบถ้วน',  badgeColor:'#1e8e3e', badgeBg:'#e6f4ea',
+    widgets:[
+      {type:'text',   title:'รายงานสถิติผู้เรียน จังหวัดสกลนคร',   cols:12, fontSize:'20'},
+      {type:'kpi',    title:'ก่อนประถมศึกษา', cols:3, dataKey:'std_pre',    color:'#4caf50', unit:'คน'},
+      {type:'kpi',    title:'ประถมศึกษา',     cols:3, dataKey:'std_p',      color:'#2196f3', unit:'คน'},
+      {type:'kpi',    title:'มัธยมต้น',       cols:3, dataKey:'std_m_ton',  color:'#ff9800', unit:'คน'},
+      {type:'kpi',    title:'มัธยมปลาย',      cols:3, dataKey:'std_m_plai', color:'#e91e63', unit:'คน'},
+      {type:'donut',  title:'สัดส่วนผู้เรียนแยกระดับ',        cols:5, dataKey:'student_all_levels', showLegend:true},
+      {type:'bar_h',  title:'เปรียบเทียบผู้เรียนแต่ละระดับ',   cols:7, dataKey:'student_all_levels', showLabel:true},
+      {type:'kpi',    title:'อาชีวศึกษา',     cols:4, dataKey:'std_voc',      color:'#9c27b0', unit:'คน'},
+      {type:'kpi',    title:'ผู้เรียนพิเศษรวม',cols:4, dataKey:'totalSpecial', color:'#f44336', unit:'คน'},
+      {type:'bar',    title:'ผู้เรียนพิเศษแยกประเภท', cols:4, dataKey:'special_all', showLabel:true},
+    ]},
+  { id:'student_special', name:'รายงานผู้เรียนพิเศษ',               desc:'เด็กพิการแยกประเภท พร้อมกราฟและตัวชี้วัด',          cat:'student',   icon:'accessible',      color:'#e65100', colorBg:'#fff3e0', badge:'เฉพาะทาง',badgeColor:'#e65100', badgeBg:'#fff3e0',
+    widgets:[
+      {type:'text',   title:'รายงานผู้เรียนที่มีความต้องการพิเศษ', cols:12, fontSize:'20', desc:'Education for All — สกลนคร'},
+      {type:'kpi',    title:'รวมผู้เรียนพิเศษ',   cols:4, dataKey:'totalSpecial', color:'#e65100', unit:'คน'},
+      {type:'kpi',    title:'ออทิสติก',            cols:4, dataKey:'spc_autistic', color:'#f57c00', unit:'คน'},
+      {type:'kpi',    title:'บกพร่องร่างกาย',      cols:4, dataKey:'spc_physical', color:'#ef6c00', unit:'คน'},
+      {type:'pie',    title:'สัดส่วนแยกประเภท',    cols:5, dataKey:'special_all',  showLegend:true},
+      {type:'bar_h',  title:'จำนวนแยกประเภท',      cols:7, dataKey:'special_all',  showLabel:true},
+      {type:'monitor_tbl', title:'สถานะการรายงานผู้เรียนพิเศษ', cols:12},
+    ]},
+  { id:'teacher_overview',name:'รายงานบุคลากรการศึกษา',              desc:'จำนวนครูแยกสังกัด + กราฟและตัวชี้วัดกำลังคน',       cat:'teacher',   icon:'person',          color:'#0277bd', colorBg:'#e1f5fe', badge:'บุคลากร',  badgeColor:'#0277bd', badgeBg:'#e1f5fe',
+    widgets:[
+      {type:'text',   title:'รายงานสถิติบุคลากรทางการศึกษา', cols:12, fontSize:'20', desc:'จังหวัดสกลนคร ปีการศึกษา 2567'},
+      {type:'kpi',    title:'ครูและบุคลากรรวม', cols:4, dataKey:'totalTeachers',  color:'#0277bd', unit:'คน'},
+      {type:'kpi',    title:'สถานศึกษา',        cols:4, dataKey:'totalSchools',    color:'#1a73e8', unit:'แห่ง'},
+      {type:'kpi',    title:'อัตราครูต่อโรงเรียน',cols:4, dataKey:'totalTeachers', color:'#00838f', unit:'คน/แห่ง'},
+      {type:'bar',    title:'ครูแยกตามสังกัด',   cols:7, dataKey:'teacher_by_agency', showLabel:true},
+      {type:'donut',  title:'สัดส่วนครูแยกสังกัด',cols:5, dataKey:'teacher_by_agency', showLegend:true},
+      {type:'yoy',    title:'แนวโน้มบุคลากร 4 ปีย้อนหลัง', cols:12},
+    ]},
+  { id:'monitor_dashboard',name:'Dashboard กำกับติดตามการรายงาน',   desc:'สถานะ 13 สังกัด + % ความสำเร็จ + Ranking',           cat:'monitor',   icon:'track_changes',   color:'#2e7d32', colorBg:'#e8f5e9', badge:'กำกับฯ',  badgeColor:'#2e7d32', badgeBg:'#e8f5e9',
+    widgets:[
+      {type:'text',    title:'Dashboard กำกับติดตามการรายงานข้อมูล', cols:12, fontSize:'20', desc:'สำนักงานเขตพื้นที่การศึกษา จังหวัดสกลนคร'},
+      {type:'kpi',     title:'สังกัดทั้งหมด', cols:3, dataKey:'mon_total',    color:'#5f6368', unit:'หน่วย'},
+      {type:'kpi',     title:'อนุมัติแล้ว',   cols:3, dataKey:'mon_approved', color:'#2e7d32', unit:'ฉบับ'},
+      {type:'kpi',     title:'รออนุมัติ',     cols:3, dataKey:'mon_pending',  color:'#f57c00', unit:'ฉบับ'},
+      {type:'kpi',     title:'ส่งกลับแก้ไข', cols:3, dataKey:'mon_rejected', color:'#c62828', unit:'ฉบับ'},
+      {type:'gauge',   title:'% ความสำเร็จรวม',      cols:4, dataKey:'mon_pct', color:'#2e7d32'},
+      {type:'progress',title:'ความคืบหน้าการรายงาน', cols:4, dataKey:'mon_pct', color:'#1a73e8'},
+      {type:'ranking', title:'อันดับสังกัด',          cols:4},
+      {type:'monitor_tbl', title:'รายละเอียดสถานะแต่ละสังกัด', cols:12},
+    ]},
+  { id:'monitor_urgent',  name:'รายงานเร่งด่วน — ยังไม่รายงาน',     desc:'เน้นสังกัดที่ยังไม่ส่ง เพื่อติดตามเร่งด่วน',          cat:'monitor',   icon:'warning',         color:'#c62828', colorBg:'#ffebee', badge:'เร่งด่วน', badgeColor:'#c62828', badgeBg:'#ffebee',
+    widgets:[
+      {type:'text',    title:'รายงานเร่งด่วน — สังกัดที่ยังไม่รายงาน', cols:12, fontSize:'18', bgColor:'#ffebee', desc:'ต้องดำเนินการทันที'},
+      {type:'kpi',     title:'ยังไม่ส่งรายงาน', cols:4, dataKey:'mon_notsent',  color:'#c62828', unit:'หน่วย'},
+      {type:'kpi',     title:'รออนุมัติ',       cols:4, dataKey:'mon_pending',  color:'#e65100', unit:'ฉบับ'},
+      {type:'kpi',     title:'ส่งกลับแก้ไข',   cols:4, dataKey:'mon_rejected', color:'#b71c1c', unit:'ฉบับ'},
+      {type:'progress',title:'% ที่ยังขาด',     cols:6, dataKey:'mon_pct',      color:'#c62828'},
+      {type:'pie',     title:'สัดส่วนสถานะการรายงาน', cols:6, dataKey:'mon_status_table', showLegend:true},
+      {type:'monitor_tbl', title:'รายชื่อสังกัดและสถานะ', cols:12},
+    ]},
+  { id:'agency_compare',  name:'เปรียบเทียบข้อมูลแยกสังกัด',        desc:'Bar + Pie + Radar + ตาราง แสดงข้อมูล 13 สังกัด',     cat:'agency',    icon:'account_balance',  color:'#4527a0', colorBg:'#ede7f6', badge:'เปรียบเทียบ',badgeColor:'#4527a0', badgeBg:'#ede7f6',
+    widgets:[
+      {type:'text',   title:'รายงานเปรียบเทียบข้อมูลแยกสังกัด', cols:12, fontSize:'20', desc:'13 สังกัด จังหวัดสกลนคร'},
+      {type:'kpi',    title:'สังกัดทั้งหมด',  cols:3, dataKey:'mon_total',     color:'#4527a0', unit:'สังกัด'},
+      {type:'kpi',    title:'สถานศึกษารวม',   cols:3, dataKey:'totalSchools',  color:'#1a73e8', unit:'แห่ง'},
+      {type:'kpi',    title:'ผู้เรียนรวม',    cols:3, dataKey:'totalStudents', color:'#2e7d32', unit:'คน'},
+      {type:'kpi',    title:'ครูรวม',         cols:3, dataKey:'totalTeachers', color:'#e65100', unit:'คน'},
+      {type:'bar',    title:'สถานศึกษาแยกสังกัด',    cols:6, dataKey:'chart_agency',      showLabel:true},
+      {type:'bar',    title:'ครูแยกสังกัด',           cols:6, dataKey:'teacher_by_agency', showLabel:true},
+      {type:'pie',    title:'สัดส่วนสถานศึกษา',      cols:4, dataKey:'chart_agency',      showLegend:true},
+      {type:'donut',  title:'สัดส่วนบุคลากร',        cols:4, dataKey:'teacher_by_agency', showLegend:true},
+      {type:'radar',  title:'ภาพรวมแต่ละสังกัด',     cols:4, dataKey:'chart_agency'},
+      {type:'monitor_tbl', title:'สรุปตารางแยกสังกัด', cols:12},
+    ]},
+  { id:'agency_geo',      name:'แผนที่สารสนเทศเชิงพื้นที่',          desc:'แผนที่ Leaflet + KPI + ตาราง รายอำเภอ',              cat:'agency',    icon:'map',             color:'#00695c', colorBg:'#e0f2f1', badge:'GIS',      badgeColor:'#00695c', badgeBg:'#e0f2f1',
+    widgets:[
+      {type:'text',   title:'แผนที่สารสนเทศด้านการศึกษา จังหวัดสกลนคร', cols:12, fontSize:'20'},
+      {type:'kpi',    title:'สถานศึกษา', cols:3, dataKey:'totalSchools',  color:'#00695c', unit:'แห่ง'},
+      {type:'kpi',    title:'ผู้เรียน',  cols:3, dataKey:'totalStudents', color:'#00695c', unit:'คน'},
+      {type:'kpi',    title:'ครู',       cols:3, dataKey:'totalTeachers', color:'#00695c', unit:'คน'},
+      {type:'kpi',    title:'สังกัด',    cols:3, dataKey:'mon_total',     color:'#00695c', unit:'หน่วย'},
+      {type:'map',    title:'แผนที่สถานศึกษา จังหวัดสกลนคร', cols:8},
+      {type:'pie',    title:'แยกสังกัด', cols:4, dataKey:'chart_agency', showLegend:true},
+      {type:'monitor_tbl', title:'ข้อมูลแยกสังกัด', cols:12},
+    ]},
+];
+
+// ── Gallery Functions ────────────────────────────────────────────
+
+function biOpenTemplateGallery() {
+  var o = document.getElementById('biTplGalleryOverlay');
+  if (!o) return;
+  o.style.display = 'flex';
+  biRenderTemplateGallery('all');
+}
+
+function biCloseTemplateGallery() {
+  var o = document.getElementById('biTplGalleryOverlay');
+  if (o) o.style.display = 'none';
+}
+
+function biFilterTpl(cat) {
+  document.querySelectorAll('.bi-tpl-tab').forEach(function(b) {
+    b.classList.toggle('active', b.getAttribute('data-cat') === cat);
+  });
+  biRenderTemplateGallery(cat);
+}
+
+function biRenderTemplateGallery(cat) {
+  var grid = document.getElementById('biTplGrid');
+  if (!grid) return;
+  var list = cat === 'all' ? BI_REPORT_TEMPLATES
+    : BI_REPORT_TEMPLATES.filter(function(t){ return t.cat === cat; });
+  grid.innerHTML = '';
+  list.forEach(function(tpl) {
+    var previewHTML = tpl.widgets.slice(0, 6).map(function(w) {
+      var h = (w.type==='text'||w.type==='divider') ? 16 : (w.type==='kpi') ? 40
+            : (w.type==='monitor_tbl'||w.type==='table') ? 28 : 52;
+      var c = (w.type==='kpi') ? (w.color||tpl.color)
+            : ['bar','bar_h','line','area'].indexOf(w.type)>=0 ? '#e8f0fe'
+            : ['pie','donut','radar'].indexOf(w.type)>=0 ? '#e6f4ea'
+            : (w.type==='text') ? 'transparent'
+            : (w.type==='monitor_tbl'||w.type==='table') ? '#f1f3f4'
+            : (w.type==='map') ? '#e0f2f1'
+            : ['gauge','progress'].indexOf(w.type)>=0 ? '#fff3e0' : '#f8f9fa';
+      var flex = ((Math.min(w.cols||6,12))/12).toFixed(3);
+      return '<div style="flex:'+flex+';height:'+h+'px;background:'+c+';border-radius:5px;border:1px solid rgba(0,0,0,.06);min-width:0;"></div>';
+    }).join('');
+
+    var card = document.createElement('div');
+    card.className = 'bi-tpl-card';
+    card.innerHTML =
+      '<div class="bi-tpl-preview" style="background:'+tpl.colorBg+';">'+
+        '<div style="display:flex;flex-wrap:wrap;gap:4px;padding:12px;width:100%;align-content:flex-start;">'+previewHTML+'</div>'+
+        '<div class="bi-tpl-badge" style="background:'+tpl.badgeBg+';color:'+tpl.badgeColor+';">'+tpl.badge+'</div>'+
+      '</div>'+
+      '<div style="padding:12px 14px 8px;">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'+
+          '<div style="width:28px;height:28px;border-radius:7px;background:'+tpl.colorBg+';display:flex;align-items:center;justify-content:center;">'+
+            '<span class="material-icons-round" style="font-size:15px;color:'+tpl.color+';">'+tpl.icon+'</span>'+
+          '</div>'+
+          '<div style="font-size:13px;font-weight:700;color:var(--text);">'+tpl.name+'</div>'+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:8px;">'+tpl.desc+'</div>'+
+        '<div style="display:flex;align-items:center;gap:6px;">'+
+          '<span class="material-icons-round" style="font-size:12px;color:var(--hint);">widgets</span>'+
+          '<span style="font-size:11px;color:var(--hint);">'+tpl.widgets.length+' widgets</span>'+
+        '</div>'+
+      '</div>';
+
+    var btn = document.createElement('button');
+    btn.className = 'bi-tpl-use-btn';
+    btn.innerHTML = '<span class="material-icons-round" style="font-size:16px;">auto_awesome</span>ใช้ Template นี้';
+    btn.addEventListener('click', (function(id){ return function(){ biApplyTemplate(id); }; })(tpl.id));
+    card.appendChild(btn);
+    grid.appendChild(card);
+  });
+  if (!list.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted);"><span class="material-icons-round" style="font-size:48px;display:block;margin-bottom:12px;opacity:.3;">search_off</span><div style="font-size:14px;font-weight:600;">ไม่มี Template ในหมวดนี้</div></div>';
+  }
+}
+
+function biApplyTemplate(tplId) {
+  var tpl = BI_REPORT_TEMPLATES.find(function(t){ return t.id === tplId; });
+  if (!tpl) return;
+  if (_biWidgets && _biWidgets.length > 0) {
+    Swal.fire({
+      title: 'ใช้ Template นี้?',
+      html: '<div style="font-size:13px;color:#5f6368;">Dashboard ปัจจุบันจะถูกแทนที่ด้วย <b>'+tpl.name+'</b></div>',
+      icon: 'question', showCancelButton: true,
+      confirmButtonText: 'ใช้ Template', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#1a73e8',
+    }).then(function(r){ if (r.isConfirmed) _biDoApplyTemplate(tpl); });
+  } else {
+    _biDoApplyTemplate(tpl);
+  }
+}
+
+function _biDoApplyTemplate(tpl) {
+  _biWidgets = []; _biNextId = 1; _biSelected = null;
+  var titleEl = document.getElementById('biDashTitle');
+  if (titleEl) titleEl.value = tpl.name;
+  tpl.widgets.forEach(function(wDef) {
+    var def = BI_WIDGET_TYPES.find(function(x){ return x.type === wDef.type; });
+    _biWidgets.push({
+      id: 'w'+(_biNextId++), type: wDef.type,
+      title:       wDef.title      || (def ? def.label : wDef.type),
+      cols:        wDef.cols       || 6,
+      color:       wDef.color      || (def ? def.color : '#1a73e8'),
+      dataKey:     wDef.dataKey    || '',
+      dataKey2:    wDef.dataKey2   || 'totalStudents',
+      customVal:   wDef.customVal  || '',
+      unit:        wDef.unit       || '',
+      desc:        wDef.desc       || '',
+      fontSize:    wDef.fontSize   || '32',
+      showTrend:   !!wDef.showTrend,
+      showLegend:  wDef.showLegend !== false,
+      showLabel:   !!wDef.showLabel,
+      bgColor:     wDef.bgColor    || '',
+      borderColor: wDef.borderColor|| '',
+      formula: '',
+    });
+  });
+  _biSaveToStorage(); _biRenderCanvas(); biCloseTemplateGallery();
+  showToast('โหลด Template "'+tpl.name+'" แล้ว — '+tpl.widgets.length+' widgets', 'success');
+  var wp = document.getElementById('bi-widget-panel'); if (wp) wp.style.display = 'none';
+  var pp = document.getElementById('bi-prop-panel');   if (pp) pp.style.display = 'none';
+}
+
+document.addEventListener('click', function(e){
+  var o = document.getElementById('biTplGalleryOverlay');
+  if (o && e.target === o) biCloseTemplateGallery();
+});
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    var o = document.getElementById('biTplGalleryOverlay');
+    if (o && o.style.display === 'flex') biCloseTemplateGallery();
+  }
+});
+
+
+// ══════════════════════════════════════════════════════════════════
+// BI DATE RANGE FILTER — EduData Sakon Enterprise v2.1
+// ══════════════════════════════════════════════════════════════════
+
+var _biActiveFilter = { year:'2567', semester:'1', from:'', to:'', agency:'all' };
+
+function biApplyDateFilter() {
+  var year     = (document.getElementById('bi-filter-year')     || {}).value || 'all';
+  var semester = (document.getElementById('bi-filter-semester') || {}).value || 'all';
+  var from     = (document.getElementById('bi-filter-from')     || {}).value || '';
+  var to       = (document.getElementById('bi-filter-to')       || {}).value || '';
+  var agency   = (document.getElementById('bi-filter-agency')   || {}).value || 'all';
+
+  _biActiveFilter = { year:year, semester:semester, from:from, to:to, agency:agency };
+
+  // ── badge ────────────────────────────────────────────────────────
+  var isFiltered = year !== 'all' || semester !== 'all' || from || to || agency !== 'all';
+  var badge      = document.getElementById('bi-filter-badge');
+  var badgeTxt   = document.getElementById('bi-filter-badge-text');
+  if (badge) badge.style.display = isFiltered ? 'flex' : 'none';
+  if (badgeTxt && isFiltered) {
+    var parts = [];
+    if (year !== 'all')     parts.push('ปี ' + year);
+    if (semester !== 'all') parts.push('ภาค ' + semester);
+    if (from)               parts.push('จาก ' + _biThaiDate(from));
+    if (to)                 parts.push('ถึง ' + _biThaiDate(to));
+    if (agency !== 'all')   parts.push(agency);
+    badgeTxt.textContent = parts.join(' · ');
+  }
+
+  // ── filter _biDashData ────────────────────────────────────────────
+  _biApplyFilterToData();
+
+  // ── re-render ────────────────────────────────────────────────────
+  _biRenderCanvas();
+  showToast('กรองข้อมูล: ' + (isFiltered ? _biActiveFilter.year + (semester !== 'all' ? ' ภาค' + semester : '') : 'ทั้งหมด'), 'info');
+}
+
+function biResetDateFilter() {
+  var els = {
+    'bi-filter-year':     'all',
+    'bi-filter-semester': 'all',
+    'bi-filter-from':     '',
+    'bi-filter-to':       '',
+    'bi-filter-agency':   'all',
+  };
+  Object.keys(els).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = els[id];
+  });
+  _biActiveFilter = { year:'all', semester:'all', from:'', to:'', agency:'all' };
+
+  var badge = document.getElementById('bi-filter-badge');
+  if (badge) badge.style.display = 'none';
+
+  // คืนข้อมูลเดิม
+  if (typeof google !== 'undefined' && google.script) {
+    google.script.run
+      .withSuccessHandler(function(d) { _biDashData = d; _biRenderCanvas(); })
+      .getDashboardData({ sessionToken: AppState ? AppState.sessionToken : null });
+  } else {
+    _biRenderCanvas();
+  }
+  showToast('รีเซ็ตตัวกรองแล้ว', 'success');
+}
+
+function _biApplyFilterToData() {
+  if (!_biDashData) return;
+  var f = _biActiveFilter;
+
+  // กรอง agencySummary ตาม agency
+  if (f.agency !== 'all' && _biDashData.agencySummary) {
+    var orig = _biDashData.agencySummary;
+    var idx  = (orig.keys || orig.labels || []).indexOf(f.agency);
+    if (idx >= 0) {
+      _biDashData._filtered = {
+        agency: f.agency,
+        schools:  (orig.schools || orig.values || [])[idx] || 0,
+        students: (orig.students || [])[idx] || 0,
+        teachers: (orig.teachers || [])[idx] || 0,
+      };
+    }
+  } else {
+    if (_biDashData._filtered) delete _biDashData._filtered;
+  }
+}
+
+function _biThaiDate(iso) {
+  if (!iso) return '';
+  var p = iso.split('-');
+  if (p.length < 3) return iso;
+  return parseInt(p[2]) + '/' + parseInt(p[1]) + '/' + (parseInt(p[0]) + 543);
+}
+
+// เรียกเมื่อ loadBIBuilder
+function biInitDateFilter() {
+  var now  = new Date();
+  var yyyy = String(now.getFullYear());
+  var mm   = String(now.getMonth() + 1).padStart(2,'0');
+  var dd   = String(now.getDate()).padStart(2,'0');
+  var yearEl = document.getElementById('bi-filter-year');
+  if (yearEl) {
+    var thYear = String(now.getFullYear() + 543);
+    for (var i = 0; i < yearEl.options.length; i++) {
+      if (yearEl.options[i].value === thYear) {
+        yearEl.selectedIndex = i; break;
+      }
+    }
+  }
+  // ตั้ง from = ต้นปีการศึกษา, to = วันนี้
+  var fromEl = document.getElementById('bi-filter-from');
+  var toEl   = document.getElementById('bi-filter-to');
+  if (fromEl) fromEl.value = yyyy + '-05-16';  // 16 พ.ค. = ต้นปีการศึกษา 1
+  if (toEl)   toEl.value   = yyyy + '-' + mm + '-' + dd;
+}
+
+// hook เข้า loadBIBuilder
+var _origLoadBIBuilder = loadBIBuilder;
+loadBIBuilder = function() {
+  _origLoadBIBuilder();
+  setTimeout(biInitDateFilter, 300);
+};
+
+// ── Filter label on PDF export ──────────────────────────────────
+function biGetFilterLabel() {
+  var f   = _biActiveFilter;
+  var out = [];
+  if (f.year !== 'all')     out.push('ปีการศึกษา ' + f.year);
+  if (f.semester !== 'all') out.push('ภาคเรียนที่ ' + f.semester);
+  if (f.from)               out.push('จาก ' + _biThaiDate(f.from));
+  if (f.to)                 out.push('ถึง ' + _biThaiDate(f.to));
+  if (f.agency !== 'all')   out.push('สังกัด: ' + f.agency);
+  return out.length ? out.join(' | ') : 'ข้อมูลทั้งหมด';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// END BI DATE RANGE FILTER
+// ══════════════════════════════════════════════════════════════════
+
+
+// ══════════════════════════════════════════════════════════════════
+// AI SUMMARY MODULE — EduData Sakon Enterprise v2.1
+// Claude AI วิเคราะห์ข้อมูลแล้วสรุปภาษาไทยสำหรับผู้บริหาร
+// ══════════════════════════════════════════════════════════════════
+
+var _aiStyle        = 'executive';
+var _aiLastSummary  = '';
+var _aiIsLoading    = false;
+
+// ── Open / Close ───────────────────────────────────────────────────
+function biOpenAISummary() {
+  var o = document.getElementById('biAIOverlay');
+  if (!o) return;
+  o.style.display = 'flex';
+  // reset to idle if no result yet
+  if (!_aiLastSummary) _biAIShowState('idle');
+}
+
+function biCloseAISummary() {
+  var o = document.getElementById('biAIOverlay');
+  if (o) o.style.display = 'none';
+}
+
+// ── Style selector ─────────────────────────────────────────────────
+function biSetAIStyle(btn, style) {
+  document.querySelectorAll('.ai-style-btn').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  btn.classList.add('active');
+  _aiStyle = style;
+}
+
+// ── Show state helper ──────────────────────────────────────────────
+function _biAIShowState(state) {
+  ['biAIIdle','biAILoading','biAIResult','biAIError'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  var target = { idle:'biAIIdle', loading:'biAILoading', result:'biAIResult', error:'biAIError' }[state];
+  var el = document.getElementById(target);
+  if (el) el.style.display = 'block';
+}
+
+// ── Build data snapshot ────────────────────────────────────────────
+function _biCollectDataSnapshot() {
+  var d   = _biDashData    || {};
+  var mon = _biMonitorData || {};
+  var f   = (typeof _biActiveFilter !== 'undefined') ? _biActiveFilter : {};
+
+  // KPI widget values
+  var kpiRows = (_biWidgets || []).filter(function(w){ return w.type === 'kpi'; }).map(function(w) {
+    var val = biResolveValue(w.dataKey, w.customVal);
+    return w.title + ': ' + (typeof val === 'number' ? val.toLocaleString() : val) + (w.unit ? ' ' + w.unit : '');
+  });
+
+  // Widget types in dashboard
+  var widgetTypes = {};
+  (_biWidgets || []).forEach(function(w) {
+    widgetTypes[w.type] = (widgetTypes[w.type] || 0) + 1;
+  });
+
+  // Monitor summary
+  var monApproved  = d.mon_approved  || mon.approved  || 0;
+  var monPending   = d.mon_pending   || mon.pending   || 0;
+  var monRejected  = d.mon_rejected  || mon.rejected  || 0;
+  var monNotSent   = d.mon_notsent   || mon.not_sent  || 0;
+  var monTotal     = d.mon_total     || mon.total     || 13;
+  var monPct       = d.mon_pct       || (monTotal > 0 ? Math.round(monApproved/monTotal*100) : 0);
+
+  // Agency list
+  var agencyLabels = (d.agencySummary && d.agencySummary.labels) ? d.agencySummary.labels : [];
+  var agencyValues = (d.agencySummary && d.agencySummary.values) ? d.agencySummary.values : [];
+
+  var snapshot = {
+    dashTitle:    (document.getElementById('biDashTitle') || {}).value || 'Dashboard',
+    filterLabel:  (typeof biGetFilterLabel === 'function') ? biGetFilterLabel() : 'ข้อมูลทั้งหมด',
+    widgetCount:  (_biWidgets || []).length,
+    widgetTypes:  widgetTypes,
+    kpiValues:    kpiRows,
+    schools:      d.totalSchools  || 0,
+    students:     d.totalStudents || 0,
+    teachers:     d.totalTeachers || 0,
+    special:      d.totalSpecial  || 0,
+    stdPre:       d.std_pre       || 0,
+    stdP:         d.std_p         || 0,
+    stdMTon:      d.std_m_ton     || 0,
+    stdMPlai:     d.std_m_plai    || 0,
+    stdVoc:       d.std_voc       || 0,
+    monApproved:  monApproved,
+    monPending:   monPending,
+    monRejected:  monRejected,
+    monNotSent:   monNotSent,
+    monTotal:     monTotal,
+    monPct:       monPct,
+    agencyLabels: agencyLabels,
+    agencyValues: agencyValues,
+  };
+  return snapshot;
+}
+
+// ── Build system prompt ────────────────────────────────────────────
+function _biAIBuildPrompt(snapshot, style) {
+  var styleInstructions = {
+    executive: [
+      'เขียนสรุปสำหรับผู้บริหารระดับสูง ใช้ภาษาทางการ กระชับ ตรงประเด็น',
+      'เน้น ข้อเท็จจริง ตัวเลขสำคัญ สถานการณ์โดยรวม และข้อเสนอแนะ 2-3 ข้อ',
+      'ความยาว 3-4 ย่อหน้า',
+    ].join(' '),
+    detail: [
+      'เขียนวิเคราะห์เชิงลึก ครอบคลุมทุกมิติของข้อมูล',
+      'เปรียบเทียบตัวเลขแต่ละกลุ่ม ชี้จุดเด่น จุดด้อย แนวโน้ม',
+      'ความยาว 5-7 ย่อหน้า ใช้ภาษาวิชาการ',
+    ].join(' '),
+    policy: [
+      'วิเคราะห์เชิงนโยบาย เสนอแนะมาตรการและแผนดำเนินงาน',
+      'ระบุปัญหา สาเหตุ และข้อเสนอเชิงนโยบาย 3-5 ข้อ พร้อมผู้รับผิดชอบ',
+      'ความยาว 4-6 ย่อหน้า',
+    ].join(' '),
+    brief: [
+      'สรุปสั้นมาก ไม่เกิน 5 ประโยค เน้นตัวเลขสำคัญที่สุด',
+      'ใช้ bullet points ได้ เข้าใจง่าย อ่านในไม่กี่วินาที',
+    ].join(' '),
+  };
+
+  var agencyInfo = '';
+  if (snapshot.agencyLabels.length > 0) {
+    agencyInfo = '\nข้อมูลแยกสังกัด:\n' + snapshot.agencyLabels.map(function(l, i) {
+      return '  - ' + l + ': ' + (snapshot.agencyValues[i] || 0).toLocaleString() + ' แห่ง';
+    }).join('\n');
+  }
+
+  var kpiInfo = snapshot.kpiValues.length > 0
+    ? '\nตัวชี้วัด KPI ใน Dashboard:\n' + snapshot.kpiValues.map(function(k){ return '  - ' + k; }).join('\n')
+    : '';
+
+  var userMsg =
+    'ข้อมูลสารสนเทศด้านการศึกษา จังหวัดสกลนคร\n' +
+    'Dashboard: ' + snapshot.dashTitle + '\n' +
+    'ช่วงข้อมูล: ' + snapshot.filterLabel + '\n\n' +
+    '=== ข้อมูลหลัก ===\n' +
+    'สถานศึกษาทั้งหมด: ' + snapshot.schools.toLocaleString() + ' แห่ง\n' +
+    'ผู้เรียนรวม: ' + snapshot.students.toLocaleString() + ' คน\n' +
+    'ครูและบุคลากร: ' + snapshot.teachers.toLocaleString() + ' คน\n' +
+    'ผู้เรียนพิเศษ: ' + snapshot.special.toLocaleString() + ' คน\n\n' +
+    '=== ผู้เรียนแยกระดับ ===\n' +
+    'ก่อนประถมฯ: ' + snapshot.stdPre.toLocaleString() + ' คน\n' +
+    'ประถมศึกษา: ' + snapshot.stdP.toLocaleString() + ' คน\n' +
+    'มัธยมต้น: '   + snapshot.stdMTon.toLocaleString() + ' คน\n' +
+    'มัธยมปลาย: '  + snapshot.stdMPlai.toLocaleString() + ' คน\n' +
+    'อาชีวศึกษา: ' + snapshot.stdVoc.toLocaleString() + ' คน\n' +
+    agencyInfo + '\n\n' +
+    '=== สถานะการรายงานข้อมูล (จาก ' + snapshot.monTotal + ' สังกัด) ===\n' +
+    'อนุมัติแล้ว: ' + snapshot.monApproved + ' สังกัด\n' +
+    'รออนุมัติ: '  + snapshot.monPending  + ' สังกัด\n' +
+    'ส่งกลับแก้ไข: '+ snapshot.monRejected + ' สังกัด\n' +
+    'ยังไม่ส่ง: '  + snapshot.monNotSent  + ' สังกัด\n' +
+    '% ความสำเร็จ: ' + snapshot.monPct + '%\n' +
+    kpiInfo;
+
+  return {
+    system: 'คุณเป็นผู้เชี่ยวชาญด้านการวิเคราะห์ข้อมูลการศึกษา สำนักงานเขตพื้นที่การศึกษา จังหวัดสกลนคร ' +
+            'มีหน้าที่วิเคราะห์และสรุปข้อมูลสารสนเทศด้านการศึกษา ' +
+            styleInstructions[style] + ' ' +
+            'ตอบเป็นภาษาไทยเท่านั้น ไม่ต้องมีหัวข้อหรือ markdown formatting ในตอบกลับ ' +
+            'ใช้ตัวเลขที่ให้มาเป็นหลัก อย่าแต่งข้อมูลขึ้นมาเอง',
+    user: userMsg,
+  };
+}
+
+// ── Generate AI Summary ────────────────────────────────────────────
+function biGenerateAISummary() {
+  if (_aiIsLoading) return;
+
+  var snapshot = _biCollectDataSnapshot();
+
+  // ตรวจว่ามีข้อมูล
+  if (!snapshot.schools && !snapshot.students && (_biWidgets||[]).length === 0) {
+    _biAIShowState('error');
+    var errEl = document.getElementById('biAIErrorMsg');
+    if (errEl) errEl.textContent = 'ไม่พบข้อมูลใน Dashboard กรุณาเลือก Template หรือโหลดข้อมูลก่อน';
+    return;
+  }
+
+  _aiIsLoading = true;
+  _biAIShowState('loading');
+
+  var loadingMsgs = [
+    'Claude AI กำลังอ่านข้อมูล Dashboard...',
+    'กำลังวิเคราะห์ตัวเลขและแนวโน้ม...',
+    'กำลังร่างสรุปภาษาไทย...',
+    'เกือบเสร็จแล้ว...',
+  ];
+  var msgIdx = 0;
+  var msgEl  = document.getElementById('biAILoadingMsg');
+  var msgTimer = setInterval(function() {
+    msgIdx = (msgIdx + 1) % loadingMsgs.length;
+    if (msgEl) msgEl.textContent = loadingMsgs[msgIdx];
+  }, 2500);
+
+  var prompts = _biAIBuildPrompt(snapshot, _aiStyle);
+  var styleLabels = {
+    executive: 'สรุปผู้บริหาร',
+    detail:    'วิเคราะห์เชิงลึก',
+    policy:    'ข้อเสนอนโยบาย',
+    brief:     'สรุปสั้น',
+  };
+  var t0 = Date.now();
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model:      'claude-sonnet-4-20250514',
+      max_tokens: 1200,
+      system:     prompts.system,
+      messages:   [{ role: 'user', content: prompts.user }],
+    }),
+  })
+  .then(function(res) {
+    if (!res.ok) return res.json().then(function(e){ throw new Error(e.error && e.error.message || 'API error ' + res.status); });
+    return res.json();
+  })
+  .then(function(data) {
+    clearInterval(msgTimer);
+    _aiIsLoading = false;
+
+    var text = (data.content && data.content[0] && data.content[0].text) || '';
+    if (!text) throw new Error('ไม่ได้รับข้อความจาก AI');
+
+    _aiLastSummary = text;
+    var elapsed    = ((Date.now() - t0) / 1000).toFixed(1);
+
+    // fill result
+    var textBox = document.getElementById('biAITextBox');
+    if (textBox) textBox.textContent = text;
+
+    var labelEl = document.getElementById('biAIResultLabel');
+    if (labelEl) labelEl.textContent = styleLabels[_aiStyle] || 'สรุป';
+
+    var timeEl = document.getElementById('biAIResultTime');
+    if (timeEl) timeEl.textContent = '(' + elapsed + 's)';
+
+    // Key action points (policy / detail style)
+    var pointsWrap = document.getElementById('biAIPoints');
+    var pointsList = document.getElementById('biAIPointsList');
+    if (pointsWrap && pointsList) {
+      var points = _biExtractActionPoints(snapshot);
+      if (points.length > 0 && (_aiStyle === 'policy' || _aiStyle === 'executive')) {
+        pointsList.innerHTML = '';
+        points.forEach(function(p) {
+          var item = document.createElement('div');
+          item.style.cssText = 'display:flex;align-items:flex-start;gap:8px;padding:8px 12px;background:var(--s1);border-radius:8px;border:1px solid var(--border-l);';
+          item.innerHTML = '<span class="material-icons-round" style="font-size:14px;color:#7b1fa2;flex-shrink:0;margin-top:1px;">arrow_right</span>'
+            + '<span style="font-size:12px;color:var(--text);line-height:1.6;">' + p + '</span>';
+          pointsList.appendChild(item);
+        });
+        pointsWrap.style.display = 'block';
+      } else {
+        pointsWrap.style.display = 'none';
+      }
+    }
+
+    // badge บนปุ่ม
+    var badge = document.getElementById('biAIBadge');
+    if (badge) badge.style.display = 'block';
+
+    _biAIShowState('result');
+    showToast('✅ AI สรุปเสร็จแล้ว (' + elapsed + 's)', 'success');
+  })
+  .catch(function(err) {
+    clearInterval(msgTimer);
+    _aiIsLoading = false;
+    _biAIShowState('error');
+    var errEl = document.getElementById('biAIErrorMsg');
+    if (errEl) errEl.textContent = err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่';
+    showToast('❌ AI Error: ' + (err.message || 'unknown'), 'error');
+  });
+}
+
+// ── Extract action points from data ────────────────────────────────
+function _biExtractActionPoints(snap) {
+  var points = [];
+  // สถานะรายงาน
+  if (snap.monNotSent > 0)
+    points.push('มี ' + snap.monNotSent + ' สังกัดที่ยังไม่ส่งรายงาน — ควรติดตามเร่งด่วน');
+  if (snap.monRejected > 0)
+    points.push('มี ' + snap.monRejected + ' สังกัดที่ถูกส่งกลับแก้ไข — ควรประสานขอรายละเอียด');
+  if (snap.monPct < 100 && snap.monPct > 0)
+    points.push('ความสำเร็จการรายงาน ' + snap.monPct + '% — เป้าหมาย 100% ก่อนปิดรอบ');
+  // ผู้เรียนพิเศษ
+  if (snap.special > 0 && snap.students > 0) {
+    var pctSp = Math.round(snap.special / snap.students * 100);
+    if (pctSp > 5) points.push('ผู้เรียนพิเศษ ' + pctSp + '% ของผู้เรียนทั้งหมด — ควรทบทวนการจัดสรรทรัพยากร');
+  }
+  // อัตราส่วนครู-นักเรียน
+  if (snap.teachers > 0 && snap.schools > 0) {
+    var ratio = Math.round(snap.teachers / snap.schools);
+    if (ratio < 5) points.push('อัตราส่วนครูต่อโรงเรียนเฉลี่ย ' + ratio + ' คน/แห่ง — ควรทบทวนอัตรากำลัง');
+  }
+  return points.slice(0, 4);
+}
+
+// ── Copy to clipboard ──────────────────────────────────────────────
+function biCopyAISummary() {
+  if (!_aiLastSummary) return;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(_aiLastSummary)
+      .then(function(){ showToast('คัดลอกข้อความแล้ว', 'success'); })
+      .catch(function(){ _biAIFallbackCopy(_aiLastSummary); });
+  } else {
+    _biAIFallbackCopy(_aiLastSummary);
+  }
+}
+
+function _biAIFallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;left:-9999px;top:0;';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); showToast('คัดลอกข้อความแล้ว', 'success'); }
+  catch(e){ showToast('ไม่สามารถคัดลอกได้', 'warning'); }
+  document.body.removeChild(ta);
+}
+
+// ── Close on backdrop ──────────────────────────────────────────────
+document.addEventListener('click', function(e) {
+  var o = document.getElementById('biAIOverlay');
+  if (o && e.target === o) biCloseAISummary();
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var o = document.getElementById('biAIOverlay');
+    if (o && o.style.display === 'flex') biCloseAISummary();
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// END AI SUMMARY MODULE
+// ══════════════════════════════════════════════════════════════════
+
+
+var SESSION_TIMEOUT_MS=30*60*1000,SESSION_WARNING_MS=60*1000,MAX_LOGIN_ATTEMPTS=5,LOGIN_TIMEOUT_MS=5*60*1000;
+var _sessTimer=null,_sessWarningTimer=null,_sessCountdownTimer=null,_sessCountdownSec=60,_sessWarningShown=false,_loginAttempts=0;
+var _SESS_EVENTS=['mousedown','mousemove','keydown','scroll','touchstart','click'];
+function sessionStart(){sessionReset();_SESS_EVENTS.forEach(function(ev){document.addEventListener(ev,sessionReset,{passive:true});});localStorage.setItem('eduData_loginAt',Date.now().toString());localStorage.setItem('eduData_lastAct',Date.now().toString());}
+function sessionStop(){if(_sessTimer)clearTimeout(_sessTimer);if(_sessWarningTimer)clearTimeout(_sessWarningTimer);if(_sessCountdownTimer)clearInterval(_sessCountdownTimer);_SESS_EVENTS.forEach(function(ev){document.removeEventListener(ev,sessionReset);});_sessWarningShown=false;}
+function sessionReset(){if(_sessWarningShown)return;localStorage.setItem('eduData_lastAct',Date.now().toString());if(_sessTimer)clearTimeout(_sessTimer);if(_sessWarningTimer)clearTimeout(_sessWarningTimer);_sessWarningTimer=setTimeout(_sessionShowWarning,SESSION_TIMEOUT_MS-SESSION_WARNING_MS);_sessTimer=setTimeout(sessionLogoutNow,SESSION_TIMEOUT_MS);}
+function _sessionShowWarning(){if(!AppState.userRole)return;_sessWarningShown=true;_sessCountdownSec=Math.round(SESSION_WARNING_MS/1000);var o=document.getElementById('sessionWarningOverlay');if(o)o.style.display='flex';var cdEl=document.getElementById('sessionCountdown'),barEl=document.getElementById('sessionProgressBar');if(cdEl)cdEl.textContent=_sessCountdownSec;if(barEl)barEl.style.width='100%';if(_sessCountdownTimer)clearInterval(_sessCountdownTimer);_sessCountdownTimer=setInterval(function(){_sessCountdownSec--;if(cdEl)cdEl.textContent=_sessCountdownSec;var pct=(_sessCountdownSec/Math.round(SESSION_WARNING_MS/1000))*100;if(barEl)barEl.style.width=pct+'%';var col=_sessCountdownSec>30?'#f29900':_sessCountdownSec>10?'#d93025':'#b71c1c';if(cdEl)cdEl.style.color=col;if(barEl)barEl.style.background=col;if(_sessCountdownSec<=0){clearInterval(_sessCountdownTimer);sessionLogoutNow();}},1000);}
+function sessionExtend(){clearInterval(_sessCountdownTimer);_sessWarningShown=false;var o=document.getElementById('sessionWarningOverlay');if(o)o.style.display='none';sessionReset();showToast('ต่ออายุเซสชันแล้ว — ระบบแจ้งเตือนอีกครั้งใน 30 นาที','success');}
+function sessionLogoutNow(){clearInterval(_sessCountdownTimer);_sessWarningShown=false;var o=document.getElementById('sessionWarningOverlay');if(o)o.style.display='none';sessionStop();localStorage.removeItem('eduData_loginAt');localStorage.removeItem('eduData_lastAct');if(typeof logout==='function')logout();showToast('หมดเวลาใช้งาน — กรุณาเข้าสู่ระบบใหม่','warning');}
+function sessionCheckLoginLock(){var d=localStorage.getItem('eduData_loginLock');if(!d)return false;var l=JSON.parse(d);if(Date.now()<l.until)return Math.ceil((l.until-Date.now())/60000);localStorage.removeItem('eduData_loginLock');_loginAttempts=0;return false;}
+function sessionRecordLoginFail(){_loginAttempts++;if(_loginAttempts>=MAX_LOGIN_ATTEMPTS){localStorage.setItem('eduData_loginLock',JSON.stringify({until:Date.now()+LOGIN_TIMEOUT_MS}));_loginAttempts=0;return true;}return false;}
+function sessionRecordLoginSuccess(){_loginAttempts=0;localStorage.removeItem('eduData_loginLock');}
+function sessionShowStatus(){var la=parseInt(localStorage.getItem('eduData_loginAt')||'0'),lb=parseInt(localStorage.getItem('eduData_lastAct')||'0'),now=Date.now();Swal.fire({title:'สถานะเซสชัน',html:'<div style="text-align:left;font-size:13px;line-height:2.2;"><div>ผู้ใช้: <b>'+(AppState.userName||'-')+'</b></div><div>สิทธิ์: <b>'+(AppState.userRole||'-')+'</b></div><div>เข้าใช้มา: <b>'+(la?Math.round((now-la)/60000):0)+' นาที</b></div><div>ไม่มีกิจกรรม: <b>'+(lb?Math.round((now-lb)/60000):0)+' นาที</b></div><div>Timeout: <b>30 นาที</b></div></div>',icon:'info',confirmButtonText:'ปิด',confirmButtonColor:'#1a73e8'});}
+var _ou=typeof setupUIAfterLogin==='function'?setupUIAfterLogin:null;if(_ou){setupUIAfterLogin=function(){_ou.apply(this,arguments);sessionStart();};}
+var _ol=typeof logout==='function'?logout:null;if(_ol){logout=function(){sessionStop();_ol.apply(this,arguments);};}
+document.addEventListener('DOMContentLoaded',function(){var sr=localStorage.getItem('eduData_role'),la=parseInt(localStorage.getItem('eduData_lastAct')||'0');if(sr&&la&&(Date.now()-la)<SESSION_TIMEOUT_MS){setTimeout(sessionStart,600);}else if(sr&&la){['eduData_role','eduData_name','eduData_agencyId','eduData_agency','eduData_lastAct','eduData_loginAt'].forEach(function(k){localStorage.removeItem(k);});}});
+
+
+document.addEventListener('click', function(e) {
+  var dd = document.getElementById('sbProfileDropdown');
+  var btn = document.getElementById('sbProfileBtn');
+  if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) {
+    dd.style.display = 'none';
+  }
+});
+
+
+// ─────────────────────────────────────────────
+// Conversational BI Assistant Implementation (Step 2)
+// ─────────────────────────────────────────────
+function biGenerateAiWidget() {
+  const promptInput = document.getElementById('biAiPromptInput');
+  if (!promptInput || !promptInput.value.trim()) {
+    showToast('กรุณากรอกคำสั่งสำหรับการสร้างการ์ดหรือกราฟ', 'warning');
+    return;
+  }
+  const prompt = promptInput.value.trim();
+  const btn = document.getElementById('btnBiAiGenerate');
+  const originalHtml = btn ? btn.innerHTML : '';
+  
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-icons-round" style="font-size:14px; animation:spin 1s linear infinite;">refresh</span> ประมวลผล...';
+  }
+  
+  if (typeof google !== 'undefined' && google.script) {
+    google.script.run
+      .withSuccessHandler(res => {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+        }
+        if (!res || !res.success) {
+          showToast(res && res.message ? res.message : 'AI ไม่สามารถวิเคราะห์คำสั่งได้', 'error');
+          return;
+        }
+        
+        var aiW = res.widget || {};
+        var type = aiW.type || 'bar';
+        var def = BI_WIDGET_TYPES.find(function(w) { return w.type === type; }) || {};
+        var defaultCols = {
+          kpi:3, kpi_compare:4, stat_group:6,
+          bar:6, bar_h:6, line:6, area:6, pie:4, donut:4, radar:6,
+          progress:6, gauge:4,
+          table:12, ranking:6, monitor_tbl:12,
+          map:6, yoy:12,
+          text:6, divider:12, spacer:12
+        };
+        
+        var w = {
+          id:          'w' + (_biNextId++),
+          type:        type,
+          title:       aiW.title || def.label || type,
+          cols:        parseInt(aiW.cols) || defaultCols[type] || 6,
+          color:       aiW.color || def.color || '#1a73e8',
+          dataKey:     aiW.dataKey || 'totalSchools',
+          dataKey2:    'totalStudents',
+          customVal:   0,
+          unit:        '',
+          desc:        '',
+          fontSize:    '32',
+          showTrend:   false,
+          showIcon:    false,
+          showLegend:  aiW.showLegend !== undefined ? aiW.showLegend : true,
+          showLabel:   aiW.showLabel !== undefined ? aiW.showLabel : false,
+          showGrid:    true,
+          smoothLine:  true,
+          autoColor:   true,
+          useComma:    true,
+          sortDesc:    false,
+          limitData:   false,
+          dataLimit:   10,
+          gaugeMax:    100,
+          gaugeMin:    0,
+          numFormat:   'number',
+          textAlign:   'left',
+          bgColor:     '',
+          borderColor: '',
+          showBorder:  false,
+          chartHeight: 220,
+          _activeTab:  'data'
+        };
+        
+        _biWidgets.push(w);
+        _biSelected = w.id;
+        _biSaveToStorage();
+        _biRenderCanvas();
+        
+        _openPropPanel(w);
+        var propPanel = document.getElementById('bi-prop-panel');
+        if (propPanel) propPanel.style.display = '';
+        
+        promptInput.value = '';
+        showToast('AI สร้างการ์ด/กราฟ "' + w.title + '" ให้คุณแล้ว ✨', 'success');
+      })
+      .withFailureHandler(err => {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+        }
+        showToast('เกิดข้อผิดพลาดในการเรียกเซิร์ฟเวอร์ AI', 'error');
+      })
+      .processAiBiPrompt({ sessionToken: AppState.sessionToken, prompt: prompt });
+  } else {
+    // Mock local fallback outside Google Apps Script environment for local testing
+    setTimeout(() => {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+      var mockTitle = prompt.length > 20 ? prompt.substring(0, 20) + "..." : prompt;
+      var w = {
+        id:          'w' + (_biNextId++),
+        type:        'bar',
+        title:       'วิเคราะห์: ' + mockTitle,
+        cols:        6,
+        color:       '#7b1fa2',
+        dataKey:     'chart_agency',
+        dataKey2:    'totalStudents',
+        customVal:   0,
+        unit:        '',
+        desc:        'Mock generated',
+        fontSize:    '32',
+        showTrend:   false,
+        showIcon:    false,
+        showLegend:  true,
+        showLabel:   false,
+        showGrid:    true,
+        smoothLine:  true,
+        autoColor:   true,
+        useComma:    true,
+        sortDesc:    false,
+        limitData:   false,
+        dataLimit:   10,
+        gaugeMax:    100,
+        gaugeMin:    0,
+        numFormat:   'number',
+        textAlign:   'left',
+        bgColor:     '',
+        borderColor: '',
+        showBorder:  false,
+        chartHeight: 220,
+        _activeTab:  'data'
+      };
+      _biWidgets.push(w);
+      _biSelected = w.id;
+      _biSaveToStorage();
+      _biRenderCanvas();
+      _openPropPanel(w);
+      var propPanel = document.getElementById('bi-prop-panel');
+      if (propPanel) propPanel.style.display = '';
+      
+      promptInput.value = '';
+      showToast('[Mock Dev] AI สร้างการ์ด/กราฟสถิติเรียบร้อยแล้ว', 'success');
+    }, 1000);
+  }
+}
+
+
+function toggleSBProfileMenu(e) {
+  if(e) e.stopPropagation();
+  var dd = document.getElementById('sbProfileDropdown');
+  if(!dd) return;
+  dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+}
+
+</script>

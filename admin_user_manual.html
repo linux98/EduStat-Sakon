@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>คู่มือผู้ดูแลระบบอย่างละเอียด — EduData Sakon (Enterprise Edition)</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@400;600;700&family=Material+Icons+Round&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #7b1fa2;
+      --primary-light: #f3e5f5;
+      --primary-dark: #4a0072;
+      --blue: #1a73e8;
+      --blue-light: #e8f0fe;
+      --green: #34a853;
+      --green-light: #e6f4ea;
+      --yellow: #fbbc04;
+      --yellow-light: #fef7e0;
+      --red: #ea4335;
+      --red-light: #fce8e6;
+      
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --border: #dadce0;
+      --text: #202124;
+      --text-muted: #5f6368;
+      --sidebar-width: 280px;
+      --shadow: 0 4px 12px rgba(0,0,0,0.05);
+      --shadow-lg: 0 12px 24px rgba(0,0,0,0.08);
+      --radius: 12px;
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f1013;
+      --surface: #1e1f22;
+      --border: #333539;
+      --text: #e3e3e3;
+      --text-muted: #9aa0a6;
+      --primary-light: rgba(123, 31, 162, 0.15);
+      --blue-light: rgba(26, 115, 232, 0.15);
+      --green-light: rgba(52, 168, 83, 0.15);
+      --yellow-light: rgba(251, 188, 4, 0.15);
+      --red-light: rgba(234, 67, 53, 0.15);
+      --shadow: 0 4px 12px rgba(0,0,0,0.2);
+      --shadow-lg: 0 12px 32px rgba(0,0,0,0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Sarabun', 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    /* Sidebar Navigation */
+    aside {
+      width: var(--sidebar-width);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      transition: transform 0.3s, background 0.3s, border-color 0.3s;
+    }
+
+    .brand {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--blue));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .brand-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .nav-links {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 12px;
+      list-style: none;
+    }
+
+    .nav-header {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      padding: 12px 12px 6px;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 500;
+      border-radius: 8px;
+      margin-bottom: 2px;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .nav-item a:hover {
+      background: var(--bg);
+      color: var(--primary);
+    }
+
+    .nav-item.active a {
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 50%;
+      transition: var(--transition);
+    }
+
+    .theme-toggle:hover {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* Main Workspace Layout */
+    main {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 48px 64px 80px;
+      max-width: 1000px;
+      transition: margin-left 0.3s;
+    }
+
+    header {
+      margin-bottom: 48px;
+    }
+
+    .meta-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    h1 {
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+      line-height: 1.25;
+    }
+
+    .lead-desc {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 800px;
+    }
+
+    /* Section Content Styles */
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px 40px;
+      margin-bottom: 40px;
+      box-shadow: var(--shadow);
+      scroll-margin-top: 24px;
+      transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1.5px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    h3 {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 28px 0 12px;
+    }
+
+    p {
+      font-size: 14.5px;
+      color: var(--text);
+      margin-bottom: 16px;
+      line-height: 1.7;
+    }
+
+    strong {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    ul, ol {
+      margin-left: 24px;
+      margin-bottom: 16px;
+      font-size: 14.5px;
+    }
+
+    li {
+      margin-bottom: 8px;
+      line-height: 1.6;
+    }
+
+    /* Callout Boxes */
+    .callout {
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      border-left: 4px solid;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .callout-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .callout-content {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .callout-content h4 {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .callout.tip {
+      background: var(--green-light);
+      border-color: var(--green);
+      color: var(--text);
+    }
+    .callout.tip .callout-icon { color: var(--green); }
+    .callout.tip h4 { color: var(--green); }
+
+    .callout.warning {
+      background: var(--yellow-light);
+      border-color: var(--yellow);
+      color: var(--text);
+    }
+    .callout.warning .callout-icon { color: var(--yellow); }
+    .callout.warning h4 { color: var(--yellow); }
+
+    .callout.important {
+      background: var(--blue-light);
+      border-color: var(--blue);
+      color: var(--text);
+    }
+    .callout.important .callout-icon { color: var(--blue); }
+    .callout.important h4 { color: var(--blue); }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 13.5px;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-weight: 600;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    tr:hover td {
+      background: var(--bg);
+    }
+
+    /* Code Blocks */
+    pre, code {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      background: var(--bg);
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
+
+    code {
+      padding: 2px 6px;
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+
+    pre {
+      padding: 16px;
+      border: 1px solid var(--border);
+      overflow-x: auto;
+      margin-bottom: 20px;
+    }
+
+    pre code {
+      padding: 0;
+      background: none;
+      border: none;
+      color: var(--text);
+    }
+
+    /* Interactive elements for the HTML manual */
+    .step-img-box {
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+      margin: 20px 0;
+      background: var(--bg);
+    }
+
+    .step-img-box span {
+      font-size: 48px;
+      color: var(--text-muted);
+      opacity: 0.5;
+    }
+
+    .step-img-box p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      margin-bottom: 0;
+    }
+
+    /* Diagram visualizer */
+    .diagram {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+      padding: 20px;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+
+    /* Floating hamburger for mobile */
+    .menu-btn {
+      display: none;
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      cursor: pointer;
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+      aside {
+        transform: translateX(-100%);
+      }
+      aside.active {
+        transform: translateX(0);
+      }
+      main {
+        margin-left: 0;
+        padding: 32px 24px;
+      }
+      .menu-btn {
+        display: flex;
+      }
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: white;
+        color: black;
+      }
+      aside, .menu-btn {
+        display: none !important;
+      }
+      main {
+        margin-left: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+      section {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-bottom: 40px !important;
+        page-break-inside: avoid;
+      }
+      h2 {
+        border-bottom: 2px solid #000 !important;
+      }
+      pre, code {
+        border: 1px solid #ccc !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Menu Button for Mobile -->
+  <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
+    <span class="material-icons-round">menu</span>
+  </button>
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        <span class="material-icons-round" style="font-size:24px;">insights</span>
+      </div>
+      <div>
+        <div class="brand-title">EduData Sakon</div>
+        <div class="brand-sub">ENTERPRISE EDITION</div>
+      </div>
+    </div>
+    
+    <ul class="nav-links">
+      <li class="nav-header">คู่มือปฏิบัติงาน</li>
+      <li class="nav-item active"><a href="#intro" onclick="scrollToSection('intro')"><span class="material-icons-round" style="font-size:16px;">dashboard</span> 1. สถาปัตยกรรมข้อมูล</a></li>
+      <li class="nav-item"><a href="#session" onclick="scrollToSection('session')"><span class="material-icons-round" style="font-size:16px;">security</span> 2. ความปลอดภัย & เซสชัน</a></li>
+      <li class="nav-item"><a href="#dashboard" onclick="scrollToSection('dashboard')"><span class="material-icons-round" style="font-size:16px;">radar</span> 3. หน้าแดชบอร์ด War Room</a></li>
+      <li class="nav-item"><a href="#dunning" onclick="scrollToSection('dunning')"><span class="material-icons-round" style="font-size:16px;">mail</span> 4. ระบบทวงถาม AI</a></li>
+      <li class="nav-item"><a href="#formbuilder" onclick="scrollToSection('formbuilder')"><span class="material-icons-round" style="font-size:16px;">edit_note</span> 5. จัดการแบบฟอร์ม & CSV</a></li>
+      <li class="nav-item"><a href="#bi" onclick="scrollToSection('bi')"><span class="material-icons-round" style="font-size:16px;">auto_awesome</span> 6. สั่ง AI สร้างกราฟ (BI)</a></li>
+      <li class="nav-item"><a href="#briefing" onclick="scrollToSection('briefing')"><span class="material-icons-round" style="font-size:16px;">picture_as_pdf</span> 7. เล่มรายงานสรุปผู้บริหาร</a></li>
+      <li class="nav-item"><a href="#gis" onclick="scrollToSection('gis')"><span class="material-icons-round" style="font-size:16px;">map</span> 8. ชั้นข้อมูล GIS & ปักหมุด</a></li>
+      <li class="nav-item"><a href="#adminconsole" onclick="scrollToSection('adminconsole')"><span class="material-icons-round" style="font-size:16px;">admin_panel_settings</span> 9. ศูนย์ควบคุมระบบ</a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <span style="font-size: 11px; font-weight:600; color: var(--text-muted);">Version 3.0.0</span>
+      <button class="theme-toggle" onclick="toggleTheme()" title="เปลี่ยนโหมดสี">
+        <span class="material-icons-round" id="themeIcon">dark_mode</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Workspace -->
+  <main>
+    <header>
+      <div class="meta-tag">
+        <span class="material-icons-round" style="font-size:13px;">auto_awesome</span> PREMIUM ADMIN DOCUMENTATION
+      </div>
+      <h1>คู่มือปฏิบัติการผู้ดูแลระบบฉบับสมบูรณ์</h1>
+      <p class="lead-desc">คู่มือการควบคุม บริหารจัดการ และวิเคราะห์สารสนเทศทางการศึกษา จังหวัดสกลนคร (EduData Sakon) ทุกซอกทุกมุมสำหรับศึกษาธิการจังหวัด</p>
+    </header>
+
+    <!-- SECTION 1 -->
+    <section id="intro">
+      <h2><span class="material-icons-round" style="color:var(--primary);">dns</span> 1. ภาพรวมระบบและสถาปัตยกรรมข้อมูล</h2>
+      <p>ระบบ <strong>EduData Sakon</strong> พัฒนาขึ้นบนเทคโนโลยี Serverless ของ <strong>Google Cloud & Workspace (Google Apps Script)</strong> ทำงานร่วมกับ Google Sheets ในลักษณะของ <em>Relational Table Database</em> มีข้อดีคือปลอดภัยสูง เสถียร และค่าใช้จ่ายคลาวด์เป็นศูนย์ตลอดอายุการใช้งาน</p>
+      
+      <h3>ผังการหมุนเวียนข้อมูลและการทำงานของสถาปัตยกรรม (Data Flow Diagram)</h3>
+      <div class="diagram">
+        <pre>[Frontend: Index.html + Component HTMLs (CSS, JS_App, JS_BI)]
+      ↕  ( google.script.run - การสื่อสาร REST API แบบอะซิงโครนัส )
+[Backend: รหัส.js - สคริปต์ประมวลผลบนเซิร์ฟเวอร์ Google Apps Script]
+      ↕                                              ↕
+[CacheService & Session Token (ต่ออายุ 2 ชม.)]     [Gemini AI 1.5 API (วิเคราะห์สรุป & BI)]
+      ↕
+[Google Sheets Database (6 ตารางย่อย)]</pre>
+      </div>
+
+      <h3>รายละเอียดตารางข้อมูลใน Google Sheets</h3>
+      <p>โครงสร้างความสัมพันธ์ของตารางฐานข้อมูลออกแบบเฉพาะตัวเพื่อสอดรับการนำเข้าข้อมูลสถิติจาก 20 สังกัด:</p>
+      <table>
+        <thead>
+          <tr>
+            <th width="20%">ชื่อตาราง / ชีต</th>
+            <th width="35%">ฟิลด์ข้อมูลหลัก</th>
+            <th width="45%">บทบาทและการเชื่อมโยง</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Users</strong></td>
+            <td>username, password (SHA-256), name, role, agencyId, status</td>
+            <td>เก็บรายชื่อบัญชีสิทธิ์และการเข้าสู่ระบบ โดยมีการ Hash รหัสผ่านปลอดภัย</td>
+          </tr>
+          <tr>
+            <td><strong>Settings</strong></td>
+            <td>key, value</td>
+            <td>ตั้งค่าปีการศึกษาปัจจุบัน และรอบการบันทึกข้อมูลหลัก</td>
+          </tr>
+          <tr>
+            <td><strong>FormTemplates</strong></td>
+            <td>formId, title, agencyId, deadline, formConfig (JSON Schema)</td>
+            <td>เก็บแบบฟอร์มที่แอดมินสร้างขึ้น โดยบันทึกโครงสร้างฟิลด์ในรูปแบบ JSON</td>
+          </tr>
+          <tr>
+            <td><strong>Data</strong></td>
+            <td>dataId, formId, agencyId, username, status, formData (JSON String)</td>
+            <td>เก็บผลสถิติคำตอบของแบบฟอร์มเป็น Dynamic JSON String รองรับคำถามหลายประเภท</td>
+          </tr>
+          <tr>
+            <td><strong>AuditLogs</strong></td>
+            <td>logId, timestamp, username, action, details, ipAddress</td>
+            <td>เก็บบันทึกประวัติกิจกรรมทุกขั้นตอนเพื่อใช้ตรวจสอบย้อนหลัง</td>
+          </tr>
+          <tr>
+            <td><strong>GisCoords</strong></td>
+            <td>agencyId, lat, lng</td>
+            <td>เก็บพิกัด Latitude, Longitude ของสำนักงานสังกัดสำหรับแผนที่ GIS</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section id="session">
+      <h2><span class="material-icons-round" style="color:var(--blue);">security</span> 2. ความปลอดภัยและการจัดการเซสชัน</h2>
+      <p>ความมั่นคงปลอดภัยของข้อมูลสารสนเทศจัดเป็นสิ่งสำคัญสูงสุด ระบบจึงแบ่งบทบาทสิทธิ์ (Roles) และกลไกควบคุมเซสชันของระบบอย่างเป็นสากล ดังนี้:</p>
+      
+      <h3>2.1 การแบ่งระดับสิทธิ์ผู้ใช้งาน (Access Control List)</h3>
+      <ul>
+        <li><strong>Super Admin / Admin (ศึกษาธิการจังหวัด):</strong> สิทธิ์สูงสุด สามารถจัดการผู้ใช้, ตรวจสอบ Audit logs, พิมพ์รายงานของทุกสังกัด, ตีกลับข้อมูล และออกแบบแบบฟอร์มใหม่</li>
+        <li><strong>Agency Admin (สพป./สพม./ท้องถิ่น):</strong> มองเห็นรายงานและสามารถกำกับติดตามเฉพาะสถานศึกษาภายใต้การปกครองของสังกัดตนเองเท่านั้น</li>
+        <li><strong>School User (ผู้รายงานระดับโรงเรียน):</strong> กรอกข้อมูล บันทึกแบบร่าง ดึงเทมเพลต CSV และนำเข้าข้อมูลของโรงเรียนตนเอง</li>
+      </ul>
+
+      <div class="callout important">
+        <div class="callout-icon"><span class="material-icons-round">lock</span></div>
+        <div class="callout-content">
+          <h4>การป้องกันการบันทึกทับซ้อน (Concurrency Control Lock)</h4>
+          <p>หลังบ้านใช้กลไก <code>LockService.getScriptLock()</code> กำหนดคิวการเข้าบันทึกฐานข้อมูลชีต เมื่อมีคนส่งข้อมูลพร้อมกันในช่วงวันเดดไลน์ ระบบจะต่อคิวทำงานป้องกันไม่ให้ฐานข้อมูลเสียหายจากการชนกันของสคริปต์ (Data Corruption Prevention)</p>
+        </div>
+      </div>
+
+      <h3>2.2 ระบบต่อเซสชันอัตโนมัติ (Session Heartbeat)</h3>
+      <p>เนื่องจาก <code>CacheService</code> มีระยะเวลาหมดอายุของ Session Token สูงสุด 2 ชั่วโมงเพื่อป้องกันภัยไซเบอร์ แต่เพื่อไม่ให้ผู้ดูแลระบบที่กำลังป้อนคำถามหรือดูข้อมูลถูก Logout ออกอัตโนมัติ ระบบได้ฝัง **Session Heartbeat** ไว้ในส่วน Frontend</p>
+      <p>สคริปต์จะคอยรันคำสั่ง <code>refreshSession</code> คืนไปยังเซิร์ฟเวอร์แบบเบื้องหลัง (Background Fetch) ทุกๆ <strong>25 นาที</strong> เพื่อขยายวันหมดอายุของ Cache (TTL Renew) ให้ทำงานได้ต่อเนื่อง 24 ชั่วโมงจนกว่าผู้ใช้งานจะกดคลิก "ออกจากระบบ" ด้วยตนเอง</p>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section id="dashboard">
+      <h2><span class="material-icons-round" style="color:var(--green);">radar</span> 3. แดชบอร์ดควบคุมสถานการณ์ (Live "War Room")</h2>
+      <p>หน้า Dashboard ออกแบบมาในลักษณะศูนย์วิเคราะห์ข้อมูลที่ตอบสนองโต้ตอบได้สมบูรณ์ (Interactive War Room)</p>
+      
+      <h3>3.1 การ์ดตัวชี้วัดหลักจังหวัด (KPI Cards Counter Animation)</h3>
+      <p>ด้านบนสุดจะแสดงยอดรวมสถานศึกษา นักเรียน ครู และผู้เรียนต้องการพิเศษของทั้งสกลนคร เมื่อล็อกอินเข้ามาระบบจะเรียกฟังก์ชัน <code>animateValue()</code> เพื่อแสดงผลตัวเลขด้วยแอนิเมชันเลื่อนขึ้นอย่างรวดเร็ว (Animated Count Up)</p>
+
+      <h3>3.2 แผงบอร์ดนำส่งรายงาน (Submission Leaderboard)</h3>
+      <p>แสดงตารางความคืบหน้าการส่งข้อมูลของ 13 สังกัด เรียงลำดับตามความครบถ้วนในการอนุมัติข้อมูลแบบเรียลไทม์ พร้อมสัญลักษณ์เหรียญทอง เงิน ทองแดง กระตุ้นความร่วมมือ</p>
+
+      <div class="callout tip">
+        <div class="callout-icon"><span class="material-icons-round">sync</span></div>
+        <div class="callout-content">
+          <h4>ขั้นตอนการโต้ตอบสองทิศทาง (Bi-directional GIS & Dashboard Interaction)</h4>
+          <p><strong>จากแผนที่สู่แดชบอร์ด:</strong> เมื่อคลิกปุ่มมาร์กเกอร์บนแผนที่ GIS ของสังกัดใดๆ แล้วกดปุ่ม <em>"แสดงข้อมูลสังกัดนี้"</em> ตัวฟิลเตอร์สังกัด Dropdown ด้านบนจะเปลี่ยนอัตโนมัติ และสถิติทั่วหน้าจอจะเปลี่ยนตามโดยไม่ต้องรีเฟรชหน้าเว็บ</p>
+          <p><strong>จากบอร์ดสู่อุปกรณ์แผนที่:</strong> เมื่อคลิกเลือกแถบสังกัดใดๆ ในกระดาน Leaderboard ตัวแผนที่จะซูม (Pan & Zoom) เข้าไปยังตำแหน่งพิกัดตั้งสำนักงานของสังกัดนั้นทันที</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4 -->
+    <section id="dunning">
+      <h2><span class="material-icons-round" style="color:var(--primary);">mail</span> 4. ระบบกำกับติดตามและหน่วยทวงถาม AI</h2>
+      <p>แก้ไขความยุ่งยากของแอดมินจังหวัดที่ไม่ต้องเปิดตารางเปรียบเทียบใน Excel และกดส่งอีเมลร่างแยกด้วยตนเองอีกต่อไป</p>
+      
+      <h3>4.1 ตารางสถานภาพความคืบหน้า (Matrix Grid View)</h3>
+      <p>ในเมนู **กำกับติดตามรายงาน** แสดงตาราง Grid แสดงสถานะการส่งข้อมูลของทุกฟอร์มและทุกสังกัดในแบบรหัสสี:</p>
+      <ul>
+        <li><span style="color:var(--green); font-weight:700;">🟢 สีเขียว:</span> อนุมัติข้อมูลแล้ว (Approved)</li>
+        <li><span style="color:var(--blue); font-weight:700;">🔵 สีฟ้า:</span> ส่งข้อมูลมารอการตรวจสอบ (Pending)</li>
+        <li><span style="color:var(--yellow); font-weight:700;">🟠 สีส้ม:</span> ตีกลับข้อมูลให้แก้ไข (Rejected)</li>
+        <li><span style="color:var(--red); font-weight:700;">🔴 สีแดง:</span> ค้างส่งข้อมูลหรือค้างแบบร่าง (Missing / Draft)</li>
+      </ul>
+
+      <h3>4.2 คู่มือการใช้งาน "ทวงถามงานด้วย AI" (One-Click AI Dunning)</h3>
+      <div class="step-img-box">
+        <span class="material-icons-round">tips_and_updates</span>
+        <p>แสดงขั้นตอน: เลือกสังกัดค้างส่ง -> คลิก ✨ ทวงงานด้วย AI -> ตรวจร่างอีเมล -> กดส่งจดหมายทวงถาม</p>
+      </div>
+      <ol>
+        <li>เข้าเมนู <strong>กำกับติดตามรายงาน</strong> มองหาแถวสังกัดที่แสดงปุ่มสถานะสีแดงค้างส่ง</li>
+        <li>คลิกปุ่มสีม่วงพิเศษ ✨ <strong>"ทวงงานด้วย AI"</strong> ทางช่องควบคุมของแถวนั้นๆ</li>
+        <li>ระบบหลังบ้านจะติดต่อ Gemini AI พร้อมส่งชื่อเจ้าหน้าที่ รายการฟอร์มค้างส่ง และเดดไลน์ที่ใกล้ถึง</li>
+        <li>AI จะทำการร่างจดหมายราชการภาษาไทยที่เหมาะสม สุภาพเรียบร้อย แต่แสดงความจำเป็นเร่งด่วน</li>
+        <li>กล่องป๊อปอัปจะแสดงร่างจดหมาย แอดมินสามารถคลิกพิมพ์แก้ไข หรือแก้ไขรายชื่ออีเมลผู้รับได้ด้วยตนเอง</li>
+        <li>คลิก <strong>"ส่งอีเมลทวงถามข้อมูล"</strong> ระบบจะรันคำสั่ง <code>MailApp.sendEmail()</code> เพื่อส่ง HTML อีเมลตกแต่งเรียบหรูตรงไปยังกล่องจดหมายผู้รับทันที พร้อมสร้างประวัติบันทึกการส่ง (Audit Logs) เป็นหลักฐานทางราชการ</li>
+      </ol>
+    </section>
+
+    <!-- SECTION 5 -->
+    <section id="formbuilder">
+      <h2><span class="material-icons-round" style="color:var(--yellow);">edit_note</span> 5. จัดการแบบฟอร์มและ CSV แม่แบบอัจฉริยะ</h2>
+      <p>ระบบ Form Builder ช่วยให้ผู้ดูแลสามารถกำหนดขอบเขตและหัวข้อสถิติที่เปลี่ยนไปในแต่ละปีการศึกษาได้อย่างยืดหยุ่น</p>
+      
+      <h3>5.1 ระบบสร้างฟอร์มอย่างง่าย (Visual Form Wizard)</h3>
+      <ul>
+        <li>เข้าเมนู <strong>ศูนย์ควบคุม (Admin Console)</strong> ➡️ คลิกสร้างแบบฟอร์มใหม่</li>
+        <li>กรอกหัวข้อแบบฟอร์ม คำอธิบาย และกำหนดวันปิดรับ (Deadline)</li>
+        <li>เลือกสังกัดที่ต้องการจัดเก็บข้อมูล (สามารถเลือกเฉพาะบางสังกัดเพื่อรายงาน หรือเลือก "ทุกสังกัด")</li>
+        <li>กดปุ่ม <strong>"เพิ่มฟิลด์คำถาม"</strong> เพื่อกำหนดชนิดตัวแปร เช่น <em>ตัวเลข (Number)</em> สำหรับใช้บวกเลขนักเรียน หรือ <em>ตัวเลือกสั้น (Dropdown)</em></li>
+        <li>กดปุ่ม <strong>"บันทึกแบบฟอร์ม"</strong> เพื่อประกาศใช้แบบฟอร์มเข้าสู่ระบบโดยตรง</li>
+      </ul>
+
+      <h3>5.2 ระบบเทมเพลต CSV แบบแก้ไขภาษาต่างดาว (Dynamic CSV Template Engine)</h3>
+      <p>หนึ่งในจุดอ่อนของไฟล์ CSV ทั่วไปเมื่อเปิดใน Microsoft Excel ภาษาไทยคือจะแสดงผลภาษาเพี้ยนอ่านไม่ออก ระบบของ EduData Sakon ได้แก้ไขปัญหานี้อย่างถาวร:</p>
+      <div class="callout tip">
+        <div class="callout-icon"><span class="material-icons-round">cloud_download</span></div>
+        <div class="callout-content">
+          <h4>การฝัง UTF-8 BOM ในไฟล์ CSV เทมเพลต</h4>
+          <p>ระบบสร้างไฟล์ดาวน์โหลดตามฟิลด์แบบฟอร์มที่สร้างขึ้นโดยฝังรหัสพิเศษ <strong>Byte Order Mark (BOM - <code>\ufeff</code>)</strong> ไว้ที่ต้นไฟล์ เมื่อนำไฟล์เทมเพลตนี้ไปดับเบิลคลิกเปิดใน Excel ภาษาไทย จะแสดงภาษาไทยที่สมบูรณ์แบบทันทีโดยที่เจ้าหน้าที่สถานศึกษาปลายทางไม่ต้องตั้งค่าการนำเข้า (Import Text) ใดๆ เพิ่มเติม</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6 -->
+    <section id="bi">
+      <h2><span class="material-icons-round" style="color:var(--primary);">auto_awesome</span> 6. สั่ง AI สร้างกราฟ (Conversational BI Assistant)</h2>
+      <p>การจัดทำแดชบอร์ดนำเสนอในอดีตต้องการขั้นตอนที่ซับซ้อน ปัจจุบันได้ก้าวข้ามผ่านระบบสนทนากับ AI เพื่อประดับ Widget อัตโนมัติ</p>
+      
+      <h3>6.1 แถบคำสั่งภาษาธรรมชาติ (Natural Language Chart Builder)</h3>
+      <p>ในหน้า BI Dashboard Builder แถบสีม่วงออร่าด้านบนจะทำหน้าที่รับอินพุตคำสั่งแอดมินภาษาไทยธรรมดา:</p>
+      <pre>🚩 ตัวอย่างคำสั่งสั่งงาน:
+"ขอกราฟแท่งเปรียบเทียบสัดส่วนครูและนักเรียนของสังกัดท้องถิ่นเทียบกับสังกัดเอกชน"
+"ทำกราฟวงกลมสรุปจำนวนนักเรียนพิการแยกจำแนกโรค"
+"ช่วยสร้างกราฟเส้นแสดงข้อมูลแนวโน้มงบประมาณของปีการศึกษาที่นำส่งมา"</pre>
+
+      <h3>6.2 ขั้นตอนการทำงานเบื้องหลังและการดึง JSON Widget</h3>
+      <ol>
+        <li>ผู้ใช้พิมพ์คำสั่งส่งให้บอท AI</li>
+        <li>ระบบทำการรวบรวมคำอธิบายตารางสถิติตั้งค่าและโครงสร้างคอลัมน์ข้อมูลนำส่งทั้งหมดของ EduData ส่งไปยังโมเดล Gemini 1.5</li>
+        <li>AI วิเคราะห์หาประเภทกราฟที่คุ้มค่า คัดกรองแกน X และแกน Y ตามข้อมูลจริง และเขียนตอบกลับเป็น **JSON Configuration Schema**</li>
+        <li>ระบบ JavaScript ฝั่ง Frontend อ่านค่า JSON และทำการอิมพอร์ตวาด Widget ชาร์ตสวยงามลงบนหน้าจอ Grid ของผู้ใช้อัตโนมัติโดยที่ผู้ใช้ไม่ต้องเขียนสูตรเลือกแกนหรือลากคอลัมน์เอง</li>
+        <li>ผู้ใช้สามารถย้ายขนาด ดึงลาก ปรับความกว้าง (Drag & Drop Resize) และสั่งบันทึกแดชบอร์ดสัญจรส่วนตัวเก็บลง LocalStorage ได้ทันที</li>
+      </ol>
+    </section>
+
+    <!-- SECTION 7 -->
+    <section id="briefing">
+      <h2><span class="material-icons-round" style="color:var(--blue);">picture_as_pdf</span> 7. เล่มรายงานสรุปผู้บริหารเชิงนโยบาย (A4 Briefing Pack)</h2>
+      <p>เปลี่ยนข้อมูลแดชบอร์ดธรรมดาให้เป็นรูปเล่มรายงานวิเคราะห์สำหรับพิมพ์หรือสั่งนำส่งอีเมลตรงหาผู้ว่าราชการจังหวัดหรือศึกษาธิการในไม่กี่วินาที</p>
+      
+      <h3>7.1 การดึงแคนวาสแผนภูมิ (Dynamic Chart to Base64 Conversion)</h3>
+      <p>แผนภูมิ ECharts ที่แสดงผลเป็นภาพเคลื่อนไหวบนแดชบอร์ดหลักเป็นภาพจำพวก Canvas Vector ดึงนั้นไม่สามารถพิมพ์ออก PDF แบบปกติให้ชัดเจนได้ ระบบจึงแก้ปัญหานี้โดย:</p>
+      <p>เมื่อผู้ใช้คลิกปุ่ม <strong>"เล่มรายงานสรุปผู้บริหาร"</strong> หลังกดยอดสรุป AI -> สคริปต์จะใช้คำสั่ง <code>instance.getDataURL()</code> ทำการคัดลอกรูปภาพแผนภูมิบนจอภาพออกเป็นสตริงไฟล์ภาพ <strong>Base64 PNG</strong> แล้วนำไปเขียนฝังลงในแท็บป๊อปอัปเอกสารจัดเลย์เอาต์ A4 อัตโนมัติ</p>
+
+      <h3>7.2 ภาพเลย์เอาต์เอกสารเล่มสรุปผู้บริหารแนวตั้ง (A4 Layout Schema)</h3>
+      <div class="diagram">
+        <pre>[ หน้าที่ 1: ปกและสรุป AI ]
++------------------------------------------+
+|  [แถบสีกราเดียนท์ม่วง-น้ำเงิน]             |
+|  รายงานสรุปเชิงนโยบายสำหรับผู้บริหาร     |
+|  ปีการศึกษา 2569 | จังหวัดสกลนคร          |
++------------------------------------------+
+|  ✨ บทวิเคราะห์และข้อเสนอแนะ (AI Summary)  |
+|  1. ข้อมูลวิเคราะห์ความทับซ้อนและงบประมาณ |
+|  2. โอกาสความก้าวหน้าและการจัดการผู้เรียน  |
+|  3. แผนงานเสนอเสนอแนะระดับพื้นที่        |
++------------------------------------------+
+
+[ หน้าที่ 2: ดัชนีตัวชี้วัดและกราฟสถิติจริง ]
++------------------------------------------+
+|  📊 ดัชนีตัวชี้วัดหลักจังหวัด (KPI Cards)  |
+|  [ รร. 450 แห่ง ]   [ ผู้เรียน 120,400 คน ] |
+|  [ ครู 8,500 คน ]  [ เด็กพิเศษ 1,200 คน ]  |
++------------------------------------------+
+|  📈 กราฟแผนภูมิภาพวิเคราะห์ (ฝัง base64)   |
+|   +------------------+ +----------------+ |
+|   |  กราฟแยกสังกัด    | | กราฟสัดส่วน นร. | |
+|   +------------------+ +----------------+ |
++------------------------------------------+</pre>
+      </div>
+
+      <h3>7.3 ระบบ Print & Email Integration</h3>
+      <ul>
+        <li><strong>พิมพ์/บันทึก PDF:</strong> สไตล์ CSS <code>@media print</code> จะทำงานทันที โดยการซ่อนปุ่มแถบควบคุม และ navbar ซ้ายทั้งหมด เหลือไว้เฉพาะส่วนของเล่มรายงานสีสันพรีเมียมขนาดพอดีหน้ากระดาษ A4</li>
+        <li><strong>ส่งอีเมลหาผู้รับตรง:</strong> แอดมินสามารถคลิกปุ่มส่งอีเมลทวงถาม/รายงาน กรอกปลายทางเพื่อส่ง HTML เล่มรายงานสรุปฉบับนี้ส่งถึงกล่องจดหมายผู้บริหารปลายทางได้ในชั่วพริบตา</li>
+      </ul>
+    </section>
+
+    <!-- SECTION 8 -->
+    <section id="gis">
+      <h2><span class="material-icons-round" style="color:var(--green);">map</span> 8. ชั้นข้อมูล GIS Overlays และระบบช่วยปักหมุดพิกัด</h2>
+      <p>เพิ่มพลังวิเคราะห์สถิติผ่านการจำลองแผนที่เชิงพื้นที่ และยกระดับการแก้ไขปัญหาพิกัดไม่ครบถ้วนให้แอดมินทำงานง่ายสุดๆ</p>
+      
+      <h3>8.1 แผงจำลองการวิเคราะห์ 3 ชั้น (Map Overlays)</h3>
+      <p>ระบบแผนที่บนแดชบอร์ดหลักรองรับการเปลี่ยนชั้นข้อมูลแผนที่ (Layer Select) ผ่านเมนูมุมขวาบน:</p>
+      <ol>
+        <li><strong>📍 พิกัดสำนักงานสังกัด:</strong> แสดงจุดพินปกติตามพิกัดที่ตั้งสังกัด โดยแสดงผลแยกแยะตามการรายงานข้อมูล</li>
+        <li><strong>🟣 ความหนาแน่นผู้เรียน (Student Density Bubble Map):</strong> แสดงจุดวงกลมสีรุ้งขนาดตามสัดส่วนผู้เรียน ช่วยสะท้อนภาพเชิงพื้นที่ว่าอำเภอใดมีประชากรผู้เรียนกระจุกตัวอยู่มากที่สุด</li>
+        <li><strong>🚨 สัดส่วนนักเรียนต่อครู (Shortage Overlay):</strong> ประเมินสัดส่วนภาระงานครูในพื้นที่สกลนคร:
+          <ul>
+            <li>🔴 <em>สีแดง (ครู 1 คน : นักเรียน > 25 คน):</em> ขาดแคลนกำลังครูวิกฤต</li>
+            <li>🟡 <em>สีเหลือง (ครู 1 คน : นักเรียน 15 - 25 คน):</em> ปานกลางตามมาตรฐาน</li>
+            <li>🟢 <em>สีเขียว (ครู 1 คน : นักเรียน < 15 คน):</em> ครูดูแลนักเรียนได้อย่างใกล้ชิด/เพียงพอ</li>
+          </ul>
+        </li>
+      </ol>
+      <p>มีแผง Dynamic Legend ปรากฏขึ้นอธิบายเกณฑ์วิเคราะห์โดยเปลี่ยนประเภทเกณฑ์ล่างขวาให้ตรงกับชั้นข้อมูลนั้นโดยอัตโนมัติ</p>
+
+      <h3>8.2 เครื่องมือช่วยปักหมุดแผนที่ย่อยและ geocoding (GIS Helpers)</h3>
+      <div class="callout tip">
+        <div class="callout-icon"><span class="material-icons-round">edit_location_alt</span></div>
+        <div class="callout-content">
+          <h4>ระบบช่วยเหลือ Admin ปักหมุดแบบ Interactive</h4>
+          <p>เครื่องมือนี้แก้ปัญหา "ข้อมูลพิกัดไม่ครบ" ในหน้า Master Data โดยแอดมินไม่ต้องสลับแท็บไปก๊อปปี้ตัวเลขพิกัดจาก Google Maps</p>
+          <p><strong>OSM Geocode:</strong> กดปุ่มและระบบจะค้นพิกัดให้อัตโนมัติจากชื่อหน่วยงาน</p>
+          <p><strong>ปักหมุดบนแผนที่ย่อย (Click-to-Pin):</strong> ระบบจะป๊อปอัปหน้าต่างแผนที่ย่อยของจังหวัดสกลนคร แอดมินสามารถคลิกจุดใดก็ได้ หมุดสีแดงจะย้ายไปปักและถอดพิกัด Latitude, Longitude ทศนิยม 6 ตำแหน่งให้ทันที เมื่อกดยืนยันพิกัดจะถูกป้อนลงฟอร์มและบันทึกขึ้นฐานข้อมูลคลาวด์ทันที</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 9 -->
+    <section id="adminconsole">
+      <h2><span class="material-icons-round" style="color:var(--primary);">admin_panel_settings</span> 9. ศูนย์ควบคุมความปลอดภัยระบบสูงสุด (Admin Console)</h2>
+      <p>หน้าเมนู <strong>ศูนย์ควบคุมระบบ (Admin Console)</strong> ออกแบบมาสำหรับการจัดการสิทธิผู้ใช้งาน ข้อมูลอ้างอิง และดูแลความสงบเรียบร้อยหลังบ้าน</p>
+      
+      <h3>9.1 ระบบจัดการผู้ใช้งาน (User Control Panel)</h3>
+      <p>แอดมินสามารถเพิ่มรายชื่อพนักงานสังกัด หรือโรงเรียนเข้าระบบได้โดยตรง:</p>
+      <ul>
+        <li><strong>การจัดการรหัสผ่าน:</strong> รหัสผ่านที่สร้างขึ้นจะผ่านฟังก์ชัน <code>SHA-256 Hashing</code> ก่อนถูกเขียนทับลงบน Google Sheets database เพื่อความมั่นคงปลอดภัยสูงสุด</li>
+        <li><strong>การระงับการเข้าใช้ชั่วคราว:</strong> หากพบความเสี่ยงหรือพนักงานย้ายสังกัด สามารถคลิกปิดสถานะการทำงาน (สลับปุ่มเป็น Inactive) เพื่อปิดสิทธิ์บัญชีผู้ใช้ชั่วคราวได้ทันทีโดยไม่ต้องทำการลบข้อมูลประวัติบัญชี</li>
+      </ul>
+
+      <h3>9.2 การวิเคราะห์ประวัติระบบ (Audit Logs Screen)</h3>
+      <p>ตรวจสอบประวัติการรายงานข้อมูลย้อนหลัง บันทึกการนำส่ง หรือค้นหาว่าแอดมินคนใดกดยกเลิกแบบฟอร์มเพื่อติดตามความสงบเรียบร้อยและความโปร่งใสในการนำเข้าข้อมูล</p>
+
+      <h3>9.3 การขึ้นรอบปีการศึกษาใหม่ (New Term Reset Cycle)</h3>
+      <p>เมื่อเข้าสู่รอบการจัดเก็บสถิติปีการศึกษาใหม่ แอดมินสามารถสลับปีการศึกษาในการตั้งค่า และกดคำสั่งล้างปีการศึกษาเพื่อล้างค่าแบบร่างและตั้งระบบเตรียมรับรายงานชุดใหม่ โดยที่ข้อมูลสถิติของปีการศึกษาเดิมจะถูกเก็บรักษาไว้อย่างครบถ้วนสำหรับใช้ในแผนภูมิ YoY (Year-over-Year) เพื่อดูแนวโน้มการเติบโตต่อไป</p>
+    </section>
+
+    <footer style="text-align: center; color: var(--text-muted); font-size: 13px; border-top: 1px solid var(--border); padding-top: 24px; margin-top: 60px;">
+      &copy; 2026 สำนักงานศึกษาธิการจังหวัดสกลนคร • สงวนลิขสิทธิ์ระบบนำส่งข้อมูลภาพรวมจังหวัดสกลนคร
+    </footer>
+  </main>
+
+  <script>
+    // Theme Manager
+    function initTheme() {
+      const saved = localStorage.getItem('man_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', saved);
+      updateThemeIcon(saved);
+    }
+
+    // Toggle Theme function
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('man_theme', next);
+      updateThemeIcon(next);
+    }
+
+    function updateThemeIcon(theme) {
+      const icon = document.getElementById('themeIcon');
+      if (icon) {
+        icon.innerText = theme === 'dark' ? 'light_mode' : 'dark_mode';
+      }
+    }
+
+    // Sidebar Mobile Toggle
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const btn = document.getElementById('menuBtn');
+      sb.classList.toggle('active');
+      
+      const icon = btn.querySelector('.material-icons-round');
+      if(sb.classList.contains('active')) {
+        icon.innerText = 'close';
+      } else {
+        icon.innerText = 'menu';
+      }
+    }
+
+    // Scroll Spy & Navigation Links Active class switcher
+    function scrollToSection(id) {
+      const target = document.getElementById(id);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+        
+        // Hide mobile sidebar after click
+        const sb = document.getElementById('sidebar');
+        if(sb.classList.contains('active')) {
+          toggleSidebar();
+        }
+      }
+    }
+
+    // Track scroll to update active sidebar link
+    window.addEventListener('scroll', () => {
+      const sections = document.querySelectorAll('section');
+      const navItems = document.querySelectorAll('.nav-item');
+      let currentSectionId = 'intro';
+
+      sections.forEach(s => {
+        const top = s.offsetTop - 100;
+        if (window.scrollY >= top) {
+          currentSectionId = s.getAttribute('id');
+        }
+      });
+
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        const link = item.querySelector('a').getAttribute('href');
+        if (link === '#' + currentSectionId) {
+          item.classList.add('active');
+        }
+      });
+    });
+
+    // Run startup functions
+    initTheme();
+  </script>
+</body>
+</html>

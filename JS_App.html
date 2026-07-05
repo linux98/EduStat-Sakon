@@ -3385,6 +3385,11 @@ function sendReportToExecutive() {
                 }, 350);
             }
             
+            // 🎯 แก้บั๊ก: แสดงฟอร์มหลักให้ออกมาแสดงผลบนหน้าจอทันที ไม่ถูกซ่อนอยู่ใน display: none
+            if (form) form.style.display = 'block';
+            const btnTpl = document.getElementById('btnDownloadTemplate');
+            if (btnTpl) btnTpl.style.display = 'inline-flex';
+            
             renderEditableTable(selectedFormObj, container, agencyId);
             return;
         } else {

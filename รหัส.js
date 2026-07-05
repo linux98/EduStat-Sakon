@@ -323,36 +323,63 @@ function _initAgencyMap() {
 }
 
 function _createMasterAgenciesSheetIfNotExist() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName('MasterAgencies');
-  if (!sheet) {
-    sheet = ss.insertSheet('MasterAgencies');
-    sheet.appendRow(['AgencyID', 'AgencyName']);
-    var defaultMap = {
-      "OBEC_1":"สพป.สกลนคร เขต 1","OBEC_2":"สพป.สกลนคร เขต 2","OBEC_3":"สพป.สกลนคร เขต 3",
-      "OBEC_M":"สพม.สกลนคร","SPECIAL":"ศูนย์การศึกษาพิเศษสกลนคร","RATCHAPRACHA":"รร.ราชประชานุเคราะห์ 53",
-      "OPEC":"สช. (เอกชน)","SNRU":"มรภ.สกลนคร","KU_CSC":"มก. ฉกส.","RMUTI_Sakon":"มทร.อีสาน สกลนคร",
-      "WITEEDHAM":"รร.วิถีธรรม มรภ.สกลนคร","VEC":"อาชีวศึกษาสกลนคร","DOLE":"สกร. (ส่งเสริมการเรียนรู้)",
-      "MUN_NAKHON":"เทศบาลนครสกลนคร","PAO_Sakon":"อบจ.สกลนคร","MUN_TAMBON":"เทศบาลตำบล",
-      "NURSERY":"ศูนย์พัฒนาเด็กเล็ก/ศพด.","BPP":"ตชด.","BUDDHIST":"พระปริยัติธรรม","MSDHS":"พมจ.สกลนคร"
-    };
-    var rows = [];
-    Object.keys(defaultMap).forEach(function(k) {
-      rows.push([k, defaultMap[k]]);
-    });
-    if (rows.length > 0) {
-      sheet.getRange(2, 1, rows.length, 2).setValues(rows);
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (!ss) return;
+    var sheet = ss.getSheetByName('MasterAgencies');
+    if (!sheet) {
+      sheet = ss.insertSheet('MasterAgencies');
+      sheet.appendRow(['AgencyID', 'AgencyName']);
+      var defaultMap = {
+        "OBEC_1":"สพป.สกลนคร เขต 1","OBEC_2":"สพป.สกลนคร เขต 2","OBEC_3":"สพป.สกลนคร เขต 3",
+        "OBEC_M":"สพม.สกลนคร","SPECIAL":"ศูนย์การศึกษาพิเศษสกลนคร","RATCHAPRACHA":"รร.ราชประชานุเคราะห์ 53",
+        "OPEC":"สช. (เอกชน)","SNRU":"มรภ.สกลนคร","KU_CSC":"มก. ฉกส.","RMUTI_Sakon":"มทร.อีสาน สกลนคร",
+        "WITEEDHAM":"รร.วิถีธรรม มรภ.สกลนคร","VEC":"อาชีวศึกษาสกลนคร","DOLE":"สกร. (ส่งเสริมการเรียนรู้)",
+        "MUN_NAKHON":"เทศบาลนครสกลนคร","PAO_Sakon":"อบจ.สกลนคร","MUN_TAMBON":"เทศบาลตำบล",
+        "NURSERY":"ศูนย์พัฒนาเด็กเล็ก/ศพด.","BPP":"ตชด.","BUDDHIST":"พระปริยัติธรรม","MSDHS":"พมจ.สกลนคร"
+      };
+      var rows = [];
+      Object.keys(defaultMap).forEach(function(k) {
+        rows.push([k, defaultMap[k]]);
+      });
+      if (rows.length > 0) {
+        sheet.getRange(2, 1, rows.length, 2).setValues(rows);
+      }
+      sheet.getRange(1, 1, 1, 2).setFontWeight('bold').setBackground('#f1f3f4');
+      sheet.setFrozenRows(1);
     }
-    sheet.getRange(1, 1, 1, 2).setFontWeight('bold').setBackground('#f1f3f4');
-    sheet.setFrozenRows(1);
+  } catch(e) {
+    Logger.log('Error creating MasterAgencies sheet: ' + e.message);
   }
 }
 
 function initSetup() {
-  _createMasterAgenciesSheetIfNotExist(); // สรรสร้างตารางรายชื่อหน่วยงานหากยังไม่มี
-  _initAgencyMap(); // โหลดข้อมูลรหัสและชื่อสังกัดมาเป็นโครงสร้างหลักของระบบ
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var dS = ss.getSheetByName('Data');
+  try {
+    _createMasterAgenciesSheetIfNotExist(); // สรรสร้างตารางรายชื่อหน่วยงานหากยังไม่มี
+  } catch(e) {
+    Logger.log('Error in _createMasterAgenciesSheetIfNotExist: ' + e.message);
+  }
+  try {
+    _initAgencyMap(); // โหลดข้อมูลรหัสและชื่อสังกัดมาเป็นโครงสร้างหลักของระบบ
+  } catch(e) {
+    Logger.log('Error in _initAgencyMap: ' + e.message);
+  }
+  
+  var ss = null;
+  try {
+    ss = SpreadsheetApp.getActiveSpreadsheet();
+  } catch(e) {
+    Logger.log('Error getting active spreadsheet: ' + e.message);
+  }
+  if (!ss) return;
+
+  var dS = null;
+  try {
+    dS = ss.getSheetByName('Data');
+    if (!dS) dS = ss.insertSheet('Data');
+  } catch(e) {
+    Logger.log('Error accessing Data sheet: ' + e.message);
+  }
   if (!dS) dS = ss.insertSheet('Data');
   var cH = ['ID','Timestamp','AgencyID','FormID','ReportTitle','Status','Lat','Lng','RawDataJSON','AdminComment'];
   var fR = dS.getRange(1,1,1,cH.length).getValues()[0], nF = false;

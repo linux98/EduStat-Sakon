@@ -8749,15 +8749,37 @@ function sendReportToExecutive() {
       }
     }
 
+    function refreshAppState() {
+      // 1. ดึงรายชื่อแบบฟอร์มใหม่
+      if (AppState.userAgencyId) {
+        loadEntryFormsList(AppState.userAgencyId);
+      }
+      // 2. ดึงประวัติการส่งใหม่
+      preloadSubmissionHistory(() => {
+        // หากกำลังเปิดฟอร์มค้างไว้ ให้รีเรนเดอร์ฟอร์มนั้นใหม่ด้วยค่าอัปเดตล่าสุด
+        const formId = document.getElementById('entryFormSelect')?.value;
+        if (formId) {
+          renderSelectedForm();
+        }
+      });
+      // 3. ดึงข้อมูลแดชบอร์ดใหม่
+      if (typeof loadDashboardData === 'function') {
+        loadDashboardData();
+      }
+      // 4. ดึงข้อมูลแจ้งเตือนตั๋วปัญหาใหม่ (สำหรับแอดมิน)
+      if (typeof updateNotificationBadge === 'function') {
+        updateNotificationBadge();
+      }
+    }
+
     function clearSystemCache() {
       showToast('กำลังล้างแคชระบบ...', 'info');
       if (typeof google !== 'undefined' && google.script) {
         google.script.run
           .withSuccessHandler(function() {
-            showToast('ล้างแคชระบบสำเร็จแล้ว! กำลังรีโหลดหน้าจอเพื่อดึงค่าล่าสุด...', 'success');
-            setTimeout(function() {
-              window.location.reload();
-            }, 1500);
+            showToast('ล้างแคชระบบสำเร็จและอัปเดตข้อมูลล่าสุดเรียบร้อยแล้ว!', 'success');
+            // อัปเดตข้อมูลในระบบผ่าน Memory แทนการ reload ป้องกันปัญหาหน้าจอขาวใน iFrame ของ Google Apps Script
+            refreshAppState();
           })
           .clearCacheBackend();
       } else {

@@ -9,7 +9,7 @@
     function agencyName(id){ return AGENCY_MAP[id]||id; }
 
     // --- Global State ---
-    const AppState = { userRole: null, userName: '', userAgencyId: '', userAgency: '', sessionToken: null, currentDataList: [], currentDashboardData: null, activeJsonStr: '', availableForms: [] };
+    const AppState = { userRole: null, userName: '', userAgencyId: '', userAgency: '', sessionToken: null, currentDataList: [], currentDashboardData: null, activeJsonStr: '', availableForms: [], activeSubmissionId: null, lastSelectedFormId: null };
 
     // escape ค่าสำหรับใช้ใน HTML attribute (ป้องกัน XSS ใน inline event handlers)
     function _escAttr(s) {
@@ -3341,6 +3341,70 @@ function sendReportToExecutive() {
         const config = selectedFormObj.formConfig;
         const agencyId = AppState.userRole === 'agency' ? AppState.userAgencyId : document.getElementById('entryAgencySelect').value;
         
+        if (AppState.lastSelectedFormId !== formId) {
+            AppState.activeSubmissionId = null;
+            AppState.lastSelectedFormId = formId;
+        }
+        
+        // 🎯 เช็กประวัติการส่งรายงานเดิม เพื่อพรีเซนต์ให้ผู้ใช้ดึงค่าเก่าหรือดูสถิติ
+        const submissions = (AppState.currentDataList || []).filter(r => r.formId === formId && r.agencyId === agencyId);
+        const banner = document.getElementById('formHistoryBanner');
+        if (banner) {
+            if (submissions.length > 0) {
+                const sorted = [...submissions].sort((a, b) => {
+                    return parseThaiDateTime(b.timestamp) - parseThaiDateTime(a.timestamp);
+                });
+                const latest = sorted[0];
+                const count = submissions.length;
+                const isActive = (AppState.activeSubmissionId === latest.id);
+                
+                let badgeStyle = '';
+                if (latest.status === 'อนุมัติแล้ว') {
+                    badgeStyle = 'background:var(--green-ll); color:var(--green); border:1.5px solid var(--green-l);';
+                } else if (latest.status === 'ส่งกลับแก้ไข') {
+                    badgeStyle = 'background:var(--red-ll); color:var(--red-d); border:1.5px solid var(--red-l);';
+                } else {
+                    badgeStyle = 'background:var(--yellow-ll); color:var(--yellow-d); border:1.5px solid var(--yellow-l);';
+                }
+                
+                banner.style.display = 'block';
+                banner.innerHTML = `
+                    <div style="background:var(--s2); border:1.5px solid var(--border-l); border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:12px; font-size:13px; line-height:1.5; margin-bottom:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div style="display:flex; align-items:center; gap:8px; font-weight:700; color:var(--text);">
+                                <span class="material-icons-round" style="color:var(--blue); font-size:20px;">history</span>
+                                <span>ประวัติการรายงานแบบฟอร์มนี้ (สังกัดของคุณ)</span>
+                            </div>
+                            <span class="badge" style="padding:4px 10px; border-radius:8px; font-weight:600; font-size:11px; ${badgeStyle}">
+                                สถานะล่าสุด: ${latest.status}
+                            </span>
+                        </div>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; color:var(--text-2);">
+                            <div>• <strong>จำนวนครั้งที่เคยส่งแล้ว:</strong> ${count} ครั้ง</div>
+                            <div>• <strong>รายงานล่าสุดเมื่อ:</strong> ${latest.timestamp}</div>
+                        </div>
+                        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:4px;">
+                            <button type="button" class="btn btn-outlined btn-sm" onclick="loadSubmissionToForm('${latest.id}')" style="font-size:12px; padding:6px 12px; border-radius:8px; background:var(--blue-ll); color:var(--blue); border-color:var(--blue-l); font-weight:600;">
+                                <span class="material-icons-round" style="font-size:14px; margin-right:4px;">history_toggle_off</span>
+                                ดึงข้อมูลเดิมล่าสุดมาเริ่มรายงานใหม่/แก้ไข
+                            </button>
+                            <button type="button" class="btn btn-outlined btn-sm" id="btnCancelEditMode" onclick="resetFormToFresh()" style="display:${isActive ? 'inline-flex' : 'none'}; font-size:12px; padding:6px 12px; border-radius:8px; color:var(--muted); border-color:var(--border-l);">
+                                <span class="material-icons-round" style="font-size:14px; margin-right:4px;">clear</span>
+                                ยกเลิกการแก้ไข / เขียนรายงานชุดใหม่
+                            </button>
+                        </div>
+                        <div id="editModeNotice" style="display:${isActive ? 'block' : 'none'}; padding:10px 14px; background:#fff9e6; color:#856404; border-radius:8px; font-size:12.5px; font-weight:600; border:1px dashed #ffeeba; margin-top:4px; display:flex; align-items:center; gap:6px;">
+                            <span class="material-icons-round" style="font-size:16px;">warning</span>
+                            <span>กำลังทำงานในโหมดแก้ไขการส่งล่าสุด (เมื่อกดส่ง จะเขียนทับข้อมูล ID: ${latest.id} แทนการเพิ่มใหม่)</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                banner.style.display = 'none';
+                banner.innerHTML = '';
+            }
+        }
+        
         if(container) container.innerHTML = '';
         if(btnSubmitData) btnSubmitData.style.display = 'inline-flex';
         
@@ -3541,7 +3605,7 @@ function sendReportToExecutive() {
         }
       }
 
-      const payload = { agencyId: ag, formId: formId, formData: formData, userRole: AppState.userRole, userAgencyId: AppState.userAgencyId, sessionToken: AppState.sessionToken };
+      const payload = { id: AppState.activeSubmissionId || '', agencyId: ag, formId: formId, formData: formData, userRole: AppState.userRole, userAgencyId: AppState.userAgencyId, sessionToken: AppState.sessionToken };
 
       if (typeof google !== 'undefined' && google.script) {
         google.script.run
@@ -3554,6 +3618,7 @@ function sendReportToExecutive() {
             if(res.success) {
               showToast(res.message, 'success');
               shootConfetti();
+              AppState.activeSubmissionId = null;
               if(e.target) e.target.reset(); 
               let draftKey = `eduDataDraft_${ag}_${formId}`;
               localStorage.removeItem(draftKey); 
@@ -3586,6 +3651,7 @@ function sendReportToExecutive() {
           }
           showToast('บันทึกข้อมูลสำเร็จ (Mock Data)', 'success');
           shootConfetti(); 
+          AppState.activeSubmissionId = null;
           let draftKey = `eduDataDraft_${ag}_${formId}`;
           localStorage.removeItem(draftKey);
           if(e.target) e.target.reset();
@@ -3593,6 +3659,59 @@ function sendReportToExecutive() {
           document.getElementById('entryFormSelect').value = '';
         }, 1000);
       }
+    }
+
+    // 🎯 3.2.2: ฟังก์ชันสำหรับโหลดและแก้ไขประวัติการส่งรายงานเดิม
+    function loadSubmissionToForm(subId) {
+        const sub = AppState.currentDataList.find(r => r.id === subId);
+        if (!sub) return;
+        
+        let details = {};
+        try { details = JSON.parse(sub.details) || {}; } catch(e){}
+        
+        const formId = sub.formId;
+        const agencyId = sub.agencyId;
+        const draftKey = `eduDataDraft_${agencyId}_${formId}`;
+        
+        const selectedFormObj = AppState.availableForms.find(f => f.formId === formId);
+        if (selectedFormObj && selectedFormObj.isMultiRow) {
+            localStorage.setItem(draftKey, JSON.stringify(details.rows || []));
+        } else {
+            localStorage.setItem(draftKey, JSON.stringify(details));
+        }
+        
+        AppState.activeSubmissionId = subId;
+        renderSelectedForm();
+        showToast('ดึงข้อมูลรายงานล่าสุดมาเรียบร้อยแล้ว คุณสามารถแก้ไขและส่งใหม่เพื่อเขียนทับข้อมูลเดิมได้ทันทีครับ', 'success');
+    }
+
+    function resetFormToFresh() {
+        const formId = document.getElementById('entryFormSelect').value;
+        const agencyId = AppState.userRole === 'agency' ? AppState.userAgencyId : document.getElementById('entryAgencySelect').value;
+        const draftKey = `eduDataDraft_${agencyId}_${formId}`;
+        
+        localStorage.removeItem(draftKey);
+        AppState.activeSubmissionId = null;
+        
+        renderSelectedForm();
+        showToast('เคลียร์ข้อมูลและยกเลิกโหมดแก้ไขเรียบร้อย เริ่มการรายงานชุดใหม่', 'info');
+    }
+
+    function parseThaiDateTime(tsStr) {
+      if (!tsStr) return new Date(0);
+      const parts = tsStr.split(' ');
+      const dateParts = (parts[0] || '').split('/');
+      const timeParts = (parts[1] || '').split(':');
+      
+      const day = parseInt(dateParts[0] || '1', 10);
+      const month = parseInt(dateParts[1] || '1', 10) - 1;
+      const year = parseInt(dateParts[2] || '1970', 10);
+      
+      const hour = parseInt(timeParts[0] || '0', 10);
+      const minute = parseInt(timeParts[1] || '0', 10);
+      const second = parseInt(timeParts[2] || '0', 10);
+      
+      return new Date(year, month, day, hour, minute, second);
     }
 
     // ==========================================

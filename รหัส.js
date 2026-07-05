@@ -3048,6 +3048,50 @@ function seedOBECMTemplates() {
         { "name": "notes", "label": "หมายเหตุ", "type": "textarea", "required": false }
       ],
       deadline: ''
+    },
+    {
+      formId: 'OBECM_F05',
+      formName: 'บุคลากรทำหน้าที่สอนและวุฒิการศึกษา สพม.สกลนคร',
+      agencyId: 'OBEC_M',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "school_name", "label": "ชื่อสถานศึกษาที่รายงาน", "type": "text", "required": true },
+        { "type": "section", "label": "ข้อมูลผู้อำนวยการโรงเรียน" },
+        { "name": "dir_male", "label": "ผู้อำนวยการ (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "dir_female", "label": "ผู้อำนวยการ (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "ข้อมูลข้าราชการครู" },
+        { "name": "tchr_male", "label": "ข้าราชการครู (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "tchr_female", "label": "ข้าราชการครู (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "ข้อมูลข้าราชการพลเรือน" },
+        { "name": "civil_male", "label": "ข้าราชการพลเรือน (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "civil_female", "label": "ข้าราชการพลเรือน (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "ข้อมูลพนักงานราชการ" },
+        { "name": "emp_male", "label": "พนักงานราชการ (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "emp_female", "label": "พนักงานราชการ (หญิง)", "type": "number", "required": true, "min": 0 }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'OBECM_F06',
+      formName: 'จำแนกตามรายวิชาเอกที่สอน สพม.สกลนคร',
+      agencyId: 'OBEC_M',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "school_name", "label": "ชื่อสถานศึกษาที่รายงาน", "type": "text", "required": true },
+        { "type": "section", "label": "วิชาเอกปฐมวัย" },
+        { "name": "maj_early_male", "label": "เอกปฐมวัย (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_early_female", "label": "เอกปฐมวัย (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "วิชาเอกสังคมศึกษา" },
+        { "name": "maj_social_male", "label": "เอกสังคม (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_social_female", "label": "เอกสังคม (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "วิชาเอกวิทยาศาสตร์" },
+        { "name": "maj_science_male", "label": "เอกวิทยาศาสตร์ (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_science_female", "label": "เอกวิทยาศาสตร์ (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "วิชาเอกภาษาอังกฤษ" },
+        { "name": "maj_english_male", "label": "เอกภาษาอังกฤษ (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_english_female", "label": "เอกภาษาอังกฤษ (หญิง)", "type": "number", "required": true, "min": 0 }
+      ],
+      deadline: ''
     }
   ];
   

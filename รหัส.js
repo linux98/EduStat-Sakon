@@ -1300,7 +1300,7 @@ function getDashboardData(payloadOrYear, filterAgency) {
         
         // 1. ดึงสถิตินักเรียนปกติ (OBECM_F12 หรือ KU_F12)
         if (String(formId).indexOf('_F12') >= 0) {
-          if (String(formId).indexOf('KU_F12') >= 0 || String(formId).indexOf('RMUTI_F12') >= 0) {
+          if (String(formId).indexOf('KU_F12') >= 0 || String(formId).indexOf('RMUTI_F12') >= 0 || String(formId).indexOf('SNRU_F12') >= 0) {
             // 🎯 สะสมยอดนักศึกษาสำหรับ มก. (KU_CSC) โดยดึงจากฟิลด์ y1_xxx ถึง y5_xxx
             fd.rows.forEach(function(r) {
               Object.keys(r).forEach(function(k) {
@@ -1354,7 +1354,7 @@ function getDashboardData(payloadOrYear, filterAgency) {
                    Number(r.tchr_male || 0) + Number(r.tchr_female || 0) + 
                    Number(r.civil_male || 0) + Number(r.civil_female || 0) + 
                    Number(r.emp_male || 0) + Number(r.emp_female || 0);
-            if (String(formId).indexOf('KU_F05') >= 0 || String(formId).indexOf('RMUTI_F05') >= 0) {
+            if (String(formId).indexOf('KU_F05') >= 0 || String(formId).indexOf('RMUTI_F05') >= 0 || String(formId).indexOf('SNRU_F05') >= 0) {
               // บวกครูอัตราจ้างสอนและอื่นๆ ของ มก.
               tch += Number(r.temp_male || 0) + Number(r.temp_female || 0) +
                      Number(r.oth_male || 0) + Number(r.oth_female || 0);
@@ -3906,6 +3906,64 @@ function seedOBECMTemplates() {
 
   allTemplates = allTemplates.concat(rmutiTemplates);
 
+  // 🎯 บูรณาการโคลนและปรับปรุงแบบฟอร์มระดับมหาวิทยาลัยสำหรับ มรภ.สกลนคร (SNRU) อัตโนมัติโดยอิงจากโครงสร้าง มก. (KU_CSC)
+  var snruTemplates = [];
+  var snruF06Config = [
+    { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+    { "name": "school_name", "label": "ชื่อสถานศึกษาที่รายงาน", "type": "text", "required": true },
+    { "type": "section", "label": "สาขาวิชาประถมศึกษา" },
+    { "name": "maj_elementary_male", "label": "ประถมศึกษา (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_elementary_female", "label": "ประถมศึกษา (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "สาขาวิชาภาษาอังกฤษ" },
+    { "name": "maj_english_male", "label": "ภาษาอังกฤษ (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_english_female", "label": "ภาษาอังกฤษ (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "สาขาวิชารัฐประศาสนศาสตร์" },
+    { "name": "maj_pubadmin_male", "label": "รัฐประศาสนศาสตร์ (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_pubadmin_female", "label": "รัฐประศาสนศาสตร์ (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "สาขาวิชานิติศาสตร์" },
+    { "name": "maj_law_male", "label": "นิติศาสตร์ (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_law_female", "label": "นิติศาสตร์ (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "สาขาวิชาการบัญชี" },
+    { "name": "maj_accounting_male", "label": "การบัญชี (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_accounting_female", "label": "การบัญชี (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "สาขาวิชาคอมพิวเตอร์ศึกษา" },
+    { "name": "maj_compedu_male", "label": "คอมพิวเตอร์ศึกษา (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_compedu_female", "label": "คอมพิวเตอร์ศึกษา (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "สาขาวิชาสาธารณสุขศาสตร์" },
+    { "name": "maj_pubhealth_male", "label": "สาธารณสุขศาสตร์ (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_pubhealth_female", "label": "สาธารณสุขศาสตร์ (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "สาขาวิชาการจัดการ" },
+    { "name": "maj_management_male", "label": "การจัดการ (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_management_female", "label": "การจัดการ (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "สาขาวิชาอื่น ๆ" },
+    { "name": "maj_other_male", "label": "อื่น ๆ (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_other_female", "label": "อื่น ๆ (หญิง)", "type": "number", "required": true, "min": 0 }
+  ];
+
+  kuTemplates.forEach(function(t) {
+    var config = JSON.parse(JSON.stringify(t.config)); // Deep clone
+    if (t.formId === 'KU_F06') {
+      config = snruF06Config;
+    } else {
+      config = config.map(function(field) {
+        if (field.label === 'มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตเฉลิมพระเกียรติจังหวัดสกลนคร') {
+          field.label = 'มหาวิทยาลัยราชภัฏสกลนคร';
+        }
+        return field;
+      });
+    }
+    var clone = {
+      formId: t.formId.replace('KU_', 'SNRU_'),
+      formName: t.formName.replace('มก. ฉกส.', 'มรภ.สกลนคร'),
+      agencyId: 'SNRU',
+      config: config,
+      deadline: t.deadline
+    };
+    snruTemplates.push(clone);
+  });
+
+  allTemplates = allTemplates.concat(snruTemplates);
+
   var data = sheet.getDataRange().getValues();
   for (var t = 0; t < allTemplates.length; t++) {
     var item = allTemplates[t];
@@ -3938,7 +3996,7 @@ function seedOBECMTemplates() {
   }
   
   _invalidateFormsCache();
-  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 2 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
+  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 3 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
 }
 
 function clearCacheBackend() {

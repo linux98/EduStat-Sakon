@@ -5598,8 +5598,8 @@ function sendReportToExecutive() {
     }
 
     function getExcelSheetNameForForm(formId) {
-      if (formId && (formId.indexOf('KU_') === 0 || formId.indexOf('RMUTI_') === 0)) {
-        var prefix = formId.indexOf('KU_') === 0 ? 'KU_' : 'RMUTI_';
+      if (formId && (formId.indexOf('KU_') === 0 || formId.indexOf('RMUTI_') === 0 || formId.indexOf('SNRU_') === 0)) {
+        var prefix = formId.indexOf('KU_') === 0 ? 'KU_' : (formId.indexOf('RMUTI_') === 0 ? 'RMUTI_' : 'SNRU_');
         var mapping = {};
         mapping[prefix + 'F01'] = 'ข้อมูลหน่วยงาน';
         mapping[prefix + 'F02'] = 'รายชื่อสถานศึกษา';
@@ -5705,7 +5705,7 @@ function sendReportToExecutive() {
         
         console.log('Detected Table Header Row at Index:', headerRowIdx);
         
-        var metadataColsCount = (formId.indexOf('KU_F12') >= 0 || formId.indexOf('KU_F13') >= 0 || formId.indexOf('RMUTI_F12') >= 0 || formId.indexOf('RMUTI_F13') >= 0) ? 2 : 4;
+        var metadataColsCount = (formId.indexOf('KU_F12') >= 0 || formId.indexOf('KU_F13') >= 0 || formId.indexOf('RMUTI_F12') >= 0 || formId.indexOf('RMUTI_F13') >= 0 || formId.indexOf('SNRU_F12') >= 0 || formId.indexOf('SNRU_F13') >= 0) ? 2 : 4;
         
         var mainHeader = sheetData[headerRowIdx];
         var subHeader1 = sheetData[headerRowIdx + 1] || [];

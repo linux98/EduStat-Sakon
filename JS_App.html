@@ -5598,6 +5598,28 @@ function sendReportToExecutive() {
     }
 
     function getExcelSheetNameForForm(formId) {
+      if (formId && formId.indexOf('OPEC_') === 0) {
+        var mapping = {
+          'OPEC_F01': 'ข้อมูลหน่วยงาน',
+          'OPEC_F02': 'รายศึกษาในสังกัด', // indexOf 'รายศึกษาในสังกัด' หรือ 'รายชื่อสถานศึกษาในสังกัด'
+          'OPEC_F03': 'ทุน ม.ท.ศ.',
+          'OPEC_F04': 'ทุนร่วมจิตต์ฯ',
+          'OPEC_F05': 'บุคลากรทำมีหน้าที่สอน',
+          'OPEC_F06': 'วิชาเอกที่สอน',
+          'OPEC_F07': 'นักเรียนออกกลางคัน',
+          'OPEC_F08': 'พันธุกรรมพืชฯ',
+          'OPEC_F09': 'กพด.',
+          'OPEC_F10': 'สถานศึกษาพอเพียง',
+          'OPEC_F11': 'สถานศึกษาสีขาว',
+          'OPEC_F12': 'จำนวนนักเรียน',
+          'OPEC_F13': 'นักเรียนสำเร็จการศึกษา',
+          'OPEC_F14': 'นร.พิการเรียนรวม'
+        };
+        // เพื่อรองรับความกว้างของเงื่อนไขการค้นหาใน readExcelFile
+        var exact = mapping[formId];
+        if (formId === 'OPEC_F02') return 'รายชื่อสถานศึกษาในสังกัด';
+        return exact || null;
+      }
       if (formId === 'DOLE_F07') {
         return 'N-net';
       }

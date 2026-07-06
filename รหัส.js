@@ -1341,6 +1341,7 @@ function getDashboardData(payloadOrYear, filterAgency) {
   }
 
   // คำนวณผลรวมสถิติจากข้อมูลที่ผ่านการกรองแล้ว (ดึงสถิติตัวแปรแท้จริงจากทุกแบบฟอร์มของสังกัดมาประมวลผลร่วมกัน)
+  var parsedForms = {}; // 🎯 แคชอ็อบเจกต์ JSON ที่แปลงแล้วเพื่อป้องกันปัญหาคอขวดประมวลผล JSON.parse ซ้ำซ้อน (O(N^2) bottleneck)
   for (var key in latestApprovedByForm) {
     var row = latestApprovedByForm[key];
     var formId = row[3];
@@ -1349,6 +1350,7 @@ function getDashboardData(payloadOrYear, filterAgency) {
     if (!rawJson) continue;
     try {
       var fd = JSON.parse(rawJson);
+      parsedForms[key] = fd;
       
       var sch = 0;
       var std = 0;
@@ -1469,9 +1471,10 @@ function getDashboardData(payloadOrYear, filterAgency) {
         // ประมวลผล Marker บนแผนที่สะสมค่าจากทุกแบบฟอร์มที่มีการอนุมัติ
         for (var key in latestApprovedByForm) {
           if (key.indexOf(agId + '_') === 0) {
+            var _fd = parsedForms[key];
+            if (!_fd) continue;
             var row = latestApprovedByForm[key];
             var formId = row[3];
-            var _fd = JSON.parse(row[8]);
             
             var sch = 0;
             if (_fd.school_total !== undefined) sch = Number(_fd.school_total || 0);

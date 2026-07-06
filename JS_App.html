@@ -5602,6 +5602,28 @@ function sendReportToExecutive() {
     }
 
     function getExcelSheetNameForForm(formId) {
+      if (formId && formId.indexOf('VEC_') === 0) {
+        var mapping = {
+          'VEC_F01': 'ข้อมูลหน่วยงาน',
+          'VEC_F02': 'รายศึกษาในสังกัด',
+          'VEC_F03': 'ทุน ม.ท.ศ.',
+          'VEC_F04': 'ทุนร่วมจิตต์ฯ',
+          'VEC_F05': 'บุคลากรทำมีหน้าที่สอน',
+          'VEC_F06': 'วิชาเอกที่สอน',
+          'VEC_F07': 'นักเรียนออกกลางคัน',
+          'VEC_F08': 'พันธุกรรมพืชฯ',
+          'VEC_F09': 'กพด.',
+          'VEC_F10': 'สถานศึกษาพอเพียง',
+          'VEC_F11': 'สถานศึกษาสีขาว',
+          'VEC_F12': 'จำนวนนักเรียน',
+          'VEC_F13': 'นักเรียนสำเร็จการศึกษา',
+          'VEC_F14': 'นร.พิการเรียนรวม',
+          'VEC_F15': 'V-net'
+        };
+        var exact = mapping[formId];
+        if (formId === 'VEC_F02') return 'รายชื่อสถานศึกษาในสังกัด';
+        return exact || null;
+      }
       if (formId && formId.indexOf('PAO_') === 0) {
         var mapping = {
           'PAO_F01': 'ข้อมูลหน่วยงาน',
@@ -5722,7 +5744,7 @@ function sendReportToExecutive() {
         };
         return mapping[formId] || null;
       }
-      if (formId === 'RP_F14' || formId === 'BPP_F14' || formId === 'WT_F14' || formId === 'DOLE_F14' || formId === 'DLA_F14' || formId === 'BUDDHIST_F14' || formId === 'MSDHS_F14' || formId === 'PAO_F14') {
+      if (formId === 'RP_F14' || formId === 'BPP_F14' || formId === 'WT_F14' || formId === 'DOLE_F14' || formId === 'DLA_F14' || formId === 'BUDDHIST_F14' || formId === 'MSDHS_F14' || formId === 'PAO_F14' || formId === 'VEC_F14') {
         return 'นร.พิการเรียนรวม';
       }
       if (formId && (formId.indexOf('KU_') === 0 || formId.indexOf('RMUTI_') === 0 || formId.indexOf('SNRU_') === 0)) {
@@ -5883,7 +5905,7 @@ function sendReportToExecutive() {
         
         console.log('Detected Table Header Row at Index:', headerRowIdx);
         
-        var metadataColsCount = (formId.indexOf('KU_F12') >= 0 || formId.indexOf('KU_F13') >= 0 || formId.indexOf('RMUTI_F12') >= 0 || formId.indexOf('RMUTI_F13') >= 0 || formId.indexOf('SNRU_F12') >= 0 || formId.indexOf('SNRU_F13') >= 0 || formId.indexOf('SPECIAL_F12') >= 0 || formId.indexOf('DOLE_F07') >= 0 || formId.indexOf('BUDDHIST_F15') >= 0) ? 2 : 4;
+        var metadataColsCount = (formId.indexOf('KU_F12') >= 0 || formId.indexOf('KU_F13') >= 0 || formId.indexOf('RMUTI_F12') >= 0 || formId.indexOf('RMUTI_F13') >= 0 || formId.indexOf('SNRU_F12') >= 0 || formId.indexOf('SNRU_F13') >= 0 || formId.indexOf('SPECIAL_F12') >= 0 || formId.indexOf('DOLE_F07') >= 0 || formId.indexOf('BUDDHIST_F15') >= 0 || formId.indexOf('VEC_F15') >= 0) ? 2 : 4;
         
         var mainHeader = sheetData[headerRowIdx];
         var subHeader1 = sheetData[headerRowIdx + 1] || [];

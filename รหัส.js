@@ -3548,6 +3548,90 @@ function _generateMsdhsDropoutFormConfig() {
   return config;
 }
 
+function _generateVecStudentFormConfig() {
+  return [
+    { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+    { "name": "school_name", "label": "ชื่อสถานศึกษา", "type": "text", "required": true },
+    { "name": "tambon", "label": "ตำบล", "type": "text", "required": true },
+    { "name": "amphoe", "label": "อำเภอ", "type": "text", "required": true },
+    
+    { "type": "section", "label": "ระดับ ปวช.1" },
+    { "name": "vc1_male", "label": "ปวช.1 (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "vc1_female", "label": "ปวช.1 (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "name": "vc1_total", "label": "ปวช.1 (รวม)", "type": "number", "required": true, "min": 0 },
+    
+    { "type": "section", "label": "ระดับ ปวช.2" },
+    { "name": "vc2_male", "label": "ปวช.2 (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "vc2_female", "label": "ปวช.2 (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "name": "vc2_total", "label": "ปวช.2 (รวม)", "type": "number", "required": true, "min": 0 },
+    
+    { "type": "section", "label": "ระดับ ปวช.3" },
+    { "name": "vc3_male", "label": "ปวช.3 (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "vc3_female", "label": "ปวช.3 (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "name": "vc3_total", "label": "ปวช.3 (รวม)", "type": "number", "required": true, "min": 0 },
+    
+    { "type": "section", "label": "รวม ปวช." },
+    { "name": "vc_sum", "label": "รวม ปวช.", "type": "number", "required": true, "min": 0 },
+    
+    { "type": "section", "label": "ระดับ ปวส.1" },
+    { "name": "vs1_male", "label": "ปวส.1 (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "vs1_female", "label": "ปวส.1 (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "name": "vs1_total", "label": "ปวส.1 (รวม)", "type": "number", "required": true, "min": 0 },
+    
+    { "type": "section", "label": "ระดับ ปวส.2" },
+    { "name": "vs2_male", "label": "ปวส.2 (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "vs2_female", "label": "ปวส.2 (หญิง)", "type": "number", "required": true, "min": 0 },
+    
+    { "type": "section", "label": "รวม ปวส." },
+    { "name": "vs_sum", "label": "รวม ปวส. (รวม)", "type": "number", "required": true, "min": 0 },
+    
+    { "name": "classroom_count", "label": "รวมห้องเรียนทั้งหมด", "type": "number", "required": false, "min": 0 }
+  ];
+}
+
+function _generateVecDropoutFormConfig() {
+  var config = [
+    { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+    { "name": "school_name", "label": "ชื่อสถานศึกษาที่รายงาน", "type": "text", "required": true }
+  ];
+  var causes = [
+    { key: "poor", label: "1. สาเหตุ: ฐานะยากจน" },
+    { key: "family", label: "2. สาเหตุ: มีปัญหาครอบครัว" },
+    { key: "married", label: "3. สาเหตุ: สมรส" },
+    { key: "adjust", label: "4. สาเหตุ: มีปัญหาการปรับตัว" },
+    { key: "arrest", label: "5. สาเหตุ: ต้องคดี/ถูกจับ" },
+    { key: "sick", label: "6. สาเหตุ: เจ็บป่วย/อุบัติเหตุ" },
+    { key: "migrate", label: "7. สาเหตุ: อพยพตามครอบครัว" },
+    { key: "work", label: "8. สาเหตุ: หาเลี้ยงครอบครัว" },
+    { key: "other", label: "9. สาเหตุ: กรณีอื่น ๆ" }
+  ];
+  causes.forEach(function(c) {
+    config.push({ "type": "section", "label": c.label });
+    config.push({ "name": c.key + "_vc", "label": "ระดับ ปวช. (คน)", "type": "number", "required": true, "min": 0 });
+    config.push({ "name": c.key + "_vs", "label": "ระดับ ปวส. (คน)", "type": "number", "required": true, "min": 0 });
+  });
+  return config;
+}
+
+function _generateVecVnetFormConfig() {
+  return [
+    { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+    { "name": "competency", "label": "สมรรถนะ", "type": "text", "required": true },
+    
+    { "name": "tech_sakon_67", "label": "วิทยาลัยเทคนิคสกลนคร (ปี 2567)", "type": "number", "required": true, "min": 0 },
+    { "name": "tech_sakon_68", "label": "วิทยาลัยเทคนิคสกลนคร (ปี 2568)", "type": "number", "required": true, "min": 0 },
+    
+    { "name": "voc_sakon_67", "label": "วิทยาลัยอาชีวศึกษาสกลนคร (ปี 2567)", "type": "number", "required": true, "min": 0 },
+    { "name": "voc_sakon_68", "label": "วิทยาลัยอาชีวศึกษาสกลนคร (ปี 2568)", "type": "number", "required": true, "min": 0 },
+    
+    { "name": "career_phanna_67", "label": "วิทยาลัยการอาชีพพรรณานิคม (ปี 2567)", "type": "number", "required": true, "min": 0 },
+    { "name": "career_phanna_68", "label": "วิทยาลัยการอาชีพพรรณานิคม (ปี 2568)", "type": "number", "required": true, "min": 0 },
+    
+    { "name": "tech_sawang_67", "label": "วิทยาลัยเทคนิคสว่างแดนดิน (ปี 2567)", "type": "number", "required": true, "min": 0 },
+    { "name": "tech_sawang_68", "label": "วิทยาลัยเทคนิคสว่างแดนดิน (ปี 2568)", "type": "number", "required": true, "min": 0 }
+  ];
+}
+
 function seedOBECMTemplates() {
   var lock = LockService.getScriptLock();
   try {
@@ -4527,6 +4611,39 @@ function seedOBECMTemplates() {
   });
   allTemplates = allTemplates.concat(paoTemplates);
 
+  // 🎯 บูรณาการโคลนและจัดทำแบบฟอร์มสำหรับ สำนักงานอาชีวศึกษาจังหวัดสกลนคร (VEC)
+  var vecTemplates = [];
+  allTemplates.forEach(function(t) {
+    if (t.formId && t.formId.indexOf('OBECM_') === 0) {
+      var suffixId = t.formId.split('_')[1]; // e.g. "F01"
+      var config = JSON.parse(JSON.stringify(t.config)); // Deep clone
+      if (suffixId === 'F06') {
+        config = bppF06Config;
+      } else if (suffixId === 'F07') {
+        config = _generateVecDropoutFormConfig();
+      } else if (suffixId === 'F12' || suffixId === 'F13' || suffixId === 'F14') {
+        config = _generateVecStudentFormConfig();
+      }
+      var clone = {
+        formId: 'VEC_' + suffixId,
+        formName: t.formName.replace('สพม.สกลนคร', 'สำนักงานอาชีวศึกษาจังหวัดสกลนคร'),
+        agencyId: 'VEC',
+        config: config,
+        deadline: t.deadline
+      };
+      vecTemplates.push(clone);
+    }
+  });
+  // เพิ่มฟอร์มพิเศษ V-net (VEC_F15)
+  vecTemplates.push({
+    formId: 'VEC_F15',
+    formName: 'ผลการทดสอบทางการศึกษาระดับชาติด้านอาชีวศึกษา V-net สำนักงานอาชีวศึกษาจังหวัดสกลนคร',
+    agencyId: 'VEC',
+    config: _generateVecVnetFormConfig(),
+    deadline: ''
+  });
+  allTemplates = allTemplates.concat(vecTemplates);
+
   var data = sheet.getDataRange().getValues();
   for (var t = 0; t < allTemplates.length; t++) {
     var item = allTemplates[t];
@@ -4559,7 +4676,7 @@ function seedOBECMTemplates() {
   }
   
   _invalidateFormsCache();
-  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 13 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
+  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 14 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
   } finally {
     try {
       lock.releaseLock();

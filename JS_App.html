@@ -5587,23 +5587,28 @@ function sendReportToExecutive() {
     }
 
     function getExcelSheetNameForForm(formId) {
+      var cleanId = formId;
+      var match = formId.match(/_(F\d+)$/);
+      if (match) {
+        cleanId = 'OBECM_' + match[1];
+      }
       var mapping = {
         'OBECM_F01': 'ข้อมูลหน่วยงาน',
-        'OBECM_F02': 'รายชื่อสถานศึกษาในสังกัด',
+        'OBECM_F02': 'รายชื่อสถานศึกษา',
         'OBECM_F03': 'ทุน ม.ท.ศ.',
-        'OBECM_F04': 'ทุนร่วมจิตต์ฯ',
-        'OBECM_F05': 'บุคลากรทำมีหน้าที่สอน',
+        'OBECM_F04': 'ทุนร่วมจิตต์',
+        'OBECM_F05': 'บุคลากร',
         'OBECM_F06': 'วิชาเอกที่สอน',
         'OBECM_F07': 'นักเรียนออกกลางคัน',
-        'OBECM_F08': 'พันธุกรรมพืชฯ',
+        'OBECM_F08': 'พันธุกรรมพืช',
         'OBECM_F09': 'กพด.',
         'OBECM_F10': 'สถานศึกษาพอเพียง',
         'OBECM_F11': 'สถานศึกษาสีขาว',
         'OBECM_F12': 'จำนวนนักเรียน',
         'OBECM_F13': 'นักเรียนสำเร็จการศึกษา',
-        'OBECM_F14': 'นร.พิการเรียนรวม'
+        'OBECM_F14': 'พิการเรียนรวม'
       };
-      return mapping[formId] || null;
+      return mapping[cleanId] || null;
     }
 
     function readExcelFile(file) {

@@ -3551,9 +3551,31 @@ function seedOBECMTemplates() {
     }
   ];
   
+  // 🎯 โคลนแบบฟอร์มอัตโนมัติสำหรับ สพป.สกลนคร เขต 1, 2, 3 เพื่อความรวดเร็วและใช้โครงสร้างเดียวกัน 100%
+  var allTemplates = [];
+  var agencies = [
+    { id: 'OBEC_M', prefix: 'OBECM', suffix: 'สพม.สกลนคร' },
+    { id: 'OBEC_P1', prefix: 'OBECP1', suffix: 'สพป.สกลนคร เขต 1' },
+    { id: 'OBEC_P2', prefix: 'OBECP2', suffix: 'สพป.สกลนคร เขต 2' },
+    { id: 'OBEC_P3', prefix: 'OBECP3', suffix: 'สพป.สกลนคร เขต 3' }
+  ];
+  
+  agencies.forEach(function(ag) {
+    templates.forEach(function(t) {
+      var clone = {
+        formId: t.formId.replace('OBECM', ag.prefix),
+        formName: t.formName.replace('สพม.สกลนคร', ag.suffix),
+        agencyId: ag.id,
+        config: t.config,
+        deadline: t.deadline
+      };
+      allTemplates.push(clone);
+    });
+  });
+
   var data = sheet.getDataRange().getValues();
-  for (var t = 0; t < templates.length; t++) {
-    var item = templates[t];
+  for (var t = 0; t < allTemplates.length; t++) {
+    var item = allTemplates[t];
     var existRow = -1;
     for (var i = 1; i < data.length; i++) {
       if (data[i][0] === item.formId) {
@@ -3570,7 +3592,7 @@ function seedOBECMTemplates() {
       item.deadline
     ];
     
-    var isMultiVal = (item.formId !== 'OBECM_F01' && item.formId !== 'OBECM_F07') ? 1 : 0;
+    var isMultiVal = (item.formId.indexOf('_F01') === -1 && item.formId.indexOf('_F07') === -1) ? 1 : 0;
     
     if (existRow > -1) {
       sheet.getRange(existRow, 1, 1, rowData.length).setValues([rowData]);
@@ -3583,7 +3605,7 @@ function seedOBECMTemplates() {
   }
   
   _invalidateFormsCache();
-  return { success: true, message: 'ลงทะเบียนฟอร์มสำเร็จ: ' + templates.map(function(x){ return x.formId; }).join(', ') };
+  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับ 4 เขตพื้นที่สำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
 }
 
 function clearCacheBackend() {

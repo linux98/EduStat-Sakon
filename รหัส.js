@@ -4392,7 +4392,7 @@ function seedOBECMTemplates() {
       var clone = {
         formId: 'DLA_' + suffixId,
         formName: t.formName.replace('สพม.สกลนคร', 'อปท. (ท้องถิ่น) เทศบาลนครสกลนคร'),
-        agencyId: 'DLA',
+        agencyId: 'MUN_NAKHON,DLA',
         config: config,
         deadline: t.deadline
       };

@@ -1298,21 +1298,34 @@ function getDashboardData(payloadOrYear, filterAgency) {
           sch = fd.rows.length;
         }
         
-        // 1. ดึงสถิตินักเรียนปกติ (OBECM_F12)
+        // 1. ดึงสถิตินักเรียนปกติ (OBECM_F12 หรือ KU_F12)
         if (String(formId).indexOf('_F12') >= 0) {
-          fd.rows.forEach(function(r) {
-            Object.keys(r).forEach(function(k) {
-              if (k.indexOf('std_') === 0) {
-                var val = Number(r[k] || 0);
-                std += val;
-                if (k.indexOf('std_kg') === 0) studentCount['ก่อนประถม'] += val;
-                else if (k.indexOf('std_p') === 0) studentCount['ประถม'] += val;
-                else if (k.indexOf('std_m1_') === 0 || k.indexOf('std_m2_') === 0 || k.indexOf('std_m3_') === 0) studentCount['ม.ต้น'] += val;
-                else if (k.indexOf('std_m4_') === 0 || k.indexOf('std_m5_') === 0 || k.indexOf('std_m6_') === 0) studentCount['ม.ปลาย'] += val;
-                else if (k.indexOf('std_v') === 0) studentCount['ปวช/ปวส'] += val;
-              }
+          if (String(formId).indexOf('KU_F12') >= 0) {
+            // 🎯 สะสมยอดนักศึกษาสำหรับ มก. (KU_CSC) โดยดึงจากฟิลด์ y1_xxx ถึง y5_xxx
+            fd.rows.forEach(function(r) {
+              Object.keys(r).forEach(function(k) {
+                if (k.match(/^y\d+_(male|female)$/)) {
+                  var val = Number(r[k] || 0);
+                  std += val;
+                  studentCount['ปวช/ปวส'] += val; // สะสมยอดในกลุ่มการศึกษาวิชาชีพ/อุดมศึกษา
+                }
+              });
             });
-          });
+          } else {
+            fd.rows.forEach(function(r) {
+              Object.keys(r).forEach(function(k) {
+                if (k.indexOf('std_') === 0) {
+                  var val = Number(r[k] || 0);
+                  std += val;
+                  if (k.indexOf('std_kg') === 0) studentCount['ก่อนประถม'] += val;
+                  else if (k.indexOf('std_p') === 0) studentCount['ประถม'] += val;
+                  else if (k.indexOf('std_m1_') === 0 || k.indexOf('std_m2_') === 0 || k.indexOf('std_m3_') === 0) studentCount['ม.ต้น'] += val;
+                  else if (k.indexOf('std_m4_') === 0 || k.indexOf('std_m5_') === 0 || k.indexOf('std_m6_') === 0) studentCount['ม.ปลาย'] += val;
+                  else if (k.indexOf('std_v') === 0) studentCount['ปวช/ปวส'] += val;
+                }
+              });
+            });
+          }
         }
         
         // 2. ดึงสถิตินักเรียนพิการเรียนรวม (OBECM_F14)
@@ -1334,13 +1347,18 @@ function getDashboardData(payloadOrYear, filterAgency) {
           });
         }
         
-        // 3. ดึงสถิติจำนวนครู/บุคลากร (OBECM_F05)
+        // 3. ดึงสถิติจำนวนครู/บุคลากร (OBECM_F05 หรือ KU_F05)
         if (String(formId).indexOf('_F05') >= 0) {
           fd.rows.forEach(function(r) {
             tch += Number(r.dir_male || 0) + Number(r.dir_female || 0) + 
                    Number(r.tchr_male || 0) + Number(r.tchr_female || 0) + 
                    Number(r.civil_male || 0) + Number(r.civil_female || 0) + 
                    Number(r.emp_male || 0) + Number(r.emp_female || 0);
+            if (String(formId).indexOf('KU_F05') >= 0) {
+              // บวกครูอัตราจ้างสอนและอื่นๆ ของ มก.
+              tch += Number(r.temp_male || 0) + Number(r.temp_female || 0) +
+                     Number(r.oth_male || 0) + Number(r.oth_female || 0);
+            }
           });
         }
       }
@@ -3314,6 +3332,23 @@ function _generateStudentFormConfig(formId, labelPrefix) {
   return config;
 }
 
+function _generateUniversityStudentFormConfig(formId, title) {
+  return [
+    { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+    { "name": "degree_level", "label": "ระดับ", "type": "text", "required": true },
+    { "name": "y1_male", "label": "ปี 1 (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "y1_female", "label": "ปี 1 (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "name": "y2_male", "label": "ปี 2 (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "y2_female", "label": "ปี 2 (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "name": "y3_male", "label": "ปี 3 (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "y3_female", "label": "ปี 3 (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "name": "y4_male", "label": "ปี 4 (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "y4_female", "label": "ปี 4 (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "name": "y5_male", "label": "ปี 5 (ตกค้าง) (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "y5_female", "label": "ปี 5 (ตกค้าง) (หญิง)", "type": "number", "required": true, "min": 0 }
+  ];
+}
+
 function seedOBECMTemplates() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName('FormTemplates');
@@ -3572,6 +3607,246 @@ function seedOBECMTemplates() {
       allTemplates.push(clone);
     });
   });
+
+  // 🎯 บูรณาการชุดแบบฟอร์มเฉพาะของ มหาวิทยาลัยเกษตรศาสตร์ (KU_CSC) จำนวน 13 ฟอร์ม
+  var kuTemplates = [
+    {
+      formId: 'KU_F01',
+      formName: 'ข้อมูลหน่วยงาน มก. ฉกส.',
+      agencyId: 'KU_CSC',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "director_name", "label": "ชื่อผู้บริหาร", "type": "text", "required": true },
+        { "name": "director_pos", "label": "ตำแหน่ง", "type": "text", "required": true },
+        { "name": "location", "label": "ที่ตั้งหน่วยงาน", "type": "textarea", "required": true },
+        { "name": "contact_info", "label": "เบอร์ติดต่อ", "type": "text", "required": true },
+        { "name": "website", "label": "เว๊ปไซต์", "type": "text", "required": true }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'KU_F02',
+      formName: 'รายชื่อสถานศึกษาในสังกัด มก. ฉกส.',
+      agencyId: 'KU_CSC',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "school_name", "label": "ชื่อสถานศึกษา", "type": "text", "required": true },
+        { "name": "tambon", "label": "ตำบล", "type": "text", "required": true },
+        { "name": "amphoe", "label": "อำเภอ", "type": "text", "required": true },
+        { "name": "address", "label": "ที่อยู่", "type": "textarea", "required": true },
+        { "name": "director_name", "label": "ชื่อผู้อำนวยการ", "type": "text", "required": true },
+        { "name": "contact_info", "label": "เบอร์ติดต่อ/ID Line", "type": "text", "required": true }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'KU_F03',
+      formName: 'ข้อมูลเรียนทุนพระราชทาน ม.ท.ศ. มก. ฉกส.',
+      agencyId: 'KU_CSC',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "student_name", "label": "ชื่อ - สกุล", "type": "text", "required": true },
+        { "name": "student_level", "label": "ระดับชั้น", "type": "text", "required": true },
+        { "name": "school_name", "label": "มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตเฉลิมพระเกียรติจังหวัดสกลนคร", "type": "text", "required": true },
+        { "name": "notes", "label": "หมายเหตุ", "type": "textarea", "required": false }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'KU_F04',
+      formName: 'ข้อมูลทุนร่วมจิตต์ฯ มก. ฉกส.',
+      agencyId: 'KU_CSC',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "student_name", "label": "ชื่อ - สกุล", "type": "text", "required": true },
+        { "name": "student_level", "label": "ระดับชั้น", "type": "text", "required": true },
+        { "name": "school_name", "label": "มหาวิทยาลัยเกษตรศาสตร์ วิทยาเขตเฉลิมพระเกียรติจังหวัดสกลนคร", "type": "text", "required": true },
+        { "name": "notes", "label": "หมายเหตุ", "type": "textarea", "required": false }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'KU_F05',
+      formName: 'บุคลากรทำหน้าที่สอนและวุฒิการศึกษา มก. ฉกส.',
+      agencyId: 'KU_CSC',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "school_name", "label": "ชื่อสถานศึกษาที่รายงาน", "type": "text", "required": true },
+        { "type": "section", "label": "ข้อมูลผู้อำนวยการ" },
+        { "name": "dir_male", "label": "ผู้อำนวยการ (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "dir_female", "label": "ผู้อำนวยการ (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "ข้อมูลข้าราชการครู" },
+        { "name": "tchr_male", "label": "ข้าราชการครู (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "tchr_female", "label": "ข้าราชการครู (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "ข้อมูลข้าราชการพลเรือน" },
+        { "name": "civil_male", "label": "ข้าราชการพลเรือน (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "civil_female", "label": "ข้าราชการพลเรือน (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "ข้อมูลพนักงานราชการ" },
+        { "name": "emp_male", "label": "พนักงานราชการ (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "emp_female", "label": "พนักงานราชการ (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "ข้อมูลครูจ้างสอน" },
+        { "name": "temp_male", "label": "ครูจ้างสอน (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "temp_female", "label": "ครูจ้างสอน (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "ข้อมูลบุคลากรอื่นๆ" },
+        { "name": "oth_male", "label": "อื่น ๆ (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "oth_female", "label": "อื่น ๆ (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "วุฒิปริญญาตรี" },
+        { "name": "deg_b_male", "label": "ปริญญาตรี (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "deg_b_female", "label": "ปริญญาตรี (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "วุฒิปริญญาโท" },
+        { "name": "deg_m_male", "label": "ปริญญาโท (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "deg_m_female", "label": "ปริญญาโท (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "วุฒิปริญญาเอก" },
+        { "name": "deg_d_male", "label": "ปริญญาเอก (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "deg_d_female", "label": "ปริญญาเอก (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "วุฒิอื่นๆ" },
+        { "name": "deg_o_male", "label": "อื่น ๆ (วุฒิ) (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "deg_o_female", "label": "อื่น ๆ (วุฒิ) (หญิง)", "type": "number", "required": true, "min": 0 }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'KU_F06',
+      formName: 'วิชาเอกที่สอน มก. ฉกส.',
+      agencyId: 'KU_CSC',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "school_name", "label": "ชื่อสถานศึกษาที่รายงาน", "type": "text", "required": true },
+        { "type": "section", "label": "สาขาวิชาสาธารณสุขศาสตร์" },
+        { "name": "maj_pubhealth_male", "label": "สาธารณสุขศาสตร์ (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_pubhealth_female", "label": "สาธารณสุขศาสตร์ (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "สาขาวิชาบัญชี" },
+        { "name": "maj_accounting_male", "label": "บัญชี (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_accounting_female", "label": "บัญชี (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "สาขาวิชาการจัดการ" },
+        { "name": "maj_management_male", "label": "การจัดการ (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_management_female", "label": "การจัดการ (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "สาขาวิชาวิศวกรรมคอมพิวเตอร์" },
+        { "name": "maj_compeng_male", "label": "วิศวกรรมคอมพิวเตอร์ (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_compeng_female", "label": "วิศวกรรมคอมพิวเตอร์ (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "สาขาวิชาภาษาอังกฤษ" },
+        { "name": "maj_english_male", "label": "ภาษาอังกฤษ (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_english_female", "label": "ภาษาอังกฤษ (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "สาขาวิชาสัตวศาสตร์" },
+        { "name": "maj_animalsci_male", "label": "สัตวศาสตร์ (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_animalsci_female", "label": "สัตวศาสตร์ (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "สาขาวิชาวิศวกรรมโยธาและสิ่งแวดล้อม" },
+        { "name": "maj_civileng_male", "label": "วิศวกรรมโยธาและสิ่งแวดล้อม (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_civileng_female", "label": "วิศวกรรมโยธาและสิ่งแวดล้อม (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "สาขาวิชาเทคโนโลยีการอาหาร" },
+        { "name": "maj_foodtech_male", "label": "เทคโนโลยีการอาหาร (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_foodtech_female", "label": "เทคโนโลยีการอาหาร (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "สาขาวิชาอื่น ๆ" },
+        { "name": "maj_other_male", "label": "อื่น ๆ (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_other_female", "label": "อื่น ๆ (หญิง)", "type": "number", "required": true, "min": 0 }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'KU_F07',
+      formName: 'นักศึกษาออกกลางคันจำแนกตามสาเหตุสำคัญ มก. ฉกส.',
+      agencyId: 'KU_CSC',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "school_name", "label": "ชื่อสถานศึกษาที่รายงาน", "type": "text", "required": true },
+        { "type": "section", "label": "1. สาเหตุ: ฐานะยากจน" },
+        { "name": "poor_pri", "label": "ระดับประถม (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "poor_mid", "label": "ระดับ ม.ต้น (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "poor_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "2. สาเหตุ: มีปัญหาครอบครัว" },
+        { "name": "family_pri", "label": "ระดับประถม (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "family_mid", "label": "ระดับ ม.ต้น (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "family_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "3. สาเหตุ: สมรส" },
+        { "name": "married_pri", "label": "ระดับประถม (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "married_mid", "label": "ระดับ ม.ต้น (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "married_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "4. สาเหตุ: มีปัญหาการปรับตัว" },
+        { "name": "adjust_pri", "label": "ระดับประถม (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "adjust_mid", "label": "ระดับ ม.ต้น (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "adjust_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "5. สาเหตุ: ต้องคดี/ถูกจับ" },
+        { "name": "arrest_pri", "label": "ระดับประถม (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "arrest_mid", "label": "ระดับ ม.ต้น (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "arrest_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 },
+        { "type": "section", "label": "6. สาเหตุ: เจ็บป่วย/อุบัติเหตุ" },
+        { "name": "sick_pri", "label": "ระดับประถม (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "sick_mid", "label": "ระดับ ม.ต้น (คน)", "type": "number", "required": true, "min": 0 },
+        { "name": "sick_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'KU_F08',
+      formName: 'โครงการอนุรักษ์พันธุกรรมพืชฯ มก. ฉกส.',
+      agencyId: 'KU_CSC',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "school_name", "label": "ชื่อสถานศึกษา", "type": "text", "required": true },
+        { "name": "location", "label": "ที่ตั้ง", "type": "text", "required": true },
+        { "name": "member_date", "label": "วันที่ตอบรับสมาชิก", "type": "text", "required": true },
+        { "name": "member_no", "label": "เลขที่สมาชิก", "type": "text", "required": true },
+        { "name": "sign_receive", "label": "รับป้าย", "type": "text", "required": true },
+        { "name": "notes", "label": "หมายเหตุ", "type": "textarea", "required": false }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'KU_F09',
+      formName: 'โครงการพัฒนาเด็กและเยาวชนในถิ่นทุรกันดาร (กพด.) มก. ฉกส.',
+      agencyId: 'KU_CSC',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "school_name", "label": "ชื่อสถานศึกษา", "type": "text", "required": true },
+        { "name": "address", "label": "ที่อยู่", "type": "textarea", "required": true },
+        { "name": "contact_info", "label": "เบอร์ติดต่อ", "type": "text", "required": true },
+        { "name": "notes", "label": "หมายเหตุ", "type": "textarea", "required": false }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'KU_F10',
+      formName: 'โครงการสถานศึกษาพอเพียง มก. ฉกส.',
+      agencyId: 'KU_CSC',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "school_name", "label": "ชื่อสถานศึกษา", "type": "text", "required": true },
+        { "name": "address", "label": "ที่อยู่", "type": "textarea", "required": true },
+        { "name": "operation", "label": "การดำเนินงาน", "type": "text", "required": true },
+        { "name": "notes", "label": "หมายเหตุ", "type": "textarea", "required": false }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'KU_F11',
+      formName: 'โครงการสถานศึกษาสีขาว มก. ฉกส.',
+      agencyId: 'KU_CSC',
+      config: [
+        { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+        { "name": "school_name", "label": "ชื่อสถานศึกษา", "type": "text", "required": true },
+        { "name": "diamond_count", "label": "ระดับเพชร", "type": "number", "required": true, "min": 0 },
+        { "name": "maintain_y1", "label": "ระดับรักษามาตรฐาน (ปี 1)", "type": "number", "required": true, "min": 0 },
+        { "name": "maintain_y2", "label": "ระดับรักษามาตรฐาน (ปี 2)", "type": "number", "required": true, "min": 0 }
+      ],
+      deadline: ''
+    },
+    {
+      formId: 'KU_F12',
+      formName: 'จำนวนนักศึกษา มก. ฉกส.',
+      agencyId: 'KU_CSC',
+      config: _generateUniversityStudentFormConfig('KU_F12', 'จำนวนนักศึกษา'),
+      deadline: ''
+    },
+    {
+      formId: 'KU_F13',
+      formName: 'สำเร็จการศึกษา มก. ฉกส.',
+      agencyId: 'KU_CSC',
+      config: _generateUniversityStudentFormConfig('KU_F13', 'สำเร็จการศึกษา'),
+      deadline: ''
+    }
+  ];
+  
+  allTemplates = allTemplates.concat(kuTemplates);
 
   var data = sheet.getDataRange().getValues();
   for (var t = 0; t < allTemplates.length; t++) {

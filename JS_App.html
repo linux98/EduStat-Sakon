@@ -5598,6 +5598,25 @@ function sendReportToExecutive() {
     }
 
     function getExcelSheetNameForForm(formId) {
+      if (formId && formId.indexOf('KU_') === 0) {
+        var mapping = {
+          'KU_F01': 'ข้อมูลหน่วยงาน',
+          'KU_F02': 'รายชื่อสถานศึกษา',
+          'KU_F03': 'ทุน ม.ท.ศ.',
+          'KU_F04': 'ทุนร่วมจิตต์',
+          'KU_F05': 'บุคลากร',
+          'KU_F06': 'วิชาเอกที่สอน',
+          'KU_F07': 'นักเรียนออกกลางคัน',
+          'KU_F08': 'พันธุกรรมพืช',
+          'KU_F09': 'กพด.',
+          'KU_F10': 'สถานศึกษาพอเพียง',
+          'KU_F11': 'สถานศึกษาสีขาว',
+          'KU_F12': 'จำนวนนักศึกษา',
+          'KU_F13': 'สำเร็จการศึกษา'
+        };
+        return mapping[formId] || null;
+      }
+      
       var cleanId = formId;
       var match = formId.match(/_(F\d+)$/);
       if (match) {
@@ -5686,6 +5705,8 @@ function sendReportToExecutive() {
         
         console.log('Detected Table Header Row at Index:', headerRowIdx);
         
+        var metadataColsCount = (formId.indexOf('KU_F12') >= 0 || formId.indexOf('KU_F13') >= 0) ? 2 : 4;
+        
         var mainHeader = sheetData[headerRowIdx];
         var subHeader1 = sheetData[headerRowIdx + 1] || [];
         var subHeader2 = sheetData[headerRowIdx + 2] || [];
@@ -5728,7 +5749,7 @@ function sendReportToExecutive() {
             if (h0) currentCategory = h0;
             if (h1) currentSubCategory = h1;
             
-            if (colIdx < 4) {
+            if (colIdx < metadataColsCount) {
               finalHeaders.push(h0 || h1 || h2);
             } else {
               var combined = '';
@@ -5755,7 +5776,7 @@ function sendReportToExecutive() {
             
             if (h0) currentCategory = h0;
             
-            if (colIdx < 4) {
+            if (colIdx < metadataColsCount) {
               finalHeaders.push(h0 || h1);
             } else {
               var combined = currentCategory;

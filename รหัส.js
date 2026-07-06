@@ -3964,6 +3964,66 @@ function seedOBECMTemplates() {
 
   allTemplates = allTemplates.concat(snruTemplates);
 
+  // 🎯 บูรณาการโคลนและปรับปรุงแบบฟอร์มโรงเรียนสำหรับ รร.ราชประชานุเคราะห์ 53 (RATCHAPRACHA) อัตโนมัติโดยอิงจากโครงสร้าง สพม. (OBECM)
+  var rpTemplates = [];
+  var rpF06Config = [
+    { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+    { "name": "school_name", "label": "ชื่อสถานศึกษาที่รายงาน", "type": "text", "required": true },
+    { "type": "section", "label": "วิชาเอกปฐมวัย" },
+    { "name": "maj_early_male", "label": "ปฐมวัย (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_early_female", "label": "ปฐมวัย (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "วิชาเอกสังคมศึกษา" },
+    { "name": "maj_social_male", "label": "สังคม (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_social_female", "label": "สังคม (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "วิชาเอกวิทยาศาสตร์" },
+    { "name": "maj_science_male", "label": "วิทยาศาสตร์ (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_science_female", "label": "วิทยาศาสตร์ (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "วิชาเอกภาษาอังกฤษ" },
+    { "name": "maj_english_male", "label": "ภาษาอังกฤษ (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_english_female", "label": "ภาษาอังกฤษ (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "วิชาเอกภาษาไทย" },
+    { "name": "maj_thai_male", "label": "ภาษาไทย (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_thai_female", "label": "ภาษาไทย (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "วิชาเอกคณิตศาสตร์" },
+    { "name": "maj_math_male", "label": "คณิตศาสตร์ (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_math_female", "label": "คณิตศาสตร์ (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "วิชาเอกฟิสิกส์" },
+    { "name": "maj_physics_male", "label": "ฟิสิกส์ (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_physics_female", "label": "ฟิสิกส์ (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "วิชาเอกคอมพิวเตอร์" },
+    { "name": "maj_computer_male", "label": "คอมพิวเตอร์ (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_computer_female", "label": "คอมพิวเตอร์ (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "วิชาเอกอื่น ๆ" },
+    { "name": "maj_other_male", "label": "อื่น ๆ (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "maj_other_female", "label": "อื่น ๆ (หญิง)", "type": "number", "required": true, "min": 0 }
+  ];
+
+  allTemplates.forEach(function(t) {
+    if (t.formId && t.formId.indexOf('OBECM_') === 0) {
+      var config = JSON.parse(JSON.stringify(t.config)); // Deep clone
+      if (t.formId === 'OBECM_F06') {
+        config = rpF06Config;
+      } else if (t.formId === 'OBECM_F03' || t.formId === 'OBECM_F04') {
+        config = config.map(function(field) {
+          if (field.name === 'school_name') {
+            field.label = 'โรงเรียน';
+          }
+          return field;
+        });
+      }
+      var clone = {
+        formId: t.formId.replace('OBECM_', 'RP_'),
+        formName: t.formName.replace('สพม.สกลนคร', 'รร.ราชประชานุเคราะห์ 53'),
+        agencyId: 'RATCHAPRACHA',
+        config: config,
+        deadline: t.deadline
+      };
+      rpTemplates.push(clone);
+    }
+  });
+
+  allTemplates = allTemplates.concat(rpTemplates);
+
   var data = sheet.getDataRange().getValues();
   for (var t = 0; t < allTemplates.length; t++) {
     var item = allTemplates[t];
@@ -3996,7 +4056,7 @@ function seedOBECMTemplates() {
   }
   
   _invalidateFormsCache();
-  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 3 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
+  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 4 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
 }
 
 function clearCacheBackend() {

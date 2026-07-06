@@ -5598,6 +5598,9 @@ function sendReportToExecutive() {
     }
 
     function getExcelSheetNameForForm(formId) {
+      if (formId === 'RP_F14') {
+        return 'นร.พิการเรียนรวม';
+      }
       if (formId && (formId.indexOf('KU_') === 0 || formId.indexOf('RMUTI_') === 0 || formId.indexOf('SNRU_') === 0)) {
         var prefix = formId.indexOf('KU_') === 0 ? 'KU_' : (formId.indexOf('RMUTI_') === 0 ? 'RMUTI_' : 'SNRU_');
         var mapping = {};

@@ -5598,6 +5598,9 @@ function sendReportToExecutive() {
     }
 
     function getExcelSheetNameForForm(formId) {
+      if (formId === 'DOLE_F07') {
+        return 'N-net';
+      }
       if (formId && formId.indexOf('SPECIAL_') === 0) {
         var mapping = {
           'SPECIAL_F01': 'ข้อมูลหน่วยงาน',
@@ -5608,7 +5611,7 @@ function sendReportToExecutive() {
         };
         return mapping[formId] || null;
       }
-      if (formId === 'RP_F14' || formId === 'BPP_F14' || formId === 'WT_F14') {
+      if (formId === 'RP_F14' || formId === 'BPP_F14' || formId === 'WT_F14' || formId === 'DOLE_F14') {
         return 'นร.พิการเรียนรวม';
       }
       if (formId && (formId.indexOf('KU_') === 0 || formId.indexOf('RMUTI_') === 0 || formId.indexOf('SNRU_') === 0)) {
@@ -5718,7 +5721,7 @@ function sendReportToExecutive() {
         
         console.log('Detected Table Header Row at Index:', headerRowIdx);
         
-        var metadataColsCount = (formId.indexOf('KU_F12') >= 0 || formId.indexOf('KU_F13') >= 0 || formId.indexOf('RMUTI_F12') >= 0 || formId.indexOf('RMUTI_F13') >= 0 || formId.indexOf('SNRU_F12') >= 0 || formId.indexOf('SNRU_F13') >= 0 || formId.indexOf('SPECIAL_F12') >= 0) ? 2 : 4;
+        var metadataColsCount = (formId.indexOf('KU_F12') >= 0 || formId.indexOf('KU_F13') >= 0 || formId.indexOf('RMUTI_F12') >= 0 || formId.indexOf('RMUTI_F13') >= 0 || formId.indexOf('SNRU_F12') >= 0 || formId.indexOf('SNRU_F13') >= 0 || formId.indexOf('SPECIAL_F12') >= 0 || formId.indexOf('DOLE_F07') >= 0) ? 2 : 4;
         
         var mainHeader = sheetData[headerRowIdx];
         var subHeader1 = sheetData[headerRowIdx + 1] || [];

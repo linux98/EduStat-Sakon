@@ -3396,6 +3396,78 @@ function _generateSpecialStudentFormConfig(formId, title) {
   ];
 }
 
+function _generateDoleStudentFormConfig(formId, title) {
+  var config = [
+    { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+    { "name": "school_name", "label": "ชื่อสถานศึกษา", "type": "text", "required": true },
+    { "name": "tambon", "label": "ตำบล", "type": "text", "required": true },
+    { "name": "amphoe", "label": "อำเภอ", "type": "text", "required": true }
+  ];
+  
+  var programs = [
+    { key: "primary", label: "ประถมศึกษา" },
+    { key: "l_sec", label: "ม.ต้น" },
+    { key: "u_sec", label: "ม.ปลาย" },
+    { key: "literacy", label: "การส่งเสริมการรู้หนังสือ" },
+    { key: "voc", label: "ปวช." },
+    { key: "career", label: "การศึกษาเพื่อพัฒนาอาชีพ" },
+    { key: "life_skills", label: "การศึกษาเพื่อพัฒนาทักษะชีวิต" },
+    { key: "short_course", label: "การศึกษาหลักสูตรระยะสั้น" },
+    { key: "mountain", label: "การศึกษาในเขตภูเขา" },
+    { key: "sufficiency", label: "การเรียนรู้เศรษฐกิจพอเพียง" },
+    { key: "royal_project", label: "โครงการตามแนวพระราชดำริ" },
+    { key: "social_dev", label: "การศึกษาเพื่อสังคมและชุมชน" },
+    { key: "voc_center", label: "โครงการศูนย์ฝึกอาชีพชุมชน" }
+  ];
+  
+  programs.forEach(function(p) {
+    config.push({ "type": "section", "label": p.label });
+    config.push({ "name": "std_" + p.key + "_m", "label": p.label + " (ชาย)", "type": "number", "required": true, "min": 0 });
+    config.push({ "name": "std_" + p.key + "_f", "label": p.label + " (หญิง)", "type": "number", "required": true, "min": 0 });
+  });
+  
+  config.push({ "name": "student_total", "label": "รวมนักศึกษาทั้งหมด", "type": "number", "required": true, "min": 0 });
+  return config;
+}
+
+function _generateDoleGraduateFormConfig(formId, title) {
+  var config = [
+    { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+    { "name": "school_name", "label": "ชื่อสถานศึกษา", "type": "text", "required": true },
+    { "name": "tambon", "label": "ตำบล", "type": "text", "required": true },
+    { "name": "amphoe", "label": "อำเภอ", "type": "text", "required": true }
+  ];
+  
+  var programs = [
+    { key: "primary", label: "ประถมศึกษา" },
+    { key: "l_sec", label: "ม.ต้น" },
+    { key: "u_sec", label: "ม.ปลาย" }
+  ];
+  
+  programs.forEach(function(p) {
+    config.push({ "type": "section", "label": p.label });
+    config.push({ "name": "std_" + p.key + "_m", "label": p.label + " (ชาย)", "type": "number", "required": true, "min": 0 });
+    config.push({ "name": "std_" + p.key + "_f", "label": p.label + " (หญิง)", "type": "number", "required": true, "min": 0 });
+  });
+  
+  config.push({ "name": "student_total", "label": "รวมนักศึกษาทั้งหมด", "type": "number", "required": true, "min": 0 });
+  return config;
+}
+
+function _generateDoleNnetFormConfig(formId, title) {
+  return [
+    { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+    { "name": "grade_level", "label": "ระดับชั้น", "type": "text", "required": true },
+    { "name": "test_scope", "label": "ระดับ", "type": "text", "required": true },
+    { "name": "learning_skills", "label": "ทักษะการเรียนรู้", "type": "number", "required": true, "min": 0 },
+    { "name": "basic_knowledge", "label": "ความรู้พื้นฐาน", "type": "number", "required": true, "min": 0 },
+    { "name": "occupation", "label": "การประกอบอาชีพ", "type": "number", "required": true, "min": 0 },
+    { "name": "life_skills", "label": "ทักษะการดำเนินชีวิต", "type": "number", "required": true, "min": 0 },
+    { "name": "social_development", "label": "การพัฒนาสังคม", "type": "number", "required": true, "min": 0 },
+    { "name": "average_score", "label": "เฉลี่ยรวม", "type": "number", "required": true, "min": 0 }
+  ];
+}
+
 function seedOBECMTemplates() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName('FormTemplates');
@@ -4221,6 +4293,38 @@ function seedOBECMTemplates() {
   });
   allTemplates = allTemplates.concat(specialTemplates);
 
+  // 🎯 บูรณาการโคลนและจัดทำแบบฟอร์มสำหรับ สกร.สกลนคร (DOLE)
+  var doleTemplates = [];
+  allTemplates.forEach(function(t) {
+    if (t.formId && t.formId.indexOf('OBECM_') === 0) {
+      var suffixId = t.formId.split('_')[1]; // e.g. "F01"
+      var config = JSON.parse(JSON.stringify(t.config)); // Deep clone
+      if (suffixId === 'F12') {
+        config = _generateDoleStudentFormConfig('DOLE_F12', 'จำนวนนักศึกษา');
+      } else if (suffixId === 'F13' || suffixId === 'F14') {
+        config = _generateDoleGraduateFormConfig('DOLE_' + suffixId, 'จำนวนนักศึกษา');
+      } else if (suffixId === 'F07') {
+        config = _generateDoleNnetFormConfig('DOLE_F07', 'ผลการทดสอบ N-NET');
+      } else if (suffixId === 'F06') {
+        config = bppF06Config;
+      }
+      
+      var clone = {
+        formId: 'DOLE_' + suffixId,
+        formName: t.formName.replace('สพม.สกลนคร', 'สกร.ประจำจังหวัดสกลนคร')
+                            .replace('นักเรียนสำเร็จการศึกษา', 'นักศึกษาสำเร็จการศึกษา')
+                            .replace('จำนวนนักเรียน', 'จำนวนนักศึกษา')
+                            .replace('พิการเรียนรวม', 'นักศึกษาผู้พิการ')
+                            .replace('นักเรียนออกกลางคัน', 'ผลสอบ N-NET'),
+        agencyId: 'DOLE',
+        config: config,
+        deadline: t.deadline
+      };
+      doleTemplates.push(clone);
+    }
+  });
+  allTemplates = allTemplates.concat(doleTemplates);
+
   var data = sheet.getDataRange().getValues();
   for (var t = 0; t < allTemplates.length; t++) {
     var item = allTemplates[t];
@@ -4253,7 +4357,7 @@ function seedOBECMTemplates() {
   }
   
   _invalidateFormsCache();
-  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 7 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
+  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 8 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
 }
 
 function clearCacheBackend() {

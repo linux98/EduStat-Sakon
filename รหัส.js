@@ -261,7 +261,7 @@ function setup() {
   seedOBECMTemplates();
 }
 function getReportBuilderUrl() { return ScriptApp.getService().getUrl()+'?page=reportbuilder'; }
-function getAgencyMasterList() { return AGENCY_MAP; }
+function getAgencyMasterList() { _initAgencyMap(); return AGENCY_MAP; }
 
 function resolveAgencyId(raw) {
   if (!raw) return raw;
@@ -757,6 +757,7 @@ function getAvailableFormsForAgency(agencyId) {
 }
 
 function _invalidateFormsCache() {
+  _initAgencyMap(); // 🎯 มั่นใจว่า AGENCY_MAP โหลดแล้ว
   // invalidate forms cache ทั้งหมด
   var keys = ['forms_all'];
   Object.keys(AGENCY_MAP).forEach(function(k){ keys.push('forms_agency_'+k); });
@@ -2354,6 +2355,7 @@ function getMonitoringData(payloadOrRole) {
 // CACHE ADMIN
 // ─────────────────────────────────────────────
 function clearAllCache() {
+  _initAgencyMap(); // 🎯 มั่นใจว่า AGENCY_MAP โหลดแล้ว
   var keys = [
     'dashboard_all_all', 'monitoring_all', 'forms_all', 'settings_all',
     'gis_coords', 'users_list', 'yoy_data'

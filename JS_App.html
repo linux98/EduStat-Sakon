@@ -4282,7 +4282,11 @@ function sendReportToExecutive() {
                 if (col.type === 'section') {
                   currentSection = col.label;
                 } else {
-                  dataCols.push({ name: col.name, label: col.label, section: currentSection });
+                  let sec = currentSection;
+                  if (col.name === 'student_total' || col.name === 'classroom_total' || col.name === 'classroom_count' || col.name === 'classroom_total_all') {
+                    sec = null;
+                  }
+                  dataCols.push({ name: col.name, label: col.label, section: sec });
                 }
               });
             } else if (rows.length > 0) {

@@ -270,6 +270,14 @@ function deduplicateFormTemplates() {
 }
 
 function doGet(e) {
+  if (e && e.parameter && e.parameter.action === 'seed') {
+    try {
+      var res = seedOBECMTemplates();
+      return HtmlService.createHtmlOutput('SUCCESS: ' + JSON.stringify(res));
+    } catch(err) {
+      return HtmlService.createHtmlOutput('ERROR: ' + err.toString() + ' at ' + err.stack);
+    }
+  }
   try {
     if (e && e.parameter && e.parameter.page === 'reportbuilder') {
       var rbTmpl = HtmlService.createTemplateFromFile('ReportBuilder');
@@ -4498,6 +4506,27 @@ function seedOBECMTemplates() {
   });
   allTemplates = allTemplates.concat(msdhsTemplates);
 
+  // 🎯 บูรณาการโคลนและจัดทำแบบฟอร์มสำหรับ องค์การบริหารส่วนจังหวัดสกลนคร (อบจ.สกลนคร - PAO)
+  var paoTemplates = [];
+  allTemplates.forEach(function(t) {
+    if (t.formId && t.formId.indexOf('OBECM_') === 0) {
+      var suffixId = t.formId.split('_')[1]; // e.g. "F01"
+      var config = JSON.parse(JSON.stringify(t.config)); // Deep clone
+      if (suffixId === 'F06') {
+        config = bppF06Config;
+      }
+      var clone = {
+        formId: 'PAO_' + suffixId,
+        formName: t.formName.replace('สพม.สกลนคร', 'องค์การบริหารส่วนจังหวัดสกลนคร (อบจ.สกลนคร)'),
+        agencyId: 'PAO_Sakon',
+        config: config,
+        deadline: t.deadline
+      };
+      paoTemplates.push(clone);
+    }
+  });
+  allTemplates = allTemplates.concat(paoTemplates);
+
   var data = sheet.getDataRange().getValues();
   for (var t = 0; t < allTemplates.length; t++) {
     var item = allTemplates[t];
@@ -4530,7 +4559,7 @@ function seedOBECMTemplates() {
   }
   
   _invalidateFormsCache();
-  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 12 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
+  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 13 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
   } finally {
     try {
       lock.releaseLock();
@@ -4609,6 +4638,3 @@ function updateAgencyName(agencyId, newName) {
     return { success: false, message: 'ข้อผิดพลาด: ' + e.message };
   }
 }
-
-
-                                                                                                                                                                                                                                                                                                                  

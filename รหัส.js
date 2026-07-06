@@ -4061,6 +4061,11 @@ function seedOBECMTemplates() {
 
 function clearCacheBackend() {
   _invalidateFormsCache();
+  try {
+    seedOBECMTemplates();
+  } catch(e) {
+    Logger.log('Error seeding templates in clearCache: ' + e.message);
+  }
   return { success: true };
 }
 

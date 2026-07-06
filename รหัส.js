@@ -332,17 +332,17 @@ function _createMasterAgenciesSheetIfNotExist() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     if (!ss) return;
     var sheet = ss.getSheetByName('MasterAgencies');
+    var defaultMap = {
+      "OBEC_1":"สพป.สกลนคร เขต 1","OBEC_2":"สพป.สกลนคร เขต 2","OBEC_3":"สพป.สกลนคร เขต 3",
+      "OBEC_M":"สพม.สกลนคร","SPECIAL":"ศูนย์การศึกษาพิเศษสกลนคร","RATCHAPRACHA":"รร.ราชประชานุเคราะห์ 53",
+      "OPEC":"สช. (เอกชน)","SNRU":"มรภ.สกลนคร","KU_CSC":"มก. ฉกส.","RMUTI_Sakon":"มทร.อีสาน สกลนคร",
+      "WITEEDHAM":"รร.วิถีธรรม มรภ.สกลนคร","VEC":"อาชีวศึกษาสกลนคร","DOLE":"สกร. (ส่งเสริมการเรียนรู้)",
+      "MUN_NAKHON":"เทศบาลนครสกลนคร","PAO_Sakon":"อบจ.สกลนคร","MUN_TAMBON":"เทศบาลตำบล",
+      "NURSERY":"ศูนย์พัฒนาเด็กเล็ก/ศพด.","BPP":"ตชด.","BUDDHIST":"พระปริยัติธรรม","MSDHS":"พมจ.สกลนคร"
+    };
     if (!sheet) {
       sheet = ss.insertSheet('MasterAgencies');
       sheet.appendRow(['AgencyID', 'AgencyName']);
-      var defaultMap = {
-        "OBEC_1":"สพป.สกลนคร เขต 1","OBEC_2":"สพป.สกลนคร เขต 2","OBEC_3":"สพป.สกลนคร เขต 3",
-        "OBEC_M":"สพม.สกลนคร","SPECIAL":"ศูนย์การศึกษาพิเศษสกลนคร","RATCHAPRACHA":"รร.ราชประชานุเคราะห์ 53",
-        "OPEC":"สช. (เอกชน)","SNRU":"มรภ.สกลนคร","KU_CSC":"มก. ฉกส.","RMUTI_Sakon":"มทร.อีสาน สกลนคร",
-        "WITEEDHAM":"รร.วิถีธรรม มรภ.สกลนคร","VEC":"อาชีวศึกษาสกลนคร","DOLE":"สกร. (ส่งเสริมการเรียนรู้)",
-        "MUN_NAKHON":"เทศบาลนครสกลนคร","PAO_Sakon":"อบจ.สกลนคร","MUN_TAMBON":"เทศบาลตำบล",
-        "NURSERY":"ศูนย์พัฒนาเด็กเล็ก/ศพด.","BPP":"ตชด.","BUDDHIST":"พระปริยัติธรรม","MSDHS":"พมจ.สกลนคร"
-      };
       var rows = [];
       Object.keys(defaultMap).forEach(function(k) {
         rows.push([k, defaultMap[k]]);
@@ -352,6 +352,29 @@ function _createMasterAgenciesSheetIfNotExist() {
       }
       sheet.getRange(1, 1, 1, 2).setFontWeight('bold').setBackground('#f1f3f4');
       sheet.setFrozenRows(1);
+    } else {
+      // ตรวจสอบคีย์ที่ตกหล่นและอัปเดตเพิ่มเติม
+      var data = sheet.getDataRange().getValues();
+      var existingKeys = {};
+      for (var i = 1; i < data.length; i++) {
+        var key = String(data[i][0] || '').trim();
+        if (key) {
+          existingKeys[key] = true;
+        }
+      }
+      var missingRows = [];
+      Object.keys(defaultMap).forEach(function(k) {
+        if (!existingKeys[k]) {
+          missingRows.push([k, defaultMap[k]]);
+        }
+      });
+      if (missingRows.length > 0) {
+        for (var m = 0; m < missingRows.length; m++) {
+          sheet.appendRow(missingRows[m]);
+        }
+        // ล้างแคชเพื่อให้โหลดใหม่ทันที
+        _cacheInvalidate(['master_agency_map']);
+      }
     }
   } catch(e) {
     Logger.log('Error creating MasterAgencies sheet: ' + e.message);

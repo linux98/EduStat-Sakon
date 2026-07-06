@@ -366,8 +366,9 @@ function initSetup() {
   }
   try {
     _initAgencyMap(); // โหลดข้อมูลรหัสและชื่อสังกัดมาเป็นโครงสร้างหลักของระบบ
+    seedOBECMTemplates(); // 🎯 โหลด/สร้างโครงสร้างเทมเพลตอัตโนมัติหากมีฟอร์มเพิ่มขึ้น
   } catch(e) {
-    Logger.log('Error in _initAgencyMap: ' + e.message);
+    Logger.log('Error in initSetup map/templates: ' + e.message);
   }
   
   var ss = null;
@@ -1290,9 +1291,57 @@ function getDashboardData(payloadOrYear, filterAgency) {
       if (fd.student_total !== undefined) std = Number(fd.student_total || 0);
       if (fd.teacher_total !== undefined) tch = Number(fd.teacher_total || 0);
       
-      // 🎯 ดึงจำนวนสถานศึกษาจริงจากตารางรายชื่อสถานศึกษาในสังกัด (OBECM_F02)
-      if (String(formId).indexOf('_F02') >= 0 && fd.rows && Array.isArray(fd.rows)) {
-        sch = fd.rows.length;
+      // 🎯 ดึงสถิติจากตารางกรอกข้อมูลของแต่ละสังกัดแบบไดนามิก (OBEC_M)
+      if (fd.rows && Array.isArray(fd.rows)) {
+        if (String(formId).indexOf('_F02') >= 0) {
+          sch = fd.rows.length;
+        }
+        
+        // 1. ดึงสถิตินักเรียนปกติ (OBECM_F12)
+        if (String(formId).indexOf('_F12') >= 0) {
+          fd.rows.forEach(function(r) {
+            Object.keys(r).forEach(function(k) {
+              if (k.indexOf('std_') === 0) {
+                var val = Number(r[k] || 0);
+                std += val;
+                if (k.indexOf('std_kg') === 0) studentCount['ก่อนประถม'] += val;
+                else if (k.indexOf('std_p') === 0) studentCount['ประถม'] += val;
+                else if (k.indexOf('std_m1_') === 0 || k.indexOf('std_m2_') === 0 || k.indexOf('std_m3_') === 0) studentCount['ม.ต้น'] += val;
+                else if (k.indexOf('std_m4_') === 0 || k.indexOf('std_m5_') === 0 || k.indexOf('std_m6_') === 0) studentCount['ม.ปลาย'] += val;
+                else if (k.indexOf('std_v') === 0) studentCount['ปวช/ปวส'] += val;
+              }
+            });
+          });
+        }
+        
+        // 2. ดึงสถิตินักเรียนพิการเรียนรวม (OBECM_F14)
+        if (String(formId).indexOf('_F14') >= 0) {
+          fd.rows.forEach(function(r) {
+            Object.keys(r).forEach(function(k) {
+              if (k.indexOf('std_') === 0) {
+                var val = Number(r[k] || 0);
+                totalSpecial += val;
+                if (k.indexOf('std_kg') === 0 || k.indexOf('std_p') === 0) {
+                  specialCount['สติปัญญา'] += val;
+                } else if (k.indexOf('std_m1_') === 0 || k.indexOf('std_m2_') === 0 || k.indexOf('std_m3_') === 0) {
+                  specialCount['ร่างกาย'] += val;
+                } else {
+                  specialCount['ออทิสติก'] += val;
+                }
+              }
+            });
+          });
+        }
+        
+        // 3. ดึงสถิติจำนวนครู/บุคลากร (OBECM_F05)
+        if (String(formId).indexOf('_F05') >= 0) {
+          fd.rows.forEach(function(r) {
+            tch += Number(r.dir_male || 0) + Number(r.dir_female || 0) + 
+                   Number(r.tchr_male || 0) + Number(r.tchr_female || 0) + 
+                   Number(r.civil_male || 0) + Number(r.civil_female || 0) + 
+                   Number(r.emp_male || 0) + Number(r.emp_female || 0);
+          });
+        }
       }
       
       totalSchools += sch; 
@@ -3225,6 +3274,44 @@ function updateSystemIssueBackend(payload) {
   }
 }
 
+function _generateStudentFormConfig(formId, labelPrefix) {
+  var config = [
+    { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+    { "name": "school_name", "label": "ชื่อสถานศึกษา", "type": "text", "required": true },
+    { "name": "tambon", "label": "ตำบล", "type": "text", "required": true },
+    { "name": "amphoe", "label": "อำเภอ", "type": "text", "required": true }
+  ];
+  
+  var grades = [
+    { key: "kg3", label: "อนุบาล 3 ขวบ" },
+    { key: "kg1", label: "อนุบาล 1" },
+    { key: "kg2", label: "อนุบาล 2" },
+    { key: "p1", label: "ป.1" },
+    { key: "p2", label: "ป.2" },
+    { key: "p3", label: "ป.3" },
+    { key: "p4", label: "ป.4" },
+    { key: "p5", label: "ป.5" },
+    { key: "p6", label: "ป.6" },
+    { key: "m1", label: "ม.1" },
+    { key: "m2", label: "ม.2" },
+    { key: "m3", label: "ม.3" },
+    { key: "m4", label: "ม.4" },
+    { key: "m5", label: "ม.5" },
+    { key: "m6", label: "ม.6" }
+  ];
+  
+  grades.forEach(function(g) {
+    config.push({ "type": "section", "label": "ชั้น" + g.label });
+    config.push({ "name": "std_" + g.key + "_m", "label": g.label + " (ชาย)", "type": "number", "required": true, "min": 0 });
+    config.push({ "name": "std_" + g.key + "_f", "label": g.label + " (หญิง)", "type": "number", "required": true, "min": 0 });
+  });
+  
+  config.push({ "name": "student_total", "label": labelPrefix, "type": "number", "required": true, "min": 0 });
+  config.push({ "name": "classroom_total", "label": "ห้องเรียนทั้งหมด", "type": "number", "required": true, "min": 0 });
+  
+  return config;
+}
+
 function seedOBECMTemplates() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName('FormTemplates');
@@ -3326,17 +3413,17 @@ function seedOBECMTemplates() {
         { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
         { "name": "school_name", "label": "ชื่อสถานศึกษาที่รายงาน", "type": "text", "required": true },
         { "type": "section", "label": "วิชาเอกปฐมวัย" },
-        { "name": "maj_early_male", "label": "เอกปฐมวัย (ชาย)", "type": "number", "required": true, "min": 0 },
-        { "name": "maj_early_female", "label": "เอกปฐมวัย (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_early_male", "label": "ปฐมวัย (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_early_female", "label": "ปฐมวัย (หญิง)", "type": "number", "required": true, "min": 0 },
         { "type": "section", "label": "วิชาเอกสังคมศึกษา" },
-        { "name": "maj_social_male", "label": "เอกสังคม (ชาย)", "type": "number", "required": true, "min": 0 },
-        { "name": "maj_social_female", "label": "เอกสังคม (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_social_male", "label": "สังคม (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_social_female", "label": "สังคม (หญิง)", "type": "number", "required": true, "min": 0 },
         { "type": "section", "label": "วิชาเอกวิทยาศาสตร์" },
-        { "name": "maj_science_male", "label": "เอกวิทยาศาสตร์ (ชาย)", "type": "number", "required": true, "min": 0 },
-        { "name": "maj_science_female", "label": "เอกวิทยาศาสตร์ (หญิง)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_science_male", "label": "วิทยาศาสตร์ (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_science_female", "label": "วิทยาศาสตร์ (หญิง)", "type": "number", "required": true, "min": 0 },
         { "type": "section", "label": "วิชาเอกภาษาอังกฤษ" },
-        { "name": "maj_english_male", "label": "เอกภาษาอังกฤษ (ชาย)", "type": "number", "required": true, "min": 0 },
-        { "name": "maj_english_female", "label": "เอกภาษาอังกฤษ (หญิง)", "type": "number", "required": true, "min": 0 }
+        { "name": "maj_english_male", "label": "ภาษาอังกฤษ (ชาย)", "type": "number", "required": true, "min": 0 },
+        { "name": "maj_english_female", "label": "ภาษาอังกฤษ (หญิง)", "type": "number", "required": true, "min": 0 }
       ],
       deadline: ''
     },

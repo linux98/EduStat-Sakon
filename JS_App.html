@@ -5466,13 +5466,203 @@ function sendReportToExecutive() {
       event.target.value = '';
     }
 
+    function getExcelSheetNameForForm(formId) {
+      var mapping = {
+        'OBECM_F01': 'ข้อมูลหน่วยงาน',
+        'OBECM_F02': 'รายชื่อสถานศึกษาในสังกัด',
+        'OBECM_F03': 'ทุน ม.ท.ศ.',
+        'OBECM_F04': 'ทุนร่วมจิตต์ฯ',
+        'OBECM_F05': 'บุคลากรทำมีหน้าที่สอน',
+        'OBECM_F06': 'วิชาเอกที่สอน',
+        'OBECM_F07': 'นักเรียนออกกลางคัน',
+        'OBECM_F08': 'พันธุกรรมพืชฯ',
+        'OBECM_F09': 'กพด.',
+        'OBECM_F10': 'สถานศึกษาพอเพียง',
+        'OBECM_F11': 'สถานศึกษาสีขาว',
+        'OBECM_F12': 'จำนวนนักเรียน',
+        'OBECM_F13': 'นักเรียนสำเร็จการศึกษา',
+        'OBECM_F14': 'นร.พิการเรียนรวม'
+      };
+      return mapping[formId] || null;
+    }
+
     function readExcelFile(file) {
+      var formId = document.getElementById('entryFormSelect')?.value;
+      if (!formId) { showToast('กรุณาเลือกแบบฟอร์มก่อน แล้วค่อย Import', 'warning'); return; }
+      
+      var targetSheetName = getExcelSheetNameForForm(formId);
+
       var reader = new FileReader();
       reader.onload = function(e) {
-        var wb   = XLSX.read(e.target.result, { type: 'array' });
-        var ws   = wb.Sheets[wb.SheetNames[0]];
-        var csv  = XLSX.utils.sheet_to_csv(ws);
-        parseAndFillCSV(csv);
+        var wb = XLSX.read(e.target.result, { type: 'array' });
+        
+        // ค้นหาชีตที่ต้องการ
+        var sheetName = wb.SheetNames[0];
+        if (targetSheetName && wb.SheetNames.indexOf(targetSheetName) >= 0) {
+          sheetName = targetSheetName;
+        } else {
+          // ค้นหาแบบยืดหยุ่นด้วย indexOf
+          for (var i = 0; i < wb.SheetNames.length; i++) {
+            if (targetSheetName && wb.SheetNames[i].indexOf(targetSheetName) >= 0) {
+              sheetName = wb.SheetNames[i];
+              break;
+            }
+          }
+        }
+        
+        var ws = wb.Sheets[sheetName];
+        if (!ws) {
+          showToast('ไม่พบชีตที่ตรงกับฟอร์มนี้ในไฟล์ Excel', 'error');
+          return;
+        }
+        
+        console.log('Importing Sheet:', sheetName);
+        
+        // แปลงเป็น 2D Array เพื่อประมวลผล Header ที่มีหลายแถว (Merged Headers)
+        var sheetData = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+        if (sheetData.length === 0) {
+          showToast('ชีตที่เลือกไม่มีข้อมูล', 'error');
+          return;
+        }
+        
+        // ค้นหาแถวที่เป็นจุดเริ่มต้นของตาราง (มักจะมีคำว่า 'ที่' หรือ 'ชื่อสถานศึกษา')
+        var headerRowIdx = -1;
+        for (var r = 0; r < Math.min(sheetData.length, 12); r++) {
+          var row = sheetData[r];
+          if (row && (
+              row[0] === 'ที่' || 
+              String(row[0]).indexOf('ที่') >= 0 || 
+              String(row[1]).indexOf('ชื่อสถานศึกษา') >= 0 ||
+              String(row[1]).indexOf('ชื่อ - สกุล') >= 0 ||
+              String(row[1]).indexOf('สาเหตุ') >= 0
+          )) {
+            headerRowIdx = r;
+            break;
+          }
+        }
+        
+        if (headerRowIdx === -1) {
+          // หากไม่พบ ให้แปลงแบบเดิม (Fallback)
+          var csv = XLSX.utils.sheet_to_csv(ws);
+          parseAndFillCSV(csv);
+          return;
+        }
+        
+        console.log('Detected Table Header Row at Index:', headerRowIdx);
+        
+        var mainHeader = sheetData[headerRowIdx];
+        var subHeader1 = sheetData[headerRowIdx + 1] || [];
+        var subHeader2 = sheetData[headerRowIdx + 2] || [];
+        
+        // ตรวจดูว่าเป็นโครงสร้าง 3 ชั้น หรือ 2 ชั้น
+        var is3Level = false;
+        var is2Level = false;
+        
+        for (var c = 0; c < subHeader2.length; c++) {
+          var val = String(subHeader2[c]).trim();
+          if (val === 'ชาย' || val === 'หญิง' || val === 'รวม') {
+            is3Level = true;
+            break;
+          }
+        }
+        
+        if (!is3Level) {
+          for (var c = 0; c < subHeader1.length; c++) {
+            var val = String(subHeader1[c]).trim();
+            if (val === 'ชาย' || val === 'หญิง' || val === 'รวม' || val === 'ตำบล' || val === 'อำเภอ' || val === 'ประถม' || val === 'ระดับเพชร') {
+              is2Level = true;
+              break;
+            }
+          }
+        }
+        
+        var finalHeaders = [];
+        var startDataRowIdx = headerRowIdx + 1;
+        
+        if (is3Level) {
+          startDataRowIdx = headerRowIdx + 3;
+          var currentCategory = '';
+          var currentSubCategory = '';
+          
+          for (var colIdx = 0; colIdx < mainHeader.length; colIdx++) {
+            var h0 = String(mainHeader[colIdx] || '').trim();
+            var h1 = String(subHeader1[colIdx] || '').trim();
+            var h2 = String(subHeader2[colIdx] || '').trim();
+            
+            if (h0) currentCategory = h0;
+            if (h1) currentSubCategory = h1;
+            
+            if (colIdx < 4) {
+              finalHeaders.push(h0 || h1 || h2);
+            } else {
+              var combined = '';
+              if (currentSubCategory) {
+                combined = currentSubCategory;
+                if (h2 && h2 !== 'รวม') {
+                  combined += ' (' + h2 + ')';
+                } else if (h2 === 'รวม') {
+                  combined += ' (รวม)';
+                }
+              } else {
+                combined = currentCategory;
+              }
+              finalHeaders.push(combined);
+            }
+          }
+        } else if (is2Level) {
+          startDataRowIdx = headerRowIdx + 2;
+          var currentCategory = '';
+          
+          for (var colIdx = 0; colIdx < mainHeader.length; colIdx++) {
+            var h0 = String(mainHeader[colIdx] || '').trim();
+            var h1 = String(subHeader1[colIdx] || '').trim();
+            
+            if (h0) currentCategory = h0;
+            
+            if (colIdx < 4) {
+              finalHeaders.push(h0 || h1);
+            } else {
+              var combined = currentCategory;
+              if (h1 && h1 !== 'รวม') {
+                combined += ' (' + h1 + ')';
+              } else if (h1 === 'รวม') {
+                combined += ' (รวม)';
+              }
+              finalHeaders.push(combined);
+            }
+          }
+        } else {
+          startDataRowIdx = headerRowIdx + 1;
+          for (var colIdx = 0; colIdx < mainHeader.length; colIdx++) {
+            finalHeaders.push(String(mainHeader[colIdx] || '').trim());
+          }
+        }
+        
+        console.log('Parsed Final Headers:', finalHeaders);
+        
+        var csvLines = [];
+        csvLines.push(finalHeaders.join(','));
+        
+        for (var rIdx = startDataRowIdx; rIdx < sheetData.length; rIdx++) {
+          var row = sheetData[rIdx];
+          if (!row || row.length === 0) continue;
+          var firstColVal = String(row[0] || '').trim();
+          var secondColVal = String(row[1] || '').trim();
+          if (firstColVal.indexOf('รวม') >= 0 || secondColVal.indexOf('รวม') >= 0) {
+            continue;
+          }
+          if (!secondColVal && !firstColVal) continue;
+          
+          var rowValues = [];
+          for (var cIdx = 0; cIdx < finalHeaders.length; cIdx++) {
+            var cellVal = String(row[cIdx] !== undefined ? row[cIdx] : '').trim();
+            rowValues.push('"' + cellVal.replace(/"/g, '""') + '"');
+          }
+          csvLines.push(rowValues.join(','));
+        }
+        
+        var generatedCsvText = csvLines.join('\n');
+        parseAndFillCSV(generatedCsvText);
       };
       reader.readAsArrayBuffer(file);
     }

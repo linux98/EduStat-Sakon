@@ -4231,7 +4231,17 @@ function sendReportToExecutive() {
         if (isMultiRow) {
           if (Array.isArray(rows)) {
             let headers = [];
-            if (rows.length > 0) {
+            const selectedFormObj = AppState.availableForms.find(f => f.formId === formId);
+            if (selectedFormObj && selectedFormObj.formConfig) {
+              headers = selectedFormObj.formConfig
+                .filter(col => col.type !== 'section')
+                .map(col => col.name);
+              // กรองเฉพาะฟิลด์ที่มีข้อมูลจริงในแถวแรก
+              if (rows.length > 0) {
+                const rowKeys = Object.keys(rows[0]);
+                headers = headers.filter(h => rowKeys.indexOf(h) >= 0);
+              }
+            } else if (rows.length > 0) {
               headers = Object.keys(rows[0]);
             }
             

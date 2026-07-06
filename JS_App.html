@@ -2282,6 +2282,11 @@ function sendReportToExecutive() {
         animateValue('agDashApproved', 0, compliance.totalApproved, 800);
         animateValue('agDashPending', 0, compliance.totalPending, 800);
         animateValue('agDashRejected', 0, compliance.totalRejected, 800);
+        
+        animateValue('agDashSchools', 0, data.totalSchools || 0, 800);
+        animateValue('agDashStudents', 0, data.totalStudents || 0, 800);
+        animateValue('agDashTeachers', 0, data.totalTeachers || 0, 800);
+        animateValue('agDashSpecial', 0, data.totalSpecial || 0, 800);
 
         // 2. เรนเดอร์ตารางสถานะแบบฟอร์มการส่งงานของปีปัจจุบัน (Form Status List)
         const agFormList = document.getElementById('agDashFormList');
@@ -3041,47 +3046,7 @@ function sendReportToExecutive() {
       }
 
       // --- 2. agChartYoY (YoY Bar Chart) ---
-      const cYoY = document.getElementById('agChartYoY');
-      if (cYoY) {
-        if (!eAgChartYoY) eAgChartYoY = safeEChartsInit(cYoY);
-        if (eAgChartYoY) {
-          const selectedYear = (document.getElementById('filterYear') || {}).value || 'all';
-          const years = selectedYear === 'all' ? ['2568', '2569'] : [selectedYear];
-          const students = selectedYear === 'all' ? [Math.round(data.totalStudents * 0.95), Math.round(data.totalStudents)] : [Math.round(data.totalStudents)];
-
-          eAgChartYoY.setOption({
-            backgroundColor: 'transparent',
-            tooltip: {
-              trigger: 'axis', axisPointer: { type: 'shadow' },
-              backgroundColor: isDark ? '#2d3035' : '#fff',
-              textStyle: { fontFamily: gFont, color: textColor }
-            },
-            grid: { left: '3%', right: '3%', bottom: '5%', top: '15%', containLabel: true },
-            xAxis: {
-              type: 'category',
-              data: years.map(y => 'ปี ' + y),
-              axisLabel: { fontFamily: gFont, color: textColor }
-            },
-            yAxis: {
-              type: 'value',
-              axisLabel: { fontFamily: gFont, color: textColor }
-            },
-            series: [{
-              name: 'จำนวนผู้เรียน',
-              type: 'bar',
-              barWidth: '40px',
-              itemStyle: {
-                borderRadius: [4, 4, 0, 0],
-                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                  { offset: 0, color: '#1a73e8' },
-                  { offset: 1, color: '#4facfe' }
-                ])
-              },
-              data: students
-            }]
-          }, true);
-        }
-      }
+      renderAgencyYoYChart();
     }
 
     // ==========================================
@@ -4655,6 +4620,35 @@ function sendReportToExecutive() {
     // ── ข้อ 5: YoY Chart ─────────────────────────────────────────
     var eChartYoY = null;
 
+    function renderAgencyYoYChart() {
+      const cYoY = document.getElementById('agChartYoY');
+      if (!cYoY) return;
+      
+      const fAgency = AppState.userRole === 'agency' ? AppState.userAgencyId : (document.getElementById('filterAgency') ? document.getElementById('filterAgency').value : 'all');
+      const payload = {
+        sessionToken: AppState.sessionToken,
+        filterAgency: fAgency
+      };
+
+      if (typeof google !== 'undefined' && google.script) {
+        google.script.run
+          .withSuccessHandler(function(d) {
+            AppState.agYoyData = d;
+            drawYoYChart(d, 'agChartYoY', 'ag-yoy-empty');
+          })
+          .getYoYData(payload);
+      } else {
+        // Mock
+        AppState.agYoyData = {
+          years: ['2567','2568','2569'],
+          students: [12450, 11200, 10100],
+          schools: [20, 20, 20],
+          teachers: [500, 480, 450]
+        };
+        drawYoYChart(AppState.agYoyData, 'agChartYoY', 'ag-yoy-empty');
+      }
+    }
+
     function renderYoYChart() {
       var chartEl = document.getElementById('chartYoY');
       var emptyEl = document.getElementById('yoy-empty');
@@ -4686,9 +4680,9 @@ function sendReportToExecutive() {
       }
     }
 
-    function drawYoYChart(d) {
-      var chartEl = document.getElementById('chartYoY');
-      var emptyEl = document.getElementById('yoy-empty');
+    function drawYoYChart(d, chartId = 'chartYoY', emptyId = 'yoy-empty') {
+      var chartEl = document.getElementById(chartId);
+      var emptyEl = document.getElementById(emptyId);
       if (!chartEl || !d || !d.years || d.years.length === 0) {
         if (emptyEl) { emptyEl.style.display='block'; chartEl.style.display='none'; }
         return;
@@ -4697,13 +4691,16 @@ function sendReportToExecutive() {
       chartEl.style.display = 'block';
 
       var metric = document.getElementById('yoyMetric')?.value || 'students';
+      if (chartId !== 'chartYoY') {
+        metric = 'students'; // Agency YoY always displays students
+      }
       var vals   = [...(d[metric] || d.students || [])];
       var label  = { students:'ผู้เรียน (คน)', schools:'สถานศึกษา (แห่ง)', teachers:'ครู (คน)' }[metric];
 
       var years = [...d.years];
 
       // แทรกรวมพยากรณ์ AI เข้าไปด้วยถ้ามี
-      if (AppState.forecastData) {
+      if (chartId === 'chartYoY' && AppState.forecastData) {
         AppState.forecastData.forEach(function(item) {
           years.push(item.year);
           var forecastVal = 0;
@@ -4780,12 +4777,20 @@ function sendReportToExecutive() {
         }
       }
 
-      if (!eChartYoY) eChartYoY = echarts.init(chartEl);
+      let chartInst = null;
+      if (chartId === 'chartYoY') {
+        if (!eChartYoY) eChartYoY = echarts.init(chartEl);
+        chartInst = eChartYoY;
+      } else {
+        if (!eAgChartYoY) eAgChartYoY = echarts.init(chartEl);
+        chartInst = eAgChartYoY;
+      }
+
       var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       var textColor = isDark ? '#bdc1c6' : '#5f6368';
 
       var legendData = [label];
-      if (AppState.simulationMode) legendData.push(label + ' (จำลอง)');
+      if (chartId === 'chartYoY' && AppState.simulationMode) legendData.push(label + ' (จำลอง)');
       legendData.push('เปลี่ยนแปลง (%)');
 
       var seriesOptions = [
@@ -4794,7 +4799,7 @@ function sendReportToExecutive() {
           label:{ show:true, position:'top', color:textColor, fontSize:10, formatter:function(p){ return p.value.toLocaleString(); } } }
       ];
 
-      if (AppState.simulationMode) {
+      if (chartId === 'chartYoY' && AppState.simulationMode) {
         seriesOptions.push({
           name: label + ' (จำลอง)',
           type: 'bar',
@@ -4813,7 +4818,7 @@ function sendReportToExecutive() {
         label:{ show:true, position:'top', color:'#34a853', fontSize:10, formatter:function(p){ return (p.value>0?'+':'')+p.value+'%'; } }
       });
 
-      eChartYoY.setOption({
+      chartInst.setOption({
         backgroundColor: 'transparent',
         tooltip: { trigger:'axis', axisPointer:{ type:'shadow' } },
         legend: { data:legendData, textStyle:{ color:textColor, fontSize:11 }, bottom:0 },

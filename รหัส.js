@@ -2277,8 +2277,18 @@ function getAgencyGisCoords() {
 // ─────────────────────────────────────────────
 // ADVANCED REPORTING: Year-over-Year (YoY) Analytics
 // ─────────────────────────────────────────────
-function getYoYData() {
-  var CACHE_KEY = 'yoy_data';
+function getYoYData(payload) {
+  var fAgency = 'all';
+  if (payload && typeof payload === 'object') {
+    var auth = _resolveAuth(payload);
+    if (auth.userRole === ROLE_AGENCY) {
+      fAgency = auth.agencyId;
+    } else if (payload.filterAgency) {
+      fAgency = payload.filterAgency;
+    }
+  }
+
+  var CACHE_KEY = 'yoy_data_' + fAgency;
   var cached = _cacheGet(CACHE_KEY);
   if (cached) return cached;
 
@@ -2293,6 +2303,10 @@ function getYoYData() {
     
     for (var i=1;i<data.length;i++) {
       if (data[i][5]!=='อนุมัติแล้ว') continue;
+      
+      var rowAgency = _resolveAgencyId(String(data[i][2]).trim());
+      if (fAgency !== 'all' && rowAgency !== fAgency) continue;
+
       var ts=data[i][1]; 
       if (!ts) continue;
       var yr='';

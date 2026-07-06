@@ -549,6 +549,32 @@
                 </div>
               </div>
 
+              <div style="font-size:12px; font-weight:700; color:var(--muted); margin: 24px 0 12px 0; letter-spacing:0.5px; text-transform:uppercase;">📊 สรุปข้อมูลสถิติล่าสุดประจำสังกัด (ที่อนุมัติแล้ว)</div>
+
+              <!-- Agency Statistical Summary Cards -->
+              <div class="stats" style="margin-bottom:24px;">
+                <div class="sc c-blue">
+                  <div class="sc-icon si-blue"><span class="material-icons-round">domain</span></div>
+                  <div class="sc-lbl">สถานศึกษาในสังกัด (แห่ง)</div>
+                  <div class="sc-val" id="agDashSchools">0</div>
+                </div>
+                <div class="sc c-green">
+                  <div class="sc-icon si-green"><span class="material-icons-round">groups</span></div>
+                  <div class="sc-lbl">ผู้เรียนทั้งหมดในสังกัด (คน)</div>
+                  <div class="sc-val" id="agDashStudents">0</div>
+                </div>
+                <div class="sc c-yellow">
+                  <div class="sc-icon si-yellow"><span class="material-icons-round">co_present</span></div>
+                  <div class="sc-lbl">ครูและบุคลากรทั้งหมด (คน)</div>
+                  <div class="sc-val" id="agDashTeachers">0</div>
+                </div>
+                <div class="sc c-purple">
+                  <div class="sc-icon si-purple"><span class="material-icons-round">accessibility_new</span></div>
+                  <div class="sc-lbl">ผู้เรียนพิเศษ/เรียนรวม (คน)</div>
+                  <div class="sc-val" id="agDashSpecial">0</div>
+                </div>
+              </div>
+
               <!-- Main Split Layout: Left side has assigned forms, Right side has ECharts & Recent submissions -->
               <div class="ga" style="margin-bottom:16px; align-items:start;">
                 
@@ -593,6 +619,10 @@
                     <div class="card-title"><span class="material-icons-round" style="color:var(--blue);">bar_chart</span> แนวโน้มผู้เรียนเปรียบเทียบกับปีก่อน</div>
                   </div>
                   <div id="agChartYoY" class="chart-box" style="height:250px;"></div>
+                  <div id="ag-yoy-empty" style="text-align:center;padding:32px;color:var(--muted);font-size:13px;display:none;">
+                    <span class="material-icons-round" style="font-size:32px;display:block;margin-bottom:8px;opacity:.3;">bar_chart</span>
+                    ยังไม่มีข้อมูลหลายปีสำหรับเปรียบเทียบ — ส่งข้อมูลในปีถัดไปจะเห็นแนวโน้ม
+                  </div>
                 </div>
               </div>
 

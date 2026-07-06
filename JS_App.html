@@ -1421,6 +1421,16 @@ function sendReportToExecutive() {
           loadMonitoringData();
         }, 1000);
       }
+      // โหลดโครงสร้างแบบฟอร์มล่วงหน้าสำหรับ Admin/Executive เพื่อให้การจัดเรียงคอลัมน์ในตารางรายละเอียดถูกต้อง
+      if (AppState.userRole !== 'agency') {
+        if (typeof google !== 'undefined' && google.script) {
+          google.script.run
+            .withSuccessHandler(function(forms) {
+              AppState.availableForms = forms;
+            })
+            .getAvailableFormsForAgency('ALL');
+        }
+      }
       // เริ่ม heartbeat และโหลด deadline notifications
       _startSessionHeartbeat();
       _loadDeadlineNotifications();

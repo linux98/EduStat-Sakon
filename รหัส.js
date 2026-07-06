@@ -179,7 +179,15 @@ function _cacheGetSmart(key) {
 function _cacheInvalidate(keys) {
   try {
     var cache = CacheService.getScriptCache();
-    cache.removeAll(keys);
+    var keysToRemove = [];
+    keys.forEach(function(key) {
+      keysToRemove.push(key);
+      keysToRemove.push(key + '__meta');
+      for (var c = 0; c < 15; c++) {
+        keysToRemove.push(key + '__chunk_' + c);
+      }
+    });
+    cache.removeAll(keysToRemove);
   } catch(e) {}
 }
 
@@ -4203,6 +4211,10 @@ function seedOBECMTemplates() {
 }
 
 function clearCacheBackend() {
+  try {
+    CacheService.getScriptCache().remove('master_agency_map');
+  } catch(e) {}
+  AGENCY_MAP = null;
   _invalidateFormsCache();
   try {
     seedOBECMTemplates();

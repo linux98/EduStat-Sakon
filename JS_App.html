@@ -1416,6 +1416,11 @@ function sendReportToExecutive() {
               }, 500);
           }
       }
+      if (AppState.userRole === 'admin' || AppState.userRole === 'super_admin') {
+        setTimeout(function() {
+          loadMonitoringData();
+        }, 1000);
+      }
       // เริ่ม heartbeat และโหลด deadline notifications
       _startSessionHeartbeat();
       _loadDeadlineNotifications();

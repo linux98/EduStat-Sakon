@@ -3514,6 +3514,32 @@ function _generateBuddhistBnetFormConfig() {
   ];
 }
 
+function _generateMsdhsDropoutFormConfig() {
+  var config = [
+    { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+    { "name": "school_name", "label": "ชื่อสถานศึกษาที่รายงาน", "type": "text", "required": true }
+  ];
+  var causes = [
+    { key: "poor", label: "1. สาเหตุ: ฐานะยากจน" },
+    { key: "family", label: "2. สาเหตุ: มีปัญหาครอบครัว" },
+    { key: "married", label: "3. สาเหตุ: สมรส" },
+    { key: "adjust", label: "4. สาเหตุ: มีปัญหาการปรับตัว" },
+    { key: "arrest", label: "5. สาเหตุ: ต้องคดี/ถูกจับ" },
+    { key: "sick", label: "6. สาเหตุ: เจ็บป่วย/อุบัติเหตุ" },
+    { key: "migrate", label: "7. สาเหตุ: อพยพตามครอบครัว" },
+    { key: "work", label: "8. สาเหตุ: หาเลี้ยงครอบครัว" },
+    { key: "other", label: "9. สาเหตุ: กรณีอื่น ๆ" }
+  ];
+  causes.forEach(function(c) {
+    config.push({ "type": "section", "label": c.label });
+    config.push({ "name": c.key + "_kg", "label": "ระดับอนุบาล (คน)", "type": "number", "required": true, "min": 0 });
+    config.push({ "name": c.key + "_pri", "label": "ระดับประถม (คน)", "type": "number", "required": true, "min": 0 });
+    config.push({ "name": c.key + "_mid", "label": "ระดับ ม.ต้น (คน)", "type": "number", "required": true, "min": 0 });
+    config.push({ "name": c.key + "_high", "label": "ระดับ ม.ปลาย (คน)", "type": "number", "required": true, "min": 0 });
+  });
+  return config;
+}
+
 function seedOBECMTemplates() {
   var lock = LockService.getScriptLock();
   try {
@@ -4449,6 +4475,29 @@ function seedOBECMTemplates() {
   });
   allTemplates = allTemplates.concat(buddhistTemplates);
 
+  // 🎯 บูรณาการโคลนและจัดทำแบบฟอร์มสำหรับ สำนักงานพัฒนาสังคมและความมั่นคงของมนุษย์จังหวัดสกลนคร (MSDHS)
+  var msdhsTemplates = [];
+  allTemplates.forEach(function(t) {
+    if (t.formId && t.formId.indexOf('OBECM_') === 0) {
+      var suffixId = t.formId.split('_')[1]; // e.g. "F01"
+      var config = JSON.parse(JSON.stringify(t.config)); // Deep clone
+      if (suffixId === 'F06') {
+        config = bppF06Config;
+      } else if (suffixId === 'F07') {
+        config = _generateMsdhsDropoutFormConfig();
+      }
+      var clone = {
+        formId: 'MSDHS_' + suffixId,
+        formName: t.formName.replace('สพม.สกลนคร', 'สำนักงานพัฒนาสังคมและความมั่นคงของมนุษย์จังหวัดสกลนคร'),
+        agencyId: 'MSDHS',
+        config: config,
+        deadline: t.deadline
+      };
+      msdhsTemplates.push(clone);
+    }
+  });
+  allTemplates = allTemplates.concat(msdhsTemplates);
+
   var data = sheet.getDataRange().getValues();
   for (var t = 0; t < allTemplates.length; t++) {
     var item = allTemplates[t];
@@ -4481,7 +4530,7 @@ function seedOBECMTemplates() {
   }
   
   _invalidateFormsCache();
-  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 11 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
+  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 12 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
   } finally {
     try {
       lock.releaseLock();
@@ -4562,3 +4611,4 @@ function updateAgencyName(agencyId, newName) {
 }
 
 
+                                                                                                                                                                                                                                                                                                                  

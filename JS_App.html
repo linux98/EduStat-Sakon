@@ -3775,6 +3775,10 @@ function sendReportToExecutive() {
         // ตัดอักขระ BOM (﻿) และตัดช่องว่างออก
         const cleanH = h.trim().replace(/^\uFEFF/, "");
         
+        if (cleanH === 'ชื่อสถานรับเลี้ยงเด็กและสถานสงเคราห์เด็กเอกชน' || cleanH === 'ชื่อสถานรับเลี้ยงเด็กและสถานสงเคราะห์เด็กเอกชน') {
+          return 'school_name';
+        }
+        
         // ค้นหาเทียบฉลากตรงตัว หรือเอาดอกจันออก
         const match = config.find(col => {
           const labelClean = (col.label || '').trim().replace(/^\uFEFF/, "");
@@ -5598,6 +5602,27 @@ function sendReportToExecutive() {
     }
 
     function getExcelSheetNameForForm(formId) {
+      if (formId && formId.indexOf('MSDHS_') === 0) {
+        var mapping = {
+          'MSDHS_F01': 'ข้อมูลหน่วยงาน',
+          'MSDHS_F02': 'รายศึกษาในสังกัด',
+          'MSDHS_F03': 'ทุน ม.ท.ศ.',
+          'MSDHS_F04': 'ทุนร่วมจิตต์ฯ',
+          'MSDHS_F05': 'บุคลากรทำมีหน้าที่สอน',
+          'MSDHS_F06': 'วิชาเอกที่สอน',
+          'MSDHS_F07': 'นักเรียนออกกลางคัน',
+          'MSDHS_F08': 'พันธุกรรมพืชฯ',
+          'MSDHS_F09': 'กพด.',
+          'MSDHS_F10': 'สถานศึกษาพอเพียง',
+          'MSDHS_F11': 'สถานศึกษาสีขาว',
+          'MSDHS_F12': 'จำนวนนักเรียน',
+          'MSDHS_F13': 'นักเรียนสำเร็จการศึกษา',
+          'MSDHS_F14': 'นร.พิการเรียนรวม'
+        };
+        var exact = mapping[formId];
+        if (formId === 'MSDHS_F02') return 'รายชื่อสถานศึกษาในสังกัด';
+        return exact || null;
+      }
       if (formId && formId.indexOf('BUDDHIST_') === 0) {
         var mapping = {
           'BUDDHIST_F01': 'ข้อมูลหน่วยงาน',
@@ -5676,7 +5701,7 @@ function sendReportToExecutive() {
         };
         return mapping[formId] || null;
       }
-      if (formId === 'RP_F14' || formId === 'BPP_F14' || formId === 'WT_F14' || formId === 'DOLE_F14' || formId === 'DLA_F14' || formId === 'BUDDHIST_F14') {
+      if (formId === 'RP_F14' || formId === 'BPP_F14' || formId === 'WT_F14' || formId === 'DOLE_F14' || formId === 'DLA_F14' || formId === 'BUDDHIST_F14' || formId === 'MSDHS_F14') {
         return 'นร.พิการเรียนรวม';
       }
       if (formId && (formId.indexOf('KU_') === 0 || formId.indexOf('RMUTI_') === 0 || formId.indexOf('SNRU_') === 0)) {

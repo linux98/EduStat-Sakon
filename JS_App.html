@@ -3188,7 +3188,17 @@ function sendReportToExecutive() {
         if (col.name.indexOf('address') >= 0 || col.name.indexOf('detail') >= 0) minWidth = '320px';
         else if (col.name.indexOf('name') >= 0 || col.name.indexOf('notes') >= 0) minWidth = '240px';
         else if (col.type === 'number') minWidth = '100px';
-        return `<th style="min-width:${minWidth};">${col.label} ${col.required ? '<span style="color:var(--red)">*</span>' : ''}</th>`;
+        
+        let customBg = '';
+        if (col.label.indexOf('อนุบาล 3 ขวบ') >= 0) {
+          // ไฮไลท์ส้มอ่อนเป็นพิเศษสำหรับเตรียมอนุบาล 3 ขวบ เพื่อให้แตกต่างจาก อ.1-อ.2 ชัดเจน
+          customBg = 'background-color: var(--yellow-ll) !important; color: #b7791f !important; border-bottom: 2px solid var(--yellow-l) !important;';
+        } else if (col.label.indexOf('อนุบาล 1') >= 0 || col.label.indexOf('อนุบาล 2') >= 0) {
+          // ไฮไลท์ม่วงอ่อนสำหรับ อ.1 - อ.2
+          customBg = 'background-color: var(--purple-ll) !important; color: var(--purple) !important; border-bottom: 2px solid var(--purple-l) !important;';
+        }
+        
+        return `<th style="min-width:${minWidth}; ${customBg}">${col.label} ${col.required ? '<span style="color:var(--red)">*</span>' : ''}</th>`;
       }).join('');
       
       table.innerHTML = `<thead><tr><th style="width:50px;text-align:center;">#</th>${ths}<th style="width:50px;text-align:center;">ลบ</th></tr></thead><tbody id="et-tbody"></tbody>`;
@@ -4292,9 +4302,10 @@ function sendReportToExecutive() {
                   thRow1 += `<th rowspan="2" class="${stickyClass}">${col.label}</th>`;
                 });
               } else {
-                let grpClass = 'grp-header';
-                if (g.label.indexOf('อนุบาล') >= 0 || g.label.indexOf('ก่อนประถม') >= 0) grpClass = 'grp-header-orange';
-                else if (g.label.indexOf('ประถม') >= 0) grpClass = 'grp-header-blue';
+                let grpClass = 'grp-header'; // 🎯 ค่าเริ่มต้นสีม่วงอ่อน (สำหรับ ม.ต้น/ม.ปลาย)
+                if (g.label.indexOf('อนุบาล 3 ขวบ') >= 0) grpClass = 'grp-header-orange'; // 🎯 สีเหลือง/ส้มอ่อนสำหรับเตรียมอนุบาล 3 ปี
+                else if (g.label.indexOf('อนุบาล') >= 0 || g.label.indexOf('ก่อนประถม') >= 0) grpClass = 'grp-header'; // 🎯 สีม่วงสำหรับ อ.1-อ.2 (4-5 ปี)
+                else if (g.label.indexOf('ประถม') >= 0) grpClass = 'grp-header-blue'; // 🎯 สีฟ้าสำหรับประถม
                 
                 thRow1 += `<th colspan="${g.count}" class="${grpClass}">${g.label}</th>`;
                 

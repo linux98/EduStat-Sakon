@@ -4077,7 +4077,7 @@ input:checked + .slider:before {
     transform: scale(1.05);
   }
 }
-#nav-entry .pulse-dot {
+.pulse-dot {
   width: 8px;
   height: 8px;
   background-color: #ef4444;
@@ -4085,11 +4085,15 @@ input:checked + .slider:before {
   margin-left: auto;
   position: relative;
   flex-shrink: 0;
-  display: inline-block;
+  display: none;
   z-index: 5;
   transition: all 0.3s;
 }
-#nav-entry .pulse-dot::after {
+#nav-entry .pulse-dot,
+.pulse-dot.active {
+  display: inline-block;
+}
+.pulse-dot::after {
   content: '';
   position: absolute;
   top: 0;
@@ -4111,7 +4115,7 @@ input:checked + .slider:before {
     opacity: 0;
   }
 }
-.sb.collapsed #nav-entry .pulse-dot {
+.sb.collapsed .pulse-dot {
   position: absolute;
   top: 8px;
   right: 8px;

@@ -242,7 +242,43 @@ function include(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
+function deduplicateFormTemplates() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('FormTemplates');
+  if (!sheet) return { success: false, message: 'No sheet found' };
+  
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return { success: true, deletedCount: 0 };
+  
+  var seen = {};
+  var rowsToDelete = [];
+  
+  for (var i = data.length - 1; i >= 1; i--) {
+    var formId = data[i][0];
+    if (seen[formId]) {
+      rowsToDelete.push(i + 1);
+    } else {
+      seen[formId] = true;
+    }
+  }
+  
+  for (var k = 0; k < rowsToDelete.length; k++) {
+    sheet.deleteRow(rowsToDelete[k]);
+  }
+  
+  return { success: true, deletedCount: rowsToDelete.length };
+}
+
 function doGet(e) {
+  if (e && e.parameter && e.parameter.action === 'seed') {
+    try {
+      var dedupRes = deduplicateFormTemplates();
+      var seedRes = seedOBECMTemplates();
+      return HtmlService.createHtmlOutput('SUCCESS: ' + JSON.stringify({ dedup: dedupRes, seed: seedRes }));
+    } catch(err) {
+      return HtmlService.createHtmlOutput('ERROR: ' + err.toString() + ' at ' + err.stack);
+    }
+  }
   try {
     if (e && e.parameter && e.parameter.page === 'reportbuilder') {
       var rbTmpl = HtmlService.createTemplateFromFile('ReportBuilder');
@@ -3469,7 +3505,14 @@ function _generateDoleNnetFormConfig(formId, title) {
 }
 
 function seedOBECMTemplates() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(20000); // 20s
+  } catch(e) {
+    Logger.log('Lock error: ' + e.message);
+  }
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName('FormTemplates');
   if (!sheet) {
     sheet = ss.insertSheet('FormTemplates');
@@ -4379,6 +4422,11 @@ function seedOBECMTemplates() {
   
   _invalidateFormsCache();
   return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 9 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
+  } finally {
+    try {
+      lock.releaseLock();
+    } catch(e){}
+  }
 }
 
 function clearCacheBackend() {

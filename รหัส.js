@@ -4380,6 +4380,27 @@ function seedOBECMTemplates() {
   });
   allTemplates = allTemplates.concat(opecTemplates);
 
+  // 🎯 บูรณาการโคลนและจัดทำแบบฟอร์มสำหรับ อปท. (DLA)
+  var dlaTemplates = [];
+  allTemplates.forEach(function(t) {
+    if (t.formId && t.formId.indexOf('OBECM_') === 0) {
+      var suffixId = t.formId.split('_')[1]; // e.g. "F01"
+      var config = JSON.parse(JSON.stringify(t.config)); // Deep clone
+      if (suffixId === 'F06') {
+        config = bppF06Config;
+      }
+      var clone = {
+        formId: 'DLA_' + suffixId,
+        formName: t.formName.replace('สพม.สกลนคร', 'อปท. (ท้องถิ่น) เทศบาลนครสกลนคร'),
+        agencyId: 'DLA',
+        config: config,
+        deadline: t.deadline
+      };
+      dlaTemplates.push(clone);
+    }
+  });
+  allTemplates = allTemplates.concat(dlaTemplates);
+
   var data = sheet.getDataRange().getValues();
   for (var t = 0; t < allTemplates.length; t++) {
     var item = allTemplates[t];
@@ -4412,7 +4433,7 @@ function seedOBECMTemplates() {
   }
   
   _invalidateFormsCache();
-  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 9 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
+  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 10 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
   } finally {
     try {
       lock.releaseLock();

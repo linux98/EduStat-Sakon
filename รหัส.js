@@ -3380,6 +3380,22 @@ function _generateUniversityStudentFormConfig(formId, title) {
   ];
 }
 
+function _generateSpecialStudentFormConfig(formId, title) {
+  return [
+    { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+    { "name": "disability_type", "label": "ประเภทความพิการ", "type": "text", "required": true },
+    { "type": "section", "label": "ในศูนย์" },
+    { "name": "in_center_male", "label": "ในศูนย์ (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "in_center_female", "label": "ในศูนย์ (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "ที่บ้าน" },
+    { "name": "at_home_male", "label": "ที่บ้าน (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "at_home_female", "label": "ที่บ้าน (หญิง)", "type": "number", "required": true, "min": 0 },
+    { "type": "section", "label": "หน่วยให้บริการ" },
+    { "name": "service_unit_male", "label": "หน่วยให้บริการ (ชาย)", "type": "number", "required": true, "min": 0 },
+    { "name": "service_unit_female", "label": "หน่วยให้บริการ (หญิง)", "type": "number", "required": true, "min": 0 }
+  ];
+}
+
 function seedOBECMTemplates() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName('FormTemplates');
@@ -4175,6 +4191,36 @@ function seedOBECMTemplates() {
 
   allTemplates = allTemplates.concat(wtTemplates);
 
+  // 🎯 บูรณาการโคลนและจัดทำแบบฟอร์มสำหรับ ศูนย์การศึกษาพิเศษสกลนคร (SPECIAL)
+  var specialTemplates = [];
+  allTemplates.forEach(function(t) {
+    if (t.formId && t.formId.indexOf('OBECM_') === 0) {
+      var suffixId = t.formId.split('_')[1]; // e.g. "F01"
+      var allowedSuffixes = ['F01', 'F02', 'F05', 'F06', 'F12'];
+      if (allowedSuffixes.indexOf(suffixId) !== -1) {
+        var config = JSON.parse(JSON.stringify(t.config)); // Deep clone
+        if (suffixId === 'F12') {
+          config = _generateSpecialStudentFormConfig('SPECIAL_F12', 'จำนวนนักเรียน');
+        } else if (suffixId === 'F06') {
+          config = bppF06Config;
+        }
+        var clone = {
+          formId: 'SPECIAL_' + suffixId,
+          formName: t.formName.replace('ข้อมูลหน่วยงาน สพม.สกลนคร', 'ข้อมูลหน่วยงาน ศูนย์การศึกษาพิเศษประจำจังหวัดสกลนคร')
+                              .replace('รายชื่อสถานศึกษาในสังกัด สพม.สกลนคร', 'รายชื่อสถานศึกษาในสังกัด ศูนย์การศึกษาพิเศษประจำจังหวัดสกลนคร')
+                              .replace('บุคลากรทำมีหน้าที่สอน สพม.สกลนคร', 'จำนวนบุคลากรที่ทำหน้าที่สอน และวุฒิการศึกษา')
+                              .replace('จำแนกตามวิชาเอก สพม.สกลนคร', 'จำแนกตามรายวิชาเอกที่สอน ศูนย์การศึกษาพิเศษประจำจังหวัดสกลนคร')
+                              .replace('จำนวนนักเรียน สพม.สกลนคร', 'จำนวนนักเรียนจำแนกตามประเภทความพิการ'),
+          agencyId: 'SPECIAL',
+          config: config,
+          deadline: t.deadline
+        };
+        specialTemplates.push(clone);
+      }
+    }
+  });
+  allTemplates = allTemplates.concat(specialTemplates);
+
   var data = sheet.getDataRange().getValues();
   for (var t = 0; t < allTemplates.length; t++) {
     var item = allTemplates[t];
@@ -4207,7 +4253,7 @@ function seedOBECMTemplates() {
   }
   
   _invalidateFormsCache();
-  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 6 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
+  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 7 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
 }
 
 function clearCacheBackend() {

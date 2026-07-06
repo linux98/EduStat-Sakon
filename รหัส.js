@@ -3555,9 +3555,9 @@ function seedOBECMTemplates() {
   var allTemplates = [];
   var agencies = [
     { id: 'OBEC_M', prefix: 'OBECM', suffix: 'สพม.สกลนคร' },
-    { id: 'OBEC_P1', prefix: 'OBECP1', suffix: 'สพป.สกลนคร เขต 1' },
-    { id: 'OBEC_P2', prefix: 'OBECP2', suffix: 'สพป.สกลนคร เขต 2' },
-    { id: 'OBEC_P3', prefix: 'OBECP3', suffix: 'สพป.สกลนคร เขต 3' }
+    { id: 'OBEC_1', prefix: 'OBECP1', suffix: 'สพป.สกลนคร เขต 1' },
+    { id: 'OBEC_2', prefix: 'OBECP2', suffix: 'สพป.สกลนคร เขต 2' },
+    { id: 'OBEC_3', prefix: 'OBECP3', suffix: 'สพป.สกลนคร เขต 3' }
   ];
   
   agencies.forEach(function(ag) {

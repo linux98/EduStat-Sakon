@@ -3495,6 +3495,25 @@ function _generateDoleNnetFormConfig(formId, title) {
   ];
 }
 
+function _generateBuddhistBnetFormConfig() {
+  return [
+    { "name": "report_title", "label": "หัวข้อการรายงาน", "type": "text", "required": true },
+    { "name": "grade_level", "label": "ระดับชั้น", "type": "text", "required": true },
+    { "name": "school_name", "label": "ชื่อสถานศึกษา", "type": "text", "required": true },
+    { "name": "score_bali", "label": "ภาษาบาลี (คะแนนเฉลี่ย)", "type": "number", "required": true, "min": 0 },
+    { "name": "rank_bali", "label": "ภาษาบาลี (ลำดับที่)", "type": "number", "required": true, "min": 1 },
+    { "name": "score_dhamma", "label": "ธรรม (คะแนนเฉลี่ย)", "type": "number", "required": true, "min": 0 },
+    { "name": "rank_dhamma", "label": "ธรรม (ลำดับที่)", "type": "number", "required": true, "min": 1 },
+    { "name": "score_history", "label": "พุทธประวัติ (คะแนนเฉลี่ย)", "type": "number", "required": true, "min": 0 },
+    { "name": "rank_history", "label": "พุทธประวัติ (ลำดับที่)", "type": "number", "required": true, "min": 1 },
+    { "name": "score_discipline", "label": "วินัย (คะแนนเฉลี่ย)", "type": "number", "required": true, "min": 0 },
+    { "name": "rank_discipline", "label": "วินัย (ลำดับที่)", "type": "number", "required": true, "min": 1 },
+    { "name": "score_total", "label": "รวม", "type": "number", "required": true, "min": 0 },
+    { "name": "score_avg", "label": "เฉลี่ย", "type": "number", "required": true, "min": 0 },
+    { "name": "rank_total", "label": "ลำดับที่ (เฉลี่ย)", "type": "number", "required": true, "min": 1 }
+  ];
+}
+
 function seedOBECMTemplates() {
   var lock = LockService.getScriptLock();
   try {
@@ -4401,6 +4420,35 @@ function seedOBECMTemplates() {
   });
   allTemplates = allTemplates.concat(dlaTemplates);
 
+  // 🎯 บูรณาการโคลนและจัดทำแบบฟอร์มสำหรับ สำนักงานพระพุทธศาสนาจังหวัดสกลนคร (BUDDHIST)
+  var buddhistTemplates = [];
+  allTemplates.forEach(function(t) {
+    if (t.formId && t.formId.indexOf('OBECM_') === 0) {
+      var suffixId = t.formId.split('_')[1]; // e.g. "F01"
+      var config = JSON.parse(JSON.stringify(t.config)); // Deep clone
+      if (suffixId === 'F06') {
+        config = bppF06Config;
+      }
+      var clone = {
+        formId: 'BUDDHIST_' + suffixId,
+        formName: t.formName.replace('สพม.สกลนคร', 'สำนักงานพระพุทธศาสนาจังหวัดสกลนคร'),
+        agencyId: 'BUDDHIST',
+        config: config,
+        deadline: t.deadline
+      };
+      buddhistTemplates.push(clone);
+    }
+  });
+  // เพิ่มฟอร์มพิเศษ B-net (BUDDHIST_F15)
+  buddhistTemplates.push({
+    formId: 'BUDDHIST_F15',
+    formName: 'ผลการทดสอบทางการศึกษาระดับชาติด้านพระพุทธศาสนา B-net สำนักงานพระพุทธศาสนาจังหวัดสกลนคร',
+    agencyId: 'BUDDHIST',
+    config: _generateBuddhistBnetFormConfig(),
+    deadline: ''
+  });
+  allTemplates = allTemplates.concat(buddhistTemplates);
+
   var data = sheet.getDataRange().getValues();
   for (var t = 0; t < allTemplates.length; t++) {
     var item = allTemplates[t];
@@ -4433,7 +4481,7 @@ function seedOBECMTemplates() {
   }
   
   _invalidateFormsCache();
-  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 10 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
+  return { success: true, message: 'ลงทะเบียนและโคลนแบบฟอร์มสำหรับโรงเรียนและมหาวิทยาลัย 11 แห่งสำเร็จ (รวม ' + allTemplates.length + ' ฟอร์ม)' };
   } finally {
     try {
       lock.releaseLock();

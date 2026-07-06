@@ -462,10 +462,19 @@
       setTimeout(resizeCharts, 350);
     }
 
+    function syncSidebarState() {
+      const sb = document.getElementById('mainSidebar');
+      const helpLabel = document.getElementById('sidebarHelpLabel');
+      if (sb && helpLabel) {
+        helpLabel.style.display = sb.classList.contains('collapsed') ? 'inline-block' : 'none';
+      }
+    }
+
     function toggleSidebar(e) {
       if(e) e.stopPropagation();
       const sb = document.getElementById('mainSidebar');
       if (sb) sb.classList.toggle('collapsed');
+      syncSidebarState();
       
       setTimeout(() => {
         [eChartAgency, eChartStudent, eChartTeacher, eChartSpecial, eChartYoY].forEach(function(c){ if(c) c.resize(); });
@@ -3374,6 +3383,7 @@ function sendReportToExecutive() {
             const sb = document.getElementById('mainSidebar');
             if (sb && sb.classList.contains('collapsed')) {
                 sb.classList.remove('collapsed');
+                syncSidebarState();
                 setTimeout(() => {
                     [eChartAgency, eChartStudent, eChartTeacher, eChartSpecial, eChartYoY].forEach(c => { if(c) c.resize(); });
                     if(map) map.invalidateSize();
@@ -3412,6 +3422,7 @@ function sendReportToExecutive() {
             const sb = document.getElementById('mainSidebar');
             if (sb && !sb.classList.contains('collapsed')) {
                 sb.classList.add('collapsed');
+                syncSidebarState();
                 setTimeout(() => {
                     [eChartAgency, eChartStudent, eChartTeacher, eChartSpecial, eChartYoY].forEach(c => { if(c) c.resize(); });
                     if(map) map.invalidateSize();
@@ -3432,6 +3443,7 @@ function sendReportToExecutive() {
             const sb = document.getElementById('mainSidebar');
             if (sb && sb.classList.contains('collapsed')) {
                 sb.classList.remove('collapsed');
+                syncSidebarState();
                 setTimeout(() => {
                     [eChartAgency, eChartStudent, eChartTeacher, eChartSpecial, eChartYoY].forEach(c => { if(c) c.resize(); });
                     if(map) map.invalidateSize();

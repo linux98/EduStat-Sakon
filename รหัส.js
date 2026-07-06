@@ -1747,6 +1747,9 @@ function _callGemini(apiKey, contents, maxTokens, temperature, systemInstruction
           temperature: temperature || 0.4
         }
       };
+      if (mName.indexOf('gemini-1.5') !== -1) {
+        payloadObj.generationConfig.responseMimeType = "application/json";
+      }
 
       if (systemInstructionText) {
         if (mName.indexOf('gemini-1.0') === -1) {
@@ -2732,7 +2735,7 @@ function processAiBiPrompt(payload) {
     '- "progress": แถบความคืบหน้า\n' +
     '- "gauge": เกจวัดความเร็ว/Speedometer\n\n' +
     '-- ข้อกำหนดการส่งออก JSON:\n' +
-    'จงส่งออกคำตอบเป็น JSON Object บรรทัดเดียวเท่านั้น ห้ามมีคำอธิบายอื่นนอกเหนือจาก JSON ห้ามใส่ Markdown Fenced Blocks (เช่น ```json) คีย์ใน JSON ต้องตรงตามเงื่อนไขดังนี้:\n' +
+    'จงส่งออกคำตอบเป็น JSON Object บรรทัดเดียวเท่านั้น ห้ามมีคำอธิบายอื่นนอกเหนือจาก JSON ห้ามใส่ Markdown Fenced Blocks (เช่น ```json) ห้ามใช้เครื่องหมายอัญประกาศคู่ซ้อนภายในค่าของคีย์ JSON โดยเด็ดขาด หากต้องการเขียนเครื่องหมายคำพูดในหัวข้อให้ใช้เครื่องหมายอัญประกาศเดี่ยว (single quote) แทน คีย์ใน JSON ต้องตรงตามเงื่อนไขดังนี้:\n' +
     '{\n' +
     '  "type": "ประเภทของ widget",\n' +
     '  "title": "ชื่อหัวข้อกราฟหรือตัวเลขภาษาไทยที่ตรงใจความและสวยงาม",\n' +
@@ -2767,7 +2770,8 @@ function processAiBiPrompt(payload) {
       modelUsed: result.model
     };
   } catch(e) {
-    return { success: false, message: 'การวิเคราะห์ล้มเหลว: ' + e.toString() };
+    console.error('AI BI Prompt Parse Error. Raw output:', txt, 'Error:', e.toString());
+    return { success: false, message: 'การวิเคราะห์ล้มเหลว: ' + e.toString() + ' (ข้อแนะนำ: กรุณาลองระบุความต้องการในการสร้างกราฟหรือการ์ดสถิติใหม่อีกครั้ง)' };
   }
 }
 

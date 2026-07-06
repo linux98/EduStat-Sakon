@@ -270,15 +270,6 @@ function deduplicateFormTemplates() {
 }
 
 function doGet(e) {
-  if (e && e.parameter && e.parameter.action === 'seed') {
-    try {
-      var dedupRes = deduplicateFormTemplates();
-      var seedRes = seedOBECMTemplates();
-      return HtmlService.createHtmlOutput('SUCCESS: ' + JSON.stringify({ dedup: dedupRes, seed: seedRes }));
-    } catch(err) {
-      return HtmlService.createHtmlOutput('ERROR: ' + err.toString() + ' at ' + err.stack);
-    }
-  }
   try {
     if (e && e.parameter && e.parameter.page === 'reportbuilder') {
       var rbTmpl = HtmlService.createTemplateFromFile('ReportBuilder');

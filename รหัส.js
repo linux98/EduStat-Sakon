@@ -3527,6 +3527,27 @@ function seedOBECMTemplates() {
         { "name": "notes", "label": "หมายเหตุ", "type": "textarea", "required": false }
       ],
       deadline: ''
+    },
+    {
+      formId: 'OBECM_F12',
+      formName: 'จำนวนนักเรียน สพม.สกลนคร',
+      agencyId: 'OBEC_M',
+      config: _generateStudentFormConfig('OBECM_F12', 'นักเรียนทั้งหมด'),
+      deadline: ''
+    },
+    {
+      formId: 'OBECM_F13',
+      formName: 'นักเรียนสำเร็จการศึกษา สพม.สกลนคร',
+      agencyId: 'OBEC_M',
+      config: _generateStudentFormConfig('OBECM_F13', 'นักเรียนสำเร็จการศึกษาทั้งหมด'),
+      deadline: ''
+    },
+    {
+      formId: 'OBECM_F14',
+      formName: 'นร.พิการเรียนรวม สพม.สกลนคร',
+      agencyId: 'OBEC_M',
+      config: _generateStudentFormConfig('OBECM_F14', 'นักเรียนพิการเรียนรวมทั้งหมด'),
+      deadline: ''
     }
   ];
   

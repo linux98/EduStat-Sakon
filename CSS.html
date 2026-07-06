@@ -3937,5 +3937,126 @@ input:checked + .slider:before {
 .swal2-container {
   z-index: 35000 !important;
 }
+
+/* ─────────────────────────────────────────────
+ * 29. ENTERPRISE STICKY TABLE STYLES (สำหรับตารางกว้าง)
+ * ───────────────────────────────────────────── */
+.tbl-sticky-container {
+  overflow: auto;
+  max-height: calc(90vh - 120px);
+  border: 1px solid var(--border-l);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.tbl-sticky {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  font-size: 12.5px;
+}
+.tbl-sticky thead th {
+  position: sticky;
+  top: 0;
+  background-color: var(--s1);
+  color: var(--text);
+  font-weight: 700;
+  border-bottom: 1.5px solid var(--border);
+  border-right: 1px solid var(--border-l);
+  padding: 10px 12px;
+  white-space: nowrap;
+  z-index: 5;
+}
+/* ตรึงหัวข้อตารางชั้นสองด้วย */
+.tbl-sticky thead tr:nth-child(2) th {
+  top: 38px; /* ออฟเซตตามความสูงของแถวแรก */
+  z-index: 5;
+}
+.tbl-sticky tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-l);
+  border-right: 1px solid var(--border-l);
+  white-space: nowrap;
+  color: var(--text-2);
+}
+/* Sticky Columns */
+.sticky-col-idx-0 {
+  position: sticky;
+  left: 0px;
+  width: 50px;
+  min-width: 50px;
+  max-width: 50px;
+}
+.sticky-col-idx-1 {
+  position: sticky;
+  left: 50px;
+  width: 220px;
+  min-width: 220px;
+  max-width: 220px;
+}
+.sticky-col-idx-2 {
+  position: sticky;
+  left: 270px;
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+}
+.sticky-col-idx-3 {
+  position: sticky;
+  left: 370px;
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+  border-right: 2px solid var(--border) !important;
+}
+.tbl-sticky th.sticky-col-idx-0,
+.tbl-sticky th.sticky-col-idx-1,
+.tbl-sticky th.sticky-col-idx-2,
+.tbl-sticky th.sticky-col-idx-3 {
+  background-color: var(--s1) !important;
+  z-index: 15 !important;
+}
+.tbl-sticky td.sticky-col-idx-0,
+.tbl-sticky td.sticky-col-idx-1,
+.tbl-sticky td.sticky-col-idx-2,
+.tbl-sticky td.sticky-col-idx-3 {
+  background-color: var(--surface) !important;
+  z-index: 10;
+}
+.tbl-sticky tr:hover td.sticky-col-idx-0,
+.tbl-sticky tr:hover td.sticky-col-idx-1,
+.tbl-sticky tr:hover td.sticky-col-idx-2,
+.tbl-sticky tr:hover td.sticky-col-idx-3 {
+  background-color: var(--s1) !important;
+}
+.tbl-sticky tbody tr:hover td {
+  background-color: var(--s1);
+}
+.grp-header {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--purple-ll) !important;
+  color: var(--purple) !important;
+  border-bottom: 2px solid var(--purple-l) !important;
+  text-align: center;
+}
+.grp-header-blue {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--blue-ll) !important;
+  color: var(--blue) !important;
+  border-bottom: 2px solid var(--blue-l) !important;
+  text-align: center;
+}
+.grp-header-orange {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--yellow-ll) !important;
+  color: #b7791f !important;
+  border-bottom: 2px solid var(--yellow-l) !important;
+  text-align: center;
+}
 </style>
 

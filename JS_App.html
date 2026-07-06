@@ -4210,6 +4210,9 @@ function sendReportToExecutive() {
       const detailsModal = document.getElementById('detailsModal');
       if(detailsModal) detailsModal.style.display = 'flex';
 
+      const searchInput = document.getElementById('schoolSearchInput');
+      if (searchInput) searchInput.value = '';
+
       const modalTitle = document.getElementById('detailsModalTitle');
       if(modalTitle) modalTitle.innerText = title + ' (' + agencyName(agency) + ')';
 
@@ -4220,7 +4223,6 @@ function sendReportToExecutive() {
       try {
         const data = JSON.parse(AppState.activeJsonStr);
         
-        // ตรวจสอบโครงสร้างแถวข้อมูลตาราง
         let rows = data.rows;
         if (typeof rows === 'string') {
           try { rows = JSON.parse(rows); } catch(e){}
@@ -4230,68 +4232,145 @@ function sendReportToExecutive() {
         
         if (isMultiRow) {
           if (Array.isArray(rows)) {
-            let headers = [];
+            let dataCols = [];
             const selectedFormObj = AppState.availableForms.find(f => f.formId === formId);
+            
             if (selectedFormObj && selectedFormObj.formConfig) {
-              headers = selectedFormObj.formConfig
-                .filter(col => col.type !== 'section')
-                .map(col => col.name);
-              // กรองเฉพาะฟิลด์ที่มีข้อมูลจริงในแถวแรก
-              if (rows.length > 0) {
-                const rowKeys = Object.keys(rows[0]);
-                headers = headers.filter(h => rowKeys.indexOf(h) >= 0);
-              }
+              let currentSection = null;
+              selectedFormObj.formConfig.forEach(col => {
+                if (col.type === 'section') {
+                  currentSection = col.label;
+                } else {
+                  dataCols.push({ name: col.name, label: col.label, section: currentSection });
+                }
+              });
             } else if (rows.length > 0) {
-              headers = Object.keys(rows[0]);
+              Object.keys(rows[0]).forEach(k => {
+                dataCols.push({ name: k, label: _getFieldLabel(k, formId) || k, section: null });
+              });
             }
             
-            let thHtml = '<tr><th style="width:50px;text-align:center;">#</th>' + headers.map(h => {
-              const label = _getFieldLabel(h, formId) || h;
-              return `<th>${label}</th>`;
-            }).join('') + '</tr>';
+            // กรองคอลัมน์เฉพาะที่มีข้อมูลจริงในแถวแรก
+            if (rows.length > 0) {
+              const rowKeys = Object.keys(rows[0]);
+              dataCols = dataCols.filter(c => rowKeys.indexOf(c.name) >= 0);
+            }
             
+            // จัดกลุ่มหัวตารางแถวที่ 1
+            let groups = [];
+            let i = 0;
+            while (i < dataCols.length) {
+              let c = dataCols[i];
+              if (c.name === 'school_name' || c.name === 'tambon' || c.name === 'amphoe') {
+                groups.push({ label: '', count: 1, cols: [c] });
+                i++;
+              } else {
+                let sect = c.section;
+                let groupCols = [c];
+                i++;
+                while (i < dataCols.length && dataCols[i].section === sect && sect !== null && 
+                       dataCols[i].name !== 'school_name' && dataCols[i].name !== 'tambon' && dataCols[i].name !== 'amphoe') {
+                  groupCols.push(dataCols[i]);
+                  i++;
+                }
+                groups.push({ label: sect || '', count: groupCols.length, cols: groupCols });
+              }
+            }
+            
+            // สร้าง Header Row 1 และ Row 2
+            let thRow1 = '<tr><th rowspan="2" class="sticky-col-idx-0">#</th>';
+            let thRow2 = '<tr>';
+            
+            groups.forEach(g => {
+              if (g.label === '') {
+                g.cols.forEach(col => {
+                  let stickyClass = '';
+                  if (col.name === 'school_name' || col.name === 'tambon' || col.name === 'amphoe') {
+                    const idx = col.name === 'school_name' ? 1 : col.name === 'tambon' ? 2 : 3;
+                    stickyClass = `sticky-col-idx-${idx}`;
+                  }
+                  thRow1 += `<th rowspan="2" class="${stickyClass}">${col.label}</th>`;
+                });
+              } else {
+                let grpClass = 'grp-header';
+                if (g.label.indexOf('อนุบาล') >= 0 || g.label.indexOf('ก่อนประถม') >= 0) grpClass = 'grp-header-orange';
+                else if (g.label.indexOf('ประถม') >= 0) grpClass = 'grp-header-blue';
+                
+                thRow1 += `<th colspan="${g.count}" class="${grpClass}">${g.label}</th>`;
+                
+                g.cols.forEach(col => {
+                  let subLabel = col.label;
+                  const matchParen = col.label.match(/\(([^)]+)\)/);
+                  if (matchParen) subLabel = matchParen[1];
+                  thRow2 += `<th>${subLabel}</th>`;
+                });
+              }
+            });
+            
+            thRow1 += '</tr>';
+            thRow2 += '</tr>';
+            
+            // สร้างข้อมูล Body
             let tbHtml = rows.map((row, rIdx) => {
-              return `<tr><td style="text-align:center;font-weight:600;color:var(--subtle);">${rIdx + 1}</td>` + headers.map(h => {
-                const val = row[h];
-                const valDisplay = (val === '' || val === null || val === undefined) ? '<span style="color:var(--muted); font-weight:normal;">—</span>' : `<span>${val}</span>`;
-                return `<td>${valDisplay}</td>`;
-              }).join('') + '</tr>';
+              let trHtml = `<tr><td class="sticky-col-idx-0" style="font-weight:600; text-align:center;">${rIdx + 1}</td>`;
+              
+              dataCols.forEach(col => {
+                let stickyClass = '';
+                if (col.name === 'school_name' || col.name === 'tambon' || col.name === 'amphoe') {
+                  const idx = col.name === 'school_name' ? 1 : col.name === 'tambon' ? 2 : 3;
+                  stickyClass = `sticky-col-idx-${idx}`;
+                }
+                
+                const val = row[col.name];
+                let valDisplay = (val === '' || val === null || val === undefined) ? '<span style="color:var(--muted); font-weight:normal;">—</span>' : val;
+                
+                let customStyle = '';
+                if (col.name !== 'school_name' && col.name !== 'tambon' && col.name !== 'amphoe') {
+                  if (!isNaN(Number(val)) && val !== '') {
+                    valDisplay = Number(val).toLocaleString();
+                    customStyle = 'text-align:right; font-variant-numeric: tabular-nums;';
+                  }
+                }
+                
+                trHtml += `<td class="${stickyClass}" style="${customStyle}">${valDisplay}</td>`;
+              });
+              
+              trHtml += '</tr>';
+              return trHtml;
             }).join('');
             
-            content.innerHTML = `<div style="overflow-x:auto; border:1px solid var(--border-l); border-radius:12px; margin-bottom:12px;">
-              <table class="tbl" style="margin-bottom:0; width:100%; font-size:13px;">
-                <thead style="background:var(--s1);">${thHtml}</thead>
-                <tbody>${tbHtml}</tbody>
-              </table>
-            </div>`;
+            content.innerHTML = `
+              <div class="tbl-sticky-container">
+                <table class="tbl-sticky">
+                  <thead>
+                    ${thRow1}
+                    ${thRow2}
+                  </thead>
+                  <tbody>
+                    ${tbHtml}
+                  </tbody>
+                </table>
+              </div>
+            `;
             return;
           } else {
-            // กรณีโครงสร้างพัง (เช่น ค่าเป็น "[object Object]" หรือไม่ใช่ Array)
             content.innerHTML = `
               <div style="padding: 24px; text-align: center; background: var(--red-ll); border: 1.5px dashed var(--red-l); border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
                 <span class="material-icons-round" style="color: var(--red); font-size: 36px;">warning</span>
                 <div style="font-weight: 700; color: var(--red-d); font-size: 15px;">พบข้อผิดพลาด: ข้อมูลตารางรายงานไม่สมบูรณ์</div>
                 <p style="font-size: 13px; color: var(--text-2); line-height: 1.6; margin: 0; max-width: 500px;">
-                  ข้อมูลรายชื่อโรงเรียนในฐานข้อมูลถูกเขียนทับด้วยรูปแบบข้อความที่ไม่ถูกต้อง (พบข้อความตัวแทน [object Object]) 
-                  ส่งผลให้ระบบไม่สามารถพล็อตตำแหน่งหรือแสดงจำนวนโรงเรียนบนแดชบอร์ดได้
+                  ข้อมูลตารางรายงานสูญหายหรือถูกเขียนทับด้วยข้อมูลชำรุด 
                 </p>
-                <div style="font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.6; text-align: left; background: var(--surface); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-l); width: 100%;">
-                  💡 <strong>วิธีการแก้ไขด้วยตนเองใน 1 นาที:</strong>
-                  <ol style="margin-left: 20px; margin-top: 4px; display: flex; flex-direction: column; gap: 4px;">
-                    <li>ปิดหน้าต่างนี้และเลื่อนไปที่แบนเนอร์ประวัติประวัติการส่งข้อมูล</li>
-                    <li>กดปุ่ม <strong>"แก้ไขข้อมูล" (รูปดินสอสีเหลือง)</strong> ของรายการนี้ เพื่อเปิดแบบฟอร์มคีย์ข้อมูล</li>
-                    <li>คัดลอกรายชื่อโรงเรียนจาก Excel หรือพิมพ์กรอกเข้าไปใหม่ในตารางให้เรียบร้อย</li>
-                    <li>กดปุ่ม <strong>"บันทึกและส่งข้อมูล"</strong> อีกครั้งเพื่ออัปเดตข้อมูลทับของเดิมให้สมบูรณ์</li>
-                  </ol>
-                </div>
               </div>
             `;
             return;
           }
         }
-        let html = '<table class="tbl" style="margin-bottom:0;"><thead><tr><th width="55%">รายการข้อมูล</th><th width="45%">ค่าที่รายงาน</th></tr></thead><tbody>';
+        
+        // 🎯 แสดงผลสำหรับฟอร์มทั่วไป (ที่ไม่ใช่ฟอร์มตารางหลายแถว)
+        let html = '<table class="tbl" style="margin-bottom:0; width:100%; border:1px solid var(--border-l); border-radius:12px; overflow:hidden;"><thead><tr style="background:var(--s1);"><th width="55%">รายการข้อมูล</th><th width="45%">ค่าที่รายงาน</th></tr></thead><tbody>';
         for (let key in data) {
-          if (key === 'report_title') continue;
+          if (key === 'report_title' || key === 'isMultiRow' || key === 'rows') continue;
           const label = _getFieldLabel(key, formId) || key;
           const isRawKey = (label === key);
           const labelHtml = isRawKey
@@ -4299,14 +4378,45 @@ function sendReportToExecutive() {
             : `<span style="font-size:13px;color:var(--text);">${label}</span>`;
           const val = data[key];
           const valDisplay = (val === '' || val === null || val === undefined) ? '<span style="color:var(--muted);">—</span>' : `<span style="font-weight:700;color:var(--blue-dd);font-size:14px;">${val}</span>`;
-          html += `<tr><td>${labelHtml}</td><td>${valDisplay}</td></tr>`;
+          html += `<tr><td style="padding:10px 12px; border-bottom:1px solid var(--border-l);">${labelHtml}</td><td style="padding:10px 12px; border-bottom:1px solid var(--border-l);">${valDisplay}</td></tr>`;
         }
         html += '</tbody></table>';
         content.innerHTML = html;
       } catch(e) {
-        content.innerHTML = `<div class="code-box">${AppState.activeJsonStr}</div>`;
+        console.error('Error in openDataDetails:', e);
       }
     }
+
+    // 🎯 29. ฟังก์ชันลบรอยหยักสำหรับการค้นหาด่วนและส่งออกตารางรายละเอียด
+    window.filterDetailsTable = function() {
+      const q = (document.getElementById('schoolSearchInput')?.value || '').toLowerCase().trim();
+      const rows = document.querySelectorAll('#detailsModalContent table tbody tr');
+      rows.forEach(row => {
+        const school = (row.cells[1]?.innerText || '').toLowerCase();
+        const tambon = (row.cells[2]?.innerText || '').toLowerCase();
+        if (school.indexOf(q) >= 0 || tambon.indexOf(q) >= 0) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    };
+
+    window.exportDetailsToExcel = function() {
+      const table = document.querySelector('#detailsModalContent table');
+      if (!table) { showToast('ไม่พบข้อมูลตารางที่จะส่งออก', 'error'); return; }
+      
+      const wb = XLSX.utils.table_to_book(table, { raw: true });
+      const rawTitle = document.getElementById('detailsModalTitle')?.innerText || 'รายงานสถิติ';
+      const cleanTitle = rawTitle.replace(/[\\/*?:[\]]/g, '_'); // คลีนตัวอักษรต้องห้ามสำหรับชื่อชีต
+      
+      if (wb.SheetNames.length > 0) {
+        wb.SheetNames[0] = cleanTitle.substring(0, 31);
+      }
+      
+      XLSX.writeFile(wb, cleanTitle + '.xlsx');
+      showToast('ดาวน์โหลดไฟล์ Excel สำเร็จ', 'success');
+    };
     
     function copyJsonToClipboard() {
       if(!AppState.activeJsonStr) return;

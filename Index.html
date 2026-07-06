@@ -1751,16 +1751,24 @@
       </div>
     </div>
 
-    <div id="detailsModal" class="modal-card" style="display:none; max-width: 600px;">
+    <div id="detailsModal" class="modal-card" style="display:none; max-width:96vw !important; width:96vw !important; height:90vh !important; max-height:90vh !important; border-radius:16px;">
       <div class="m-hd">
         <div class="m-title"><span class="material-icons-round" style="color:var(--blue)">visibility</span> รายละเอียดข้อมูลรายงาน</div>
         <button class="btn-icon btn-ghost" onclick="closeModals()"><span class="material-icons-round">close</span></button>
       </div>
-      <div class="m-body" style="padding: 0;">
-        <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-l);">
-          <h4 id="detailsModalTitle" style="font-size: 16px; margin: 0; color: var(--text);"></h4>
+      <!-- 🎯 บาร์เครื่องมือค้นหาและส่งออก Excel -->
+      <div style="display:flex; align-items:center; gap:12px; padding:12px 24px; background:var(--s1); border-bottom:1px solid var(--border-l); flex-shrink:0; flex-wrap:wrap;">
+        <h4 id="detailsModalTitle" style="font-size: 14.5px; margin: 0; color: var(--text); font-weight:700;"></h4>
+        <div class="search-wrap" style="background:var(--white); box-shadow:var(--e1); width:280px; margin-left:24px;">
+          <span class="material-icons-round" style="color:var(--muted);">search</span>
+          <input type="text" id="schoolSearchInput" onkeyup="filterDetailsTable()" placeholder="ค้นหาโรงเรียน หรือ ตำบล..." />
         </div>
-        <div id="detailsModalContent" style="padding: 12px 24px;"></div>
+        <div style="margin-left:auto; display:flex; gap:8px;">
+          <button class="btn btn-outlined" onclick="exportDetailsToExcel()"><span class="material-icons-round">download</span> ส่งออก Excel</button>
+        </div>
+      </div>
+      <div class="m-body" style="padding: 0; flex:1; display:flex; flex-direction:column; min-height:0; overflow:hidden;">
+        <div id="detailsModalContent" style="padding: 16px 24px; flex:1; overflow:auto;"></div>
       </div>
       <div class="m-ft">
         <button class="btn btn-outlined" id="btnCopyJson" onclick="copyJsonToClipboard()"><span class="material-icons-round">content_copy</span> คัดลอกข้อมูล (JSON)</button>
